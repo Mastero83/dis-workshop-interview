@@ -133,7 +133,7 @@ function mediaBlock(media: Media | null | undefined, tone: 'light' | 'dark'): st
   if (media.type === 'video') {
     const poster = media.poster ? ` poster="${escapeHtml(asset(media.poster))}"` : ''
     return `<figure class="${tone === 'light' ? 'video-card' : 'q-media'}">
-      <video controls playsinline preload="metadata"${poster}>
+      <video controls playsinline preload="none"${poster}>
         <source src="${escapeHtml(asset(media.src))}" type="video/mp4" />
         Je browser kan deze video niet afspelen.
       </video>
@@ -193,7 +193,7 @@ function welcomeView(): string {
     <div class="hero-main">
       <div class="hero-copy anim-${anim === 'none' ? 'none' : anim}">
         <p class="kicker">${escapeHtml(questionnaire.kicker)}</p>
-        <h1 id="screen-title" tabindex="-1">De workshop begint bij jullie</h1>
+        <h1 id="screen-title" tabindex="-1">De vragen voor de workshop</h1>
         <p class="lede">${escapeHtml(questionnaire.intro)}</p>
       </div>
       ${mediaBlock(questionnaire.video, 'light')}
@@ -216,7 +216,7 @@ function welcomeView(): string {
     </div>
     <img class="hero-mark" alt="" src="${asset('logos/beeldmerk-lijnen-kleur.png')}" />
     <footer class="hero-foot">
-      <span>DIS Group · ERP-partner voor bouw en installatie</span>
+      <span>DIS Group · Workshopvoorbereiding</span>
       <a href="${beheerHref()}">Antwoorden vergelijken</a>
     </footer>
   </main>`
@@ -422,7 +422,6 @@ function summaryView(): string {
   if (!questionnaire || !session) return ''
   const doc = toExportDoc(questionnaire, session)
   const answered = doc.answers.filter((item) => item.display !== 'Nog niet ingevuld').length
-  const name = typeof session.answers.naam === 'string' ? session.answers.naam.trim() : ''
   const blocks = questionnaire.sections
     .map((section) => {
       const items = section.questions
@@ -446,9 +445,9 @@ function summaryView(): string {
     <header class="sum-hero" style="${photoVars(questionnaire.heroImage, questionnaire.heroPosition)}">
       <div class="only-screen">${logo('light', 'logo-light')}</div>
       <div class="only-print">${logo('dark')}</div>
-      <p class="kicker">Klaar om mee te nemen</p>
+      <p class="kicker">Voor de workshop</p>
       <h1 id="screen-title" tabindex="-1">Dit nemen we mee</h1>
-      <p class="sum-meta">${escapeHtml(doc.klant || 'Klant nog niet ingevuld')}${name ? ` · ${escapeHtml(name)}` : ''}<br />
+      <p class="sum-meta">${escapeHtml(doc.klant || 'Klant nog niet ingevuld')}<br />
         ${answered} van ${totalQuestions} vragen ingevuld · ${escapeHtml(formatWhen(doc.exportedAt))}</p>
     </header>
     <div class="sum-body">
@@ -464,7 +463,7 @@ function summaryView(): string {
       <button class="btn btn-primary" type="button" data-action="download">Download JSON</button>
       <button class="btn btn-line" type="button" data-action="print">Afdrukken / PDF</button>
       <button class="btn btn-line" type="button" data-action="copy">Kopieer tekst</button>
-      <button class="btn btn-line" type="button" data-action="mail">Mail naar ons</button>
+      <button class="btn btn-line" type="button" data-action="mail">Mail de samenvatting</button>
     </div>
   </article>`
 }
@@ -501,7 +500,7 @@ function adminView(): string {
       <p class="help">Sleep geëxporteerde JSON-bestanden hierheen. Vink er twee aan om ze te vergelijken. Niets wordt geüpload.</p>
       <div class="drop" data-drop>
         <p><strong>Zet de bestanden hier neer</strong></p>
-        <p>of kies ze op je telefoon of laptop.</p>
+        <p>of kies een bestand op dit apparaat.</p>
         <p><label class="btn btn-primary" style="display:inline-flex">Kies JSON<input class="sr-only" type="file" accept="application/json,.json" multiple data-action="file-input" /></label></p>
       </div>
       ${adminError ? `<p class="form-error" role="alert">${escapeHtml(adminError)}</p>` : ''}
@@ -774,7 +773,7 @@ function modalHtml(): string {
       <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <h2 id="modal-title">Naar welk adres mailen we?</h2>
         <p>Je mailprogramma opent met een samenvatting. Voeg de JSON toe als de tekst wordt afgekapt.</p>
-        <input class="field" id="mail-to" type="email" inputmode="email" placeholder="naam@disgroup.nl" value="${escapeHtml(preset)}" />
+        <input class="field" id="mail-to" type="email" inputmode="email" placeholder="workshop@bedrijf.nl" value="${escapeHtml(preset)}" />
         <p class="form-error" id="mail-error" hidden></p>
         <div class="actions">
           <button class="btn btn-ghost-dark" type="button" data-action="close-modal">Annuleren</button>

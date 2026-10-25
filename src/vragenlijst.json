@@ -4,7 +4,7 @@
       "id": "workshop-voorbereiding",
       "title": "Workshopvoorbereiding",
       "kicker": "Workshopvoorbereiding",
-      "intro": "Een korte vragenlijst, ongeveer tien minuten. Jij vult hem in, wij bereiden de sessie ermee voor. Zo praten we meteen over jullie werk in plaats van een standaardverhaal.",
+      "intro": "Een korte vragenlijst, ongeveer tien minuten. Jij vult hem in. Wij gebruiken de antwoorden om de workshop op jullie werk af te stemmen.",
       "heroImage": "fotos/bouwplaats-zonsondergang-titel.jpeg",
       "heroPosition": "center 40%",
       "estimatedMinutes": 10,
@@ -13,14 +13,14 @@
         "type": "video",
         "src": "media/dis-zijn-wij.mp4",
         "poster": "media/dis-zijn-wij-poster.jpg",
-        "caption": "DIS, zijn wij — een korte kennismaking"
+        "caption": "DIS, zijn wij"
       },
       "sections": [
         {
           "id": "bedrijf",
           "title": "Over je bedrijf",
-          "kicker": "Kennismaken",
-          "intro": "Een paar feiten over jullie organisatie. Dan nemen we de juiste voorbeelden mee naar de workshop.",
+          "kicker": "Organisatie",
+          "intro": "Een paar feiten over de organisatie, zodat de voorbeelden in de workshop kloppen met jullie werk.",
           "image": "fotos/bouwvakkers-kraan.jpeg",
           "imagePosition": "center 30%",
           "accent": "blue",
@@ -29,34 +29,26 @@
               "id": "organisatie",
               "type": "text",
               "title": "Hoe heet jullie organisatie?",
-              "help": "De naam zoals je hem op de factuur of de bouwkeet zou zetten.",
+              "help": "De naam zoals die op de bouwkeet of de factuur staat.",
               "required": true,
-              "placeholder": "Bijv. Jansen Bouw & Installatie",
+              "placeholder": "Bijv. een installatiebedrijf of aannemer",
               "prefill": "klant",
               "autocomplete": "organization"
             },
             {
-              "id": "naam",
-              "type": "text",
-              "title": "Hoe mogen we je noemen?",
-              "required": true,
-              "placeholder": "Voornaam en achternaam",
-              "autocomplete": "name"
-            },
-            {
               "id": "rol",
               "type": "text",
-              "title": "Wat is je rol?",
-              "help": "Dan weten we vanuit welke stoel je de vragen beantwoordt.",
+              "title": "Vanuit welke rol vul je dit in?",
+              "help": "Een functienaam is genoeg. Geen persoonsgegevens.",
               "required": true,
-              "placeholder": "Bijv. projectleider, controller, directeur",
+              "placeholder": "Bijv. werkvoorbereider, projectleider, controller",
               "autocomplete": "organization-title"
             },
             {
               "id": "sector",
               "type": "single",
-              "title": "In welke wereld zitten jullie vooral?",
-              "help": "Kies wat het grootste deel van het werk raakt.",
+              "title": "Waar zit het meeste werk?",
+              "help": "Kies de tak die het grootste deel van de projecten raakt.",
               "required": true,
               "options": [
                 { "value": "bouw", "label": "Bouw", "hint": "Woningbouw of utiliteit" },
@@ -64,24 +56,24 @@
                 { "value": "infra", "label": "Infra en GWW", "hint": "Grond, weg, water of civiel" },
                 { "value": "service", "label": "Service en onderhoud", "hint": "Contracten, storingen, beheer" },
                 { "value": "mix", "label": "Een mix van deze", "hint": "Meerdere takken naast elkaar" },
-                { "value": "anders", "label": "Iets anders", "hint": "Vertel het ons straks gerust in het vrije veld" }
+                { "value": "anders", "label": "Iets anders", "hint": "Dat kan straks in een open veld" }
               ]
             },
             {
               "id": "processen",
               "type": "multiple",
               "title": "Welke processen moeten in de workshop voorbijkomen?",
-              "help": "Kies alles wat ertoe doet. Je kunt er meer dan één aanvinken.",
+              "help": "Kies alles wat ertoe doet. Meerdere antwoorden mogen.",
               "required": true,
               "options": [
                 { "value": "calculatie", "label": "Calculatie en offertes" },
                 { "value": "projectadministratie", "label": "Projectadministratie" },
                 { "value": "planning", "label": "Planning en werkvoorbereiding" },
-                { "value": "uren", "label": "Uren en materieel" },
-                { "value": "inkoop", "label": "Inkoop en voorraad" },
-                { "value": "facturatie", "label": "Facturatie" },
+                { "value": "uren", "label": "Uren en materieel op de bouwplaats" },
+                { "value": "inkoop", "label": "Inkoop en materiaal" },
+                { "value": "facturatie", "label": "Facturatie, ook van meerwerk" },
                 { "value": "servicecontracten", "label": "Service en contracten" },
-                { "value": "financieel", "label": "Financieel en rapportages" },
+                { "value": "financieel", "label": "Projectrapportages en BI Services" },
                 { "value": "hr", "label": "HR en payroll" },
                 { "value": "documenten", "label": "Documenten en kwaliteit" }
               ]
@@ -92,7 +84,7 @@
           "id": "systemen",
           "title": "Processen en systemen",
           "kicker": "Hoe jullie nu werken",
-          "intro": "We sluiten aan op wat er vandaag al staat. Business Central, 4PS of nog een mix van Excel en losse pakketten: alles is een bruikbaar vertrekpunt.",
+          "intro": "We sluiten aan op wat er vandaag staat. Business Central met 4PS zien we als één geheel. Excel, een ander pakket of papier mag ook genoemd worden.",
           "image": "fotos/collegas-beeldscherm.jpeg",
           "imagePosition": "center 40%",
           "accent": "green",
@@ -107,11 +99,10 @@
               "id": "systemen",
               "type": "multiple",
               "title": "Waar leggen jullie het werk nu vooral in vast?",
-              "help": "Meerdere antwoorden mogen. Kies ook Excel of papier als dat de dagelijkse praktijk is.",
+              "help": "Meerdere antwoorden mogen. Noem ook Excel of papier als dat de dagelijkse praktijk is.",
               "required": true,
               "options": [
-                { "value": "bc", "label": "Microsoft Dynamics 365 Business Central" },
-                { "value": "4ps", "label": "4PS" },
+                { "value": "bc-4ps", "label": "Business Central met 4PS" },
                 { "value": "excel", "label": "Excel en gedeelde mappen" },
                 { "value": "ander-erp", "label": "Een ander ERP-pakket" },
                 { "value": "calculatiepakket", "label": "Een los calculatiepakket" },
@@ -122,10 +113,11 @@
             {
               "id": "business-central",
               "type": "single",
-              "title": "Werken jullie al met Business Central?",
+              "title": "Werken jullie al met Business Central met 4PS?",
+              "help": "Dat is voor ons één aanbod: projectadministratie en ERP in hetzelfde systeem.",
               "required": true,
               "options": [
-                { "value": "hoofd", "label": "Ja, dat is ons hoofdsysteem" },
+                { "value": "hoofd", "label": "Ja, dat is ons systeem voor project en administratie" },
                 { "value": "deels", "label": "Deels, naast andere systemen" },
                 { "value": "orientatie", "label": "Nog niet, we oriënteren ons" },
                 { "value": "nee", "label": "Nee" }
@@ -146,14 +138,14 @@
               "id": "projectverloop",
               "type": "longtext",
               "title": "Schets hoe een project nu loopt, van calculatie tot eindfactuur.",
-              "help": "Een paar zinnen is genoeg. Noem gerust waar iemand iets overtypt of nabelt.",
+              "help": "Een paar zinnen is genoeg. Noem waar gegevens opnieuw worden ingevoerd of nagebeld.",
               "required": true,
-              "placeholder": "Bijv. calculatie in Excel, daarna een project in 4PS, uren via de app, factuur aan het eind van de maand.",
+              "placeholder": "Bijv. calculatie in Excel, daarna project, uren en materiaal in Business Central met 4PS, factuur als het werk is opgeleverd.",
               "media": {
                 "type": "image",
                 "src": "fotos/collegas-beeldscherm.jpeg",
                 "alt": "Twee collega's kijken samen naar een scherm",
-                "caption": "Samen naar hetzelfde scherm kijken scheelt een hoop nabellen."
+                "caption": "Projectinformatie staat vaak op één scherm. Kantoor en uitvoering moeten allebei kunnen meekijken."
               }
             }
           ]
@@ -162,7 +154,7 @@
           "id": "pijn",
           "title": "Waar het schuurt",
           "kicker": "Pijnpunten",
-          "intro": "Wees gerust concreet. Hoe scherper het knelpunt, hoe gerichter we de workshop kunnen maken.",
+          "intro": "Wees concreet. Een scherp knelpunt uit de bouw- of installatiepraktijk maakt de workshop gerichter.",
           "image": "fotos/bouwplaats-zonsondergang-titel.jpeg",
           "imagePosition": "center 55%",
           "accent": "orange",
@@ -175,23 +167,23 @@
               "required": true,
               "minRanked": 3,
               "options": [
-                { "value": "dubbel", "label": "Dezelfde gegevens meerdere keren invoeren" },
-                { "value": "versnipperd", "label": "Projectinformatie is versnipperd" },
-                { "value": "facturen", "label": "Facturen gaan te laat de deur uit" },
-                { "value": "inkoop", "label": "Inkoop en voorraad sluiten niet aan" },
-                { "value": "uren", "label": "Uren komen niet op tijd binnen" },
-                { "value": "rapportages", "label": "Rapportages kloppen niet of komen te laat" },
-                { "value": "samenwerking", "label": "Kantoor en buiten werken langs elkaar heen" },
-                { "value": "inzicht", "label": "Weinig actueel inzicht voor de directie" }
+                { "value": "dubbel", "label": "Dezelfde projectgegevens meerdere keren invoeren" },
+                { "value": "versnipperd", "label": "Projectinformatie staat verspreid" },
+                { "value": "facturen", "label": "Meerwerk en facturen lopen achter" },
+                { "value": "inkoop", "label": "Materiaal en inkoop sluiten niet aan op het project" },
+                { "value": "uren", "label": "Uren van bouwplaats of montage komen niet op tijd binnen" },
+                { "value": "rapportages", "label": "Projectrapportages kloppen niet of komen te laat" },
+                { "value": "samenwerking", "label": "Kantoor en bouwplaats werken met verschillende informatie" },
+                { "value": "inzicht", "label": "Weinig actueel inzicht in lopende projecten" }
               ]
             },
             {
               "id": "voorbeeld",
               "type": "longtext",
               "title": "Kun je een recent voorbeeld geven?",
-              "help": "Optioneel. Een concrete situatie helpt ons meer dan een algemene klacht.",
+              "help": "Optioneel. Een situatie uit een project helpt meer dan een algemene omschrijving. Geen namen en geen bedragen.",
               "required": false,
-              "placeholder": "Bijv. een meerwerkfactuur die bleef liggen omdat de opdrachtbevestiging niet in het systeem stond."
+              "placeholder": "Bijv. meerwerk op een project stond niet in de administratie, waardoor de factuur bleef liggen."
             },
             {
               "id": "urgentie",
@@ -208,8 +200,8 @@
         {
           "id": "doelen",
           "title": "Doelen voor de workshop",
-          "kicker": "Waar we naartoe werken",
-          "intro": "Wat moet er na afloop anders zijn? Daar sturen we de sessie op.",
+          "kicker": "Resultaat",
+          "intro": "Wat moet er na afloop anders zijn? Daar richten we de sessie op.",
           "image": "fotos/overleg-kantoor.jpeg",
           "imagePosition": "center 40%",
           "accent": "yellow",
@@ -218,32 +210,34 @@
               "id": "doelen",
               "type": "rank",
               "title": "Wat moet deze workshop vooral opleveren?",
-              "help": "Zet minimaal twee uitkomsten op volgorde. 1 is wat je als eerste mee naar huis wilt nemen.",
+              "help": "Zet minimaal twee uitkomsten op volgorde. 1 staat voorop.",
               "required": true,
               "minRanked": 2,
               "options": [
-                { "value": "beeld", "label": "Een scherp beeld van hoe we nu werken" },
-                { "value": "kansen", "label": "Concrete verbeterkansen" },
-                { "value": "advies", "label": "Advies over Business Central en 4PS" },
+                { "value": "beeld", "label": "Een scherp beeld van hoe projecten nu lopen" },
+                { "value": "kansen", "label": "Concrete verbeterpunten in de processen" },
+                { "value": "advies", "label": "Advies over Business Central met 4PS" },
+                { "value": "bi", "label": "Rapportages en sturing via BI Services" },
+                { "value": "ai", "label": "Waar AI Services kan ondersteunen, met akkoord van een collega" },
                 { "value": "plan", "label": "Een plan voor de komende 90 dagen" },
-                { "value": "draagvlak", "label": "Draagvlak bij de mensen die ermee werken" },
-                { "value": "demo", "label": "Een demo op onze eigen processen" }
+                { "value": "draagvlak", "label": "Afstemming met de rollen die ermee werken" },
+                { "value": "demo", "label": "Een doorloop op jullie eigen processen" }
               ]
             },
             {
               "id": "over-drie-maanden",
               "type": "longtext",
-              "title": "Als we elkaar over drie maanden spreken en het is geslaagd — wat is er dan anders?",
+              "title": "Als we elkaar over drie maanden spreken en het is geslaagd, wat is er dan anders in het werk?",
               "required": true,
-              "placeholder": "Bijv. projectleiders zien zelf de nacalculatie, en we factureren meerwerk binnen twee weken."
+              "placeholder": "Bijv. de nacalculatie van een project is bij te werken zonder gegevens opnieuw over te typen, en meerwerk staat tijdig in de administratie."
             }
           ]
         },
         {
           "id": "wie",
           "title": "Wie schuift aan",
-          "kicker": "De mensen aan tafel",
-          "intro": "De juiste rollen in de kamer maken het verschil. Vertel ons wie we kunnen verwachten.",
+          "kicker": "Rollen",
+          "intro": "We vragen naar rollen, niet naar namen of contactgegevens.",
           "image": "fotos/medewerker-headset.jpeg",
           "imagePosition": "center 30%",
           "accent": "blue",
@@ -259,7 +253,7 @@
                 { "value": "projectleiding", "label": "Projectleiding" },
                 { "value": "calculatie", "label": "Calculatie" },
                 { "value": "werkvoorbereiding", "label": "Werkvoorbereiding" },
-                { "value": "uitvoering", "label": "Uitvoering op de bouwplaats" },
+                { "value": "uitvoering", "label": "Uitvoering op de bouwplaats of in de montage" },
                 { "value": "service", "label": "Service" },
                 { "value": "ict", "label": "ICT" }
               ]
@@ -267,27 +261,26 @@
             {
               "id": "deelnemers",
               "type": "longtext",
-              "title": "Wie verwacht je aan tafel?",
-              "help": "Optioneel. Naam en rol, voor zover je die al weet.",
+              "title": "Ontbreekt er een rol, of hoeft een rol er juist niet de hele sessie bij te zijn?",
+              "help": "Optioneel. Blijf bij rollen. Geen namen.",
               "required": false,
-              "placeholder": "Bijv. Sara de Vries (controller), Tom Bakker (projectleider)."
+              "placeholder": "Bijv. werkvoorbereiding sluit later aan. Uitvoering alleen bij het blok over uren en materiaal."
             },
             {
               "id": "aanspreekpunt",
               "type": "text",
-              "title": "Wie is voor ons het aanspreekpunt vooraf?",
-              "help": "Naam, en als je wilt een e-mailadres of telefoonnummer.",
+              "title": "Via welke rol stemmen we de workshop vooraf af?",
+              "help": "Een rol is genoeg. Geen naam, e-mailadres of telefoonnummer.",
               "required": true,
-              "placeholder": "Naam, rol en hoe we je bereiken",
-              "autocomplete": "name"
+              "placeholder": "Bijv. projectleiding of finance"
             }
           ]
         },
         {
           "id": "ai",
-          "title": "AI en automatisering",
-          "kicker": "Slim waar het helpt",
-          "intro": "Geen hype. We willen weten waar automatisering jullie werk lichter maakt, en waar een mens het besluit houdt.",
+          "title": "AI Services",
+          "kicker": "Ondersteuning",
+          "intro": "We willen weten waar AI Services het werk kan ondersteunen. Een voorstel mag voorbereiden. De eindbeslissing blijft bij een collega.",
           "image": "fotos/collegas-beeldscherm.jpeg",
           "imagePosition": "center 20%",
           "accent": "green",
@@ -295,7 +288,8 @@
             {
               "id": "ai-vertrouwd",
               "type": "scale",
-              "title": "Hoe vertrouwd is het team met AI in het dagelijkse werk?",
+              "title": "Hoe vertrouwd is het team met AI Services in het dagelijkse werk?",
+              "help": "Ook als iemand een tekst laat voorbereiden: een collega geeft het akkoord.",
               "required": true,
               "min": 1,
               "max": 5,
@@ -305,38 +299,39 @@
             {
               "id": "ai-kansen",
               "type": "multiple",
-              "title": "Waar zien jullie kansen?",
-              "help": "Kies wat nieuwsgierigheid wekt. 'We weten het nog niet' is een prima antwoord.",
+              "title": "Waar zou ondersteuning het werk lichter maken?",
+              "help": "Kies onderwerpen. AI Services bereidt voor. Een collega houdt de eindbeslissing.",
               "required": true,
               "options": [
-                { "value": "offertes", "label": "Offertes en calculaties sneller opzetten" },
+                { "value": "offertes", "label": "Calculaties en offertes voorbereiden" },
                 { "value": "samenvatten", "label": "Projectinformatie samenvatten" },
-                { "value": "mail", "label": "Mail, notulen en taken" },
-                { "value": "controleren", "label": "Uren en inkoop controleren" },
-                { "value": "rapportages", "label": "Rapportages en sturing" },
-                { "value": "copilot", "label": "Copilot in Microsoft 365" },
-                { "value": "inspiratie", "label": "We weten het nog niet — graag inspiratie" }
+                { "value": "mail", "label": "Notulen en taken uit een projectoverleg" },
+                { "value": "controleren", "label": "Uren van monteurs en materiaalcontrole nalopen" },
+                { "value": "rapportages", "label": "Projectrapportages via BI Services" },
+                { "value": "microsoft", "label": "Teksten en samenvattingen in Microsoft 365" },
+                { "value": "inspiratie", "label": "Nog geen keuze. Eerst de mogelijkheden zien" }
               ]
             },
             {
               "id": "ai-houding",
               "type": "single",
-              "title": "Hoe staan jullie tegenover automatisering?",
+              "title": "Hoe staan jullie tegenover AI Services?",
+              "help": "In alle gevallen geeft een mens het laatste akkoord.",
               "required": true,
               "options": [
-                { "value": "graag", "label": "Graag, waar het veilig kan", "hint": "We willen tempo, met een mens aan het stuur" },
-                { "value": "basis", "label": "Eerst de basis op orde", "hint": "Processen en data, daarna pas slimme hulp" },
-                { "value": "voorzichtig", "label": "Voorzichtig, met duidelijke grenzen", "hint": "Alleen waar we het kunnen uitleggen" },
-                { "value": "nieuwsgierig", "label": "Vooral nieuwsgierig", "hint": "Laat maar zien wat er kan" }
+                { "value": "graag", "label": "Inzetten, zolang een collega akkoord geeft", "hint": "Ondersteuning mag. De beslissing blijft bij het team" },
+                { "value": "basis", "label": "Eerst project en administratie op orde", "hint": "Processen en gegevens, daarna ondersteuning" },
+                { "value": "voorzichtig", "label": "Alleen met duidelijke grenzen", "hint": "Alleen waar het team het kan controleren" },
+                { "value": "nieuwsgierig", "label": "Eerst verkennen, nog geen keuze", "hint": "De workshop mag de mogelijkheden laten zien" }
               ]
             },
             {
               "id": "nog-iets",
               "type": "longtext",
               "title": "Is er nog iets dat we vooraf moeten weten?",
-              "help": "Optioneel. Planning, gevoeligheden, of iets wat we vooral niet moeten overslaan.",
+              "help": "Optioneel. Geen persoonsgegevens en geen bedragen.",
               "required": false,
-              "placeholder": "Schrijf het zoals je het aan een collega zou vertellen."
+              "placeholder": "Bijvoorbeeld een planning, een onderwerp dat gevoelig ligt, of iets dat we niet moeten overslaan."
             }
           ]
         }
