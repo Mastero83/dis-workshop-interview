@@ -1,0 +1,19 @@
+{
+  "name": "DIS Workshopvoorbereiding",
+  "short_name": "DIS Workshop",
+  "description": "Beantwoord de intakevragen ter voorbereiding op een workshop met DIS Group.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "nl",
+  "background_color": "#001A3F",
+  "theme_color": "#001A3F",
+  "icons": [
+    {
+      "src": "logos/beeldmerk-lijnen-kleur.png",
+      "sizes": "810x1087",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
