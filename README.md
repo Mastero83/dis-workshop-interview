@@ -67,11 +67,11 @@ Vraagtypes:
 
 Een tweede vragenlijst voeg je toe als extra object in `questionnaires`, met een eigen `id`. Open hem met `?vragenlijst=dat-id`. Zonder parameter opent de eerste lijst.
 
-Toon: Nederlands, zakelijk maar toegankelijk. De app spreekt de klant aan met je/jij, vanuit wij.
+Toon: Nederlands, zakelijk en niet-promotioneel. De app spreekt de klant aan met je/jij, vanuit wij. Gebruik de namen **AI Services** en **BI Services**. Geen ‘DAS’ en geen ‘business unit’. Business Central met 4PS is één aanbod, geen twee losse producten. Voorbeelden komen uit bouw en installatie. Waar AI Services staat, geeft een collega het laatste akkoord. Vraag niet om persoonsgegevens (naam, e-mail, telefoon) en niet om omzet of andere bedragen, ook niet in de voorbeeldteksten.
 
 ## Video of foto bij een vraag of onderdeel
 
-Zet bestanden in `public/`. Paden in de JSON zijn relatief aan die map, zonder slash ervoor. De video op het welkomstscherm én bij het onderdeel *Processen en systemen* is `public/media/dis-zijn-wij.mp4` (ongeveer 9 MB), met poster `public/media/dis-zijn-wij-poster.jpg`.
+Zet bestanden in `public/`. Paden in de JSON zijn relatief aan die map, zonder slash ervoor. De video op het welkomstscherm én bij het onderdeel *Processen en systemen* is `public/media/dis-zijn-wij.mp4` (de actuele film “DIS, zijn wij”, ongeveer 9 MB), met poster `public/media/dis-zijn-wij-poster.jpg`. Vervang die twee bestanden als er een nieuwere versie is.
 
 Op het welkomstscherm:
 
@@ -80,7 +80,7 @@ Op het welkomstscherm:
   "type": "video",
   "src": "media/dis-zijn-wij.mp4",
   "poster": "media/dis-zijn-wij-poster.jpg",
-  "caption": "DIS, zijn wij — een korte kennismaking"
+  "caption": "DIS, zijn wij"
 }
 ```
 
@@ -95,7 +95,7 @@ Hetzelfde object mag aan een onderdeel (`sections[].media`) of aan een vraag (`q
 }
 ```
 
-De speler gebruikt `playsinline`, een poster en de normale bediening. Niets start vanzelf.
+De speler gebruikt `playsinline`, `preload="none"`, een poster en de normale bediening. De poster blijft staan tot iemand op afspelen drukt. Niets start vanzelf.
 
 Foto's voor achtergronden horen bij `image` op een onderdeel of `heroImage` op de vragenlijst. Gebruik de beelden uit `public/fotos/`. Ze zijn verkleind voor mobiel gebruik; de originelen zaten in het huisstijlarchief.
 
@@ -109,7 +109,7 @@ Handige parameters:
 | --- | --- |
 | `?klant=Naam` | Naam op het welkomstscherm en in de export |
 | `?vragenlijst=id` | Andere lijst uit de JSON |
-| `?naar=naam@bedrijf.nl` | Vooringevuld adres voor de mailknop |
+| `?naar=workshop@bedrijf.nl` | Vooringevuld adres voor de mailknop |
 | `?beheer=1` | Scherm om geëxporteerde JSON te vergelijken |
 
 Het logo linksboven, de kleuren en Poppins volgen de huisstijl (navy `#001A3F`, DIS-blauw `#319FDA`, geel, oranje, groen, pastelkaarten). Het placeholder-klantlogo staat in `public/logos/placeholder-klantlogo.png`. Vervang dat bestand als je een echt logo in de app wilt zetten; de vragenlijst toont standaard de klantnaam in plaats van die placeholder.
