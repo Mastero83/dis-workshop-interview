@@ -1,6 +1,6 @@
 # Workshopvoorbereiding · DIS Group
 
-Interactieve vragenlijst waarmee klanten van DIS Group zich voorbereiden op een workshop. Eén vraag per scherm, in de DIS-huisstijl, volledig statisch. Antwoorden blijven in de browser staan tot iemand ze exporteert.
+Interactieve vragenlijst waarmee klanten van DIS Group zich voorbereiden op een workshop. Het gesprek loopt als een chat: DIS stelt een vraag, de klant antwoordt met een snelle keuze, een schaal of een tekstveld. Antwoorden blijven in de browser staan tot iemand ze exporteert.
 
 Live: [https://mastero83.github.io/dis-workshop-interview/](https://mastero83.github.io/dis-workshop-interview/)
 
@@ -69,35 +69,57 @@ Een tweede vragenlijst voeg je toe als extra object in `questionnaires`, met een
 
 Toon: Nederlands, zakelijk en niet-promotioneel. De app spreekt de klant aan met je/jij, vanuit wij. Gebruik de namen **AI Services** en **BI Services**. Geen ‘DAS’ en geen ‘business unit’. Business Central met 4PS is één aanbod, geen twee losse producten. Voorbeelden komen uit bouw en installatie. Waar AI Services staat, geeft een collega het laatste akkoord. Vraag niet om persoonsgegevens (naam, e-mail, telefoon) en niet om omzet of andere bedragen, ook niet in de voorbeeldteksten.
 
-## Video of foto bij een vraag of onderdeel
+## Introductie en context in het gesprek
 
-Zet bestanden in `public/`. Paden in de JSON zijn relatief aan die map, zonder slash ervoor. De video op het welkomstscherm én bij het onderdeel *Processen en systemen* is `public/media/dis-zijn-wij.mp4` (de actuele film “DIS, zijn wij”, ongeveer 9 MB), met poster `public/media/dis-zijn-wij-poster.jpg`. Vervang die twee bestanden als er een nieuwere versie is.
+Zet bestanden in `public/media/`. Paden in de JSON zijn relatief aan `public/`, zonder slash ervoor. Een nieuw filmpje toevoegen is een bestand neerzetten en de JSON aanpassen. Geen codewijziging nodig.
 
-Op het welkomstscherm:
+Het welkomstscherm toont `introVideo`: `media/intro.mp4` (16:9) en op een smal scherm `media/intro-4x5.mp4`. *Volledig scherm* op een telefoon gebruikt `media/intro-vertical.mp4` (9:16). De losse ondertitels staan in `media/intro.vtt` (zelfde tekst als `intro.srt`). `media/dis-zijn-wij.mp4` blijft het contextfilmpje bij “Wie zijn wij”, niet de intro.
 
 ```json
-"video": {
+"introVideo": {
+  "src": "media/intro.mp4",
+  "poster": "media/intro-poster.jpg",
+  "srcPortrait": "media/intro-4x5.mp4",
+  "posterPortrait": "media/intro-4x5-poster.jpg",
+  "srcFullscreen": "media/intro-vertical.mp4",
+  "captions": "media/intro.vtt"
+}
+```
+
+Het gesprek telt tien vragen, ongeveer vijf minuten. Clips hangen als `context` aan de bijpassende vraag: systemen, projectverloop, pijnpunten, rollen en AI Services. `ctx-werksessie-dagdelen.mp4` staat in `disabledMedia` en wordt niet getoond; het workshopformat is nog niet bevestigd. Zet `enabled` niet op `true` tot dat wel zo is.
+
+Op een telefoon vullen contextfilmpjes de breedte van de ballon. *Volledig scherm* vergroot ze, zodat de ingebrande ondertitel leesbaar is.
+
+Elke vraag mag een `context` hebben. Die verschijnt als bericht van de host vóór de vraag.
+
+Een filmpje start pas na een tik, gedempt en met `playsinline`. Nog een tik zet het geluid aan. `captions` wijst naar een WebVTT-bestand; veel clips hebben de ondertitel ook ingebrand.
+
+```json
+"context": {
   "type": "video",
-  "src": "media/dis-zijn-wij.mp4",
-  "poster": "media/dis-zijn-wij-poster.jpg",
-  "caption": "DIS, zijn wij"
+  "src": "media/wie-zijn-wij.mp4",
+  "poster": "media/wie-zijn-wij.jpg",
+  "srcPortrait": "media/wie-zijn-wij-staand.mp4",
+  "posterPortrait": "media/wie-zijn-wij-staand.jpg",
+  "captions": "media/wie-zijn-wij.vtt",
+  "title": "Wie zijn wij",
+  "body": "Korte toelichting onder het filmpje."
 }
 ```
 
-Hetzelfde object mag aan een onderdeel (`sections[].media`) of aan een vraag (`questions[].media`). Een foto werkt net zo:
+Een uitlegkaart, zonder bestand:
 
 ```json
-"media": {
-  "type": "image",
-  "src": "fotos/collegas-beeldscherm.jpeg",
-  "alt": "Twee collega's kijken samen naar een scherm",
-  "caption": "Korte toelichting onder de foto"
+"context": {
+  "type": "explainer",
+  "title": "Wat bedoelen we met BI Services?",
+  "body": "Korte uitleg in gewone taal."
 }
 ```
 
-De speler gebruikt `playsinline`, `preload="none"`, een poster en de normale bediening. De poster blijft staan tot iemand op afspelen drukt. Niets start vanzelf.
+Een foto bij een vraag blijft mogelijk via `media` met `type: "image"`. Die verschijnt in de vraagballon.
 
-Foto's voor achtergronden horen bij `image` op een onderdeel of `heroImage` op de vragenlijst. Gebruik de beelden uit `public/fotos/`. Ze zijn verkleind voor mobiel gebruik; de originelen zaten in het huisstijlarchief.
+De host op het welkomstscherm speelt niet vanzelf. In het gesprek start een contextfilmpje pas na een tik, gedempt, met `playsinline`. De poster blijft staan tot die tik.
 
 ## Meerdere klanten
 
@@ -141,7 +163,9 @@ Op het overzicht:
 - **Download JSON** — volledig bestand, versie 1, geschikt voor het beheerscherm.
 - **Afdrukken / PDF** — printvriendelijke weergave. Kies in het printdialoogvenster *Opslaan als PDF*.
 - **Kopieer tekst** — platte samenvatting op het klembord.
-- **Mail naar ons** — opent het mailprogramma. Lange antwoorden worden ingekort; voeg de JSON toe als bijlage. Het adres komt uit `?naar=`, anders uit `consultantEmail` in de JSON, anders vraagt de app erom.
+- **Mail de samenvatting** — opent het mailprogramma. Lange antwoorden worden ingekort; voeg de JSON toe als bijlage. Het adres komt uit `?naar=`, anders uit `consultantEmail` in de JSON, anders vraagt de app erom.
+
+In het gesprek tik je een eigen antwoordballon aan om dat antwoord te wijzigen. Het overzicht groepeert de antwoorden per hoofdstuk.
 
 ## Beheer
 
