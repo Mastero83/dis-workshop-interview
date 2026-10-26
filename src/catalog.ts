@@ -27,6 +27,15 @@ export function loadCatalog(): Catalog {
         if (question.type === 'single' || question.type === 'multiple' || question.type === 'rank') {
           assert(Array.isArray(question.options) && question.options.length > 0, `${question.id} mist options`)
         }
+        if (question.context) {
+          assert(
+            question.context.type === 'video' || question.context.type === 'explainer',
+            `${question.id} heeft een onbekend context-type`,
+          )
+          if (question.context.type === 'video') {
+            assert(typeof question.context.src === 'string' && question.context.src, `${question.id} mist context.src`)
+          }
+        }
       }
     }
     return item as unknown as Questionnaire
