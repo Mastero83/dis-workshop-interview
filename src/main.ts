@@ -383,10 +383,10 @@ function turnHtml(question: Question, index: number, fresh: boolean): string {
   const typing = fresh
     ? `<div class="msg host typing-row" aria-hidden="true">${avatar()}<div class="bubble typing"><i></i><i></i><i></i></div></div>`
     : ''
-  const context = question.context ? contextHtml(question.context, fresh) : ''
+  const context = question.context ? contextHtml(question.context, fresh, true) : ''
   const askDelay = question.context ? 'reveal-2' : 'reveal-1'
   const image = question.media?.type === 'image' ? imageHtml(question.media) : ''
-  const ask = `<div class="msg host ${fresh ? askDelay : ''}">
+  const ask = `<div class="msg host ${fresh ? askDelay : ''}${question.context ? '' : ' is-lead'}">
     ${question.context ? '<span class="avatar-spacer"></span>' : avatar()}
     <div class="stack">
       ${question.context ? '' : '<span class="who">DIS</span>'}
@@ -404,12 +404,13 @@ function turnHtml(question: Question, index: number, fresh: boolean): string {
 const FULL =
   '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 4H4v4M16 4h4v4M4 16v4h4M20 16v4h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
 
-function contextHtml(context: ContextBlock, fresh: boolean): string {
+function contextHtml(context: ContextBlock, fresh: boolean, lead = false): string {
   if (context.enabled === false) return ''
   const reveal = fresh ? 'reveal-1' : ''
+  const leadClass = lead ? ' is-lead' : ''
   if (context.type === 'video' && context.src) {
     const title = context.title || 'Video'
-    return `<div class="msg host ${reveal}">
+    return `<div class="msg host ${reveal}${leadClass}">
       ${avatar()}
       <div class="stack">
         <span class="who">DIS</span>
@@ -430,7 +431,7 @@ function contextHtml(context: ContextBlock, fresh: boolean): string {
       </div>
     </div>`
   }
-  return `<div class="msg host ${reveal}">
+  return `<div class="msg host ${reveal}${leadClass}">
     ${avatar()}
     <div class="stack">
       <span class="who">DIS</span>

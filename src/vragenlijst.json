@@ -4,10 +4,10 @@
       "id": "workshop-voorbereiding",
       "title": "Workshopvoorbereiding",
       "kicker": "Workshopvoorbereiding",
-      "intro": "Een paar vragen, ±5 minuten, met korte video's en uitleg.",
+      "intro": "Een paar vragen, ±4 minuten, met korte video's en uitleg.",
       "heroImage": "fotos/bouwplaats-zonsondergang-titel.jpeg",
       "heroPosition": "center 40%",
-      "estimatedMinutes": 5,
+      "estimatedMinutes": 4,
       "consultantEmail": "",
       "video": {
         "type": "video",
@@ -46,6 +46,17 @@
             "poster": "media/ctx-systemen-bc-4ps-poster.jpg",
             "title": "Business Central met 4PS"
           }
+        },
+        {
+          "id": "herkenbaar",
+          "reason": "Niet tonen. De clip overlapt met ctx-rollen-tijdvreters en de pijnpuntenvraag staat niet meer in het gesprek.",
+          "context": {
+            "type": "video",
+            "enabled": false,
+            "src": "media/ctx-herkenbaar.mp4",
+            "poster": "media/ctx-herkenbaar-poster.jpg",
+            "title": "Herken je dit?"
+          }
         }
       ],
       "sections": [
@@ -53,7 +64,7 @@
           "id": "bedrijf",
           "title": "Over je bedrijf",
           "kicker": "Organisatie",
-          "intro": "Een paar feiten, zodat de voorbeelden in de workshop kloppen met jullie werk.",
+          "intro": "De naam, zodat de voorbeelden in de workshop kloppen met jullie werk.",
           "image": "fotos/bouwvakkers-kraan.jpeg",
           "imagePosition": "center 30%",
           "accent": "blue",
@@ -75,54 +86,6 @@
                 "title": "Wie zijn wij",
                 "body": "Een korte film over DIS. Daarna een paar vragen over jullie werk."
               }
-            },
-            {
-              "id": "sector",
-              "type": "single",
-              "title": "Waar zit het meeste werk?",
-              "help": "Kies de tak die het grootste deel van de projecten raakt.",
-              "required": true,
-              "options": [
-                { "value": "bouw", "label": "Bouw", "hint": "Woningbouw of utiliteit" },
-                { "value": "installatie", "label": "Installatietechniek", "hint": "Elektrotechniek, werktuigbouwkunde, klimaat" },
-                { "value": "infra", "label": "Infra en GWW", "hint": "Grond, weg, water of civiel" },
-                { "value": "service", "label": "Service en onderhoud", "hint": "Contracten, storingen, beheer" },
-                { "value": "mix", "label": "Een mix van deze", "hint": "Meerdere takken naast elkaar" }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "pijn",
-          "title": "Waar het schuurt",
-          "kicker": "Pijnpunten",
-          "intro": "Eén scherp knelpunt uit de bouw- of installatiepraktijk maakt de workshop gerichter.",
-          "image": "fotos/bouwplaats-zonsondergang-titel.jpeg",
-          "imagePosition": "center 55%",
-          "accent": "orange",
-          "questions": [
-            {
-              "id": "pijnpunten",
-              "type": "rank",
-              "title": "Wat kost jullie nu de meeste tijd of frustratie?",
-              "help": "Zet minimaal twee punten op volgorde. 1 is het belangrijkst.",
-              "required": true,
-              "minRanked": 2,
-              "context": {
-                "type": "video",
-                "src": "media/ctx-herkenbaar.mp4",
-                "poster": "media/ctx-herkenbaar-poster.jpg",
-                "title": "Herken je dit?",
-                "body": "Dubbel invoeren, zoeken in mappen, statussen najagen. Zeg welk punt bij jullie het zwaarst weegt."
-              },
-              "options": [
-                { "value": "dubbel", "label": "Dezelfde projectgegevens meerdere keren invoeren" },
-                { "value": "facturen", "label": "Meerwerk en facturen lopen achter" },
-                { "value": "uren", "label": "Uren van bouwplaats of montage komen niet op tijd binnen" },
-                { "value": "rapportages", "label": "Projectrapportages kloppen niet of komen te laat" },
-                { "value": "samenwerking", "label": "Kantoor en bouwplaats werken met verschillende informatie" },
-                { "value": "inzicht", "label": "Weinig actueel inzicht in lopende projecten" }
-              ]
             }
           ]
         },
@@ -186,6 +149,16 @@
                 { "value": "inkoper", "label": "Inkoper", "icon": "icons/roles/n-shopping-cart.svg", "figure": "40%", "hint": "materiaalbeheer niet geautomatiseerd", "source": "Exact 2025", "sourceKind": "bron", "tint": "lilac" },
                 { "value": "finance", "label": "Finance/controller", "icon": "icons/roles/n-chart-line.svg", "figure": "34%", "hint": "administratie (deels) op papier of in Excel", "source": "Exact 2025", "sourceKind": "bron", "tint": "sand" }
               ]
+            },
+            {
+              "id": "urgentie",
+              "type": "scale",
+              "title": "Hoe urgent is het om die tijdvreters aan te pakken?",
+              "required": true,
+              "min": 1,
+              "max": 5,
+              "minLabel": "Kan wachten",
+              "maxLabel": "Speelt nu"
             }
           ]
         },
@@ -198,16 +171,6 @@
           "imagePosition": "center 40%",
           "accent": "yellow",
           "questions": [
-            {
-              "id": "urgentie",
-              "type": "scale",
-              "title": "Hoe urgent is het om dit aan te pakken?",
-              "required": true,
-              "min": 1,
-              "max": 5,
-              "minLabel": "Kan wachten",
-              "maxLabel": "Speelt nu"
-            },
             {
               "id": "doelen",
               "type": "rank",
