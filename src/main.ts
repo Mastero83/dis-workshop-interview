@@ -185,8 +185,16 @@ function render(): void {
   applyPortraitPosters()
   const nextThread = document.getElementById('thread')
   if (nextThread) {
-    if (arriving) nextThread.scrollTop = nextThread.scrollHeight
-    else if (keepScroll != null) nextThread.scrollTop = keepScroll
+    if (arriving) {
+      const composer = document.querySelector('.composer')
+      const tall = composer != null && composer.getBoundingClientRect().height > window.innerHeight * 0.58
+      const hosts = nextThread.querySelectorAll('.msg.host')
+      const last = hosts[hosts.length - 1]
+      if (tall && last) {
+        const delta = last.getBoundingClientRect().top - nextThread.getBoundingClientRect().top
+        nextThread.scrollTop += delta - 4
+      } else nextThread.scrollTop = nextThread.scrollHeight
+    } else if (keepScroll != null) nextThread.scrollTop = keepScroll
   } else if (pageScroll) window.scrollTo(0, pageScroll)
   const nextSheet = document.querySelector('.role-sheet.is-open')
   if (nextSheet && window.matchMedia('(max-width: 799px)').matches) document.body.appendChild(nextSheet)
@@ -199,7 +207,7 @@ function render(): void {
   }
   if (arriving) {
     const question = questionById(arriving)
-    if (question?.context?.type !== 'video') {
+    if (question?.type === 'text' || question?.type === 'longtext') {
       document.querySelector<HTMLElement>('.composer .field')?.focus()
     }
   }

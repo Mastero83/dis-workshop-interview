@@ -568,7 +568,7 @@ button { -webkit-tap-highlight-color: transparent; }
 }
 .kans-note span { font-weight: 300; color: var(--das-text); }
 .composer:has(.kans-card),
-.composer:has(.kans-empty) { max-height: min(78vh, 760px); }
+.composer:has(.kans-empty) { max-height: min(62vh, 720px); }
 .kaart-wrap { margin: 8px 0 18px; }
 .kaart {
   position: relative;
