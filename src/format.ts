@@ -175,6 +175,15 @@ export function formatWhen(iso: string): string {
   }).format(date)
 }
 
+export function formatSummaryWhen(iso: string): { date: string; time: string } {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return { date: iso, time: '' }
+  return {
+    date: new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }).format(date),
+    time: new Intl.DateTimeFormat('nl-NL', { hour: '2-digit', minute: '2-digit' }).format(date),
+  }
+}
+
 export function fileSlug(value: string): string {
   return (
     value

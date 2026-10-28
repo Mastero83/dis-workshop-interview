@@ -6,6 +6,7 @@ import {
   displayAnswer,
   escapeHtml,
   fileSlug,
+  formatSummaryWhen,
   formatWhen,
   isEmpty,
   isExportDoc,
@@ -733,6 +734,14 @@ function asList(value: AnswerValue | undefined): string[] {
   return Array.isArray(value) ? value.filter((item) => typeof item === 'string') : []
 }
 
+function chosenRoleLabels(): string[] {
+  if (!questionnaire || !session) return []
+  const question = questionnaire.sections.flatMap((section) => section.questions).find((item) => item.type === 'roles')
+  if (!question) return []
+  const selected = new Set(asList(session.answers[question.id]))
+  return (question.options || []).filter((option) => selected.has(option.value)).map((option) => option.label)
+}
+
 function summaryView(): string {
   if (!questionnaire || !session) return ''
   const doc = toExportDoc(questionnaire, session)
@@ -760,29 +769,50 @@ function summaryView(): string {
     })
     .join('')
   const pieces = celebrate && !reduceMotion ? confetti() : ''
+  const when = formatSummaryWhen(doc.exportedAt)
+  const complete = doc.answers.length > 0 && answered === doc.answers.length
+  const progressMark = complete
+    ? `<span class="sum-tick">${CHECK}</span>`
+    : ring(doc.answers.length === 0 ? 0 : Math.round((answered / doc.answers.length) * 100))
+  const roles = chosenRoleLabels()
+  const roleChips = roles.length
+    ? `<ul class="sum-roles">${roles.map((label) => `<li>${escapeHtml(label)}</li>`).join('')}</ul>`
+    : ''
   return `${blobs()}${pieces}<article class="summary">
-    <header class="sum-hero">
-      <div class="only-screen sum-top">${logo('light')}<div class="bar-tools">${resetButton()}${avatar()}</div></div>
-      <div class="only-print">${logo('dark')}</div>
-      <p class="kicker">Voor de workshop</p>
-      <h1 id="screen-title" tabindex="-1">Dit nemen we mee</h1>
-      <p class="sum-meta">${escapeHtml(doc.klant || 'Klant nog niet ingevuld')}<br />
-        ${answered} van ${doc.answers.length} vragen ingevuld · ${escapeHtml(formatWhen(doc.exportedAt))}</p>
-    </header>
-    <div class="sum-body">
-      <p class="note" id="remote-note">${escapeHtml(remoteNote || privacyLine())}</p>
-      ${blocks}
-      <div class="sum-links no-print">
-        <button class="linkish" type="button" data-action="back">Terug naar het gesprek</button>
-        ${resetButton()}
-        <a class="text-link" href="${beheerHref()}">Antwoorden vergelijken</a>
+    <div class="sum-frame">
+      <header class="sum-hero">
+        <div class="sum-toolbar">
+          ${logo('dark')}
+          <div class="sum-actions">
+            <button class="reset-btn sum-action-extra no-print" type="button" data-action="download">Download JSON</button>
+            <button class="reset-btn sum-action-extra no-print" type="button" data-action="print">Afdrukken</button>
+            ${resetButton()}
+          </div>
+        </div>
+        <p class="sum-eyebrow">Dit nemen we mee</p>
+        <h1 id="screen-title" tabindex="-1">Jullie kansenkaart</h1>
+        ${roleChips}
+        <p class="sum-meta">
+          <span class="sum-progress${complete ? ' is-done' : ''}">${progressMark}<span>${answered} van ${doc.answers.length} vragen</span></span>
+          <span>${escapeHtml(when.date)}</span>
+          ${when.time ? `<span>${escapeHtml(when.time)}</span>` : ''}
+        </p>
+      </header>
+      <div class="sum-rule" aria-hidden="true"></div>
+      <div class="sum-body">
+        <p class="note" id="remote-note">${escapeHtml(remoteNote || privacyLine())}</p>
+        ${blocks}
+        <div class="sum-links no-print">
+          <button class="linkish" type="button" data-action="back">Terug naar het gesprek</button>
+          <a class="text-link" href="${beheerHref()}">Antwoorden vergelijken</a>
+        </div>
       </div>
-    </div>
-    <div class="export-bar no-print">
-      <button class="btn btn-primary" type="button" data-action="download">Download JSON</button>
-      <button class="btn btn-line" type="button" data-action="print">Afdrukken / PDF</button>
-      <button class="btn btn-line" type="button" data-action="copy">Kopieer tekst</button>
-      <button class="btn btn-line" type="button" data-action="mail">Mail de samenvatting</button>
+      <div class="export-bar no-print">
+        <button class="btn btn-primary" type="button" data-action="download">Download JSON</button>
+        <button class="btn btn-line" type="button" data-action="print">Afdrukken / PDF</button>
+        <button class="btn btn-line" type="button" data-action="copy">Kopieer tekst</button>
+        <button class="btn btn-line" type="button" data-action="mail">Mail de samenvatting</button>
+      </div>
     </div>
   </article>`
 }
