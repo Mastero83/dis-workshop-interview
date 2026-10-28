@@ -176,12 +176,13 @@ export interface Catalog {
 export interface SignalAnswer {
   kind: 'signals'
   values: Record<string, number>
+  note: string
 }
 
 export interface KansAnswer {
   kind: 'kansen'
   interest: Record<string, string>
-  note: string
+  ideas: string[]
 }
 
 export type AnswerValue = string | string[] | number | null | SignalAnswer | KansAnswer
@@ -189,7 +190,7 @@ export type AnswerValue = string | string[] | number | null | SignalAnswer | Kan
 export type Phase = 'welcome' | 'flow' | 'summary'
 
 export interface Session {
-  version: 5
+  version: 6
   questionnaireId: string
   klant: string
   phase: Phase
@@ -223,6 +224,12 @@ export interface ExportDoc {
   updatedAt: string
   answers: ExportAnswer[]
   kansen: { id: string; naam: string; score: number; interest: string; signalen: string[] }[]
+  eigen: {
+    rollen: string[]
+    tijdvreters: { rol: string; tekst: string }[]
+    ideeen: string[]
+    nogWeten: string
+  }
 }
 
 export type Step =
