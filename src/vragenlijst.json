@@ -4,10 +4,10 @@
       "id": "workshop-voorbereiding",
       "title": "Workshopvoorbereiding",
       "kicker": "Workshopvoorbereiding",
-      "intro": "Een paar vragen, ±4 minuten, met korte video's en uitleg.",
+      "intro": "Een paar vragen, ±3 minuten, met korte video's en uitleg.",
       "heroImage": "fotos/bouwplaats-zonsondergang-titel.jpeg",
       "heroPosition": "center 40%",
-      "estimatedMinutes": 4,
+      "estimatedMinutes": 3,
       "consultantEmail": "",
       "video": {
         "type": "video",
@@ -57,6 +57,17 @@
             "poster": "media/ctx-herkenbaar-poster.jpg",
             "title": "Herken je dit?"
           }
+        },
+        {
+          "id": "kettingreactie",
+          "reason": "Niet tonen. De vraag over het projectverloop staat niet meer in het gesprek.",
+          "context": {
+            "type": "video",
+            "enabled": false,
+            "src": "media/ctx-kettingreactie.mp4",
+            "poster": "media/ctx-kettingreactie-poster.jpg",
+            "title": "Van kantoor naar de bouwplaats"
+          }
         }
       ],
       "sections": [
@@ -85,32 +96,6 @@
                 "captions": "media/dis-zijn-wij.vtt",
                 "title": "Wie zijn wij",
                 "body": "Een korte film over DIS. Daarna een paar vragen over jullie werk."
-              }
-            }
-          ]
-        },
-        {
-          "id": "verloop",
-          "title": "Hoe een project loopt",
-          "kicker": "Van kantoor naar de bouwplaats",
-          "intro": "Een onvolledig werkpakket schuift door. We willen horen waar dat bij jullie gebeurt.",
-          "image": "fotos/collegas-beeldscherm.jpeg",
-          "imagePosition": "center 40%",
-          "accent": "green",
-          "questions": [
-            {
-              "id": "projectverloop",
-              "type": "longtext",
-              "title": "Schets hoe een project nu loopt, van calculatie tot eindfactuur.",
-              "help": "Een paar zinnen is genoeg. Noem waar gegevens opnieuw worden ingevoerd.",
-              "required": true,
-              "placeholder": "Bijv. calculatie, dan planning en uitvoering, uren en materiaal, factuur als het werk is opgeleverd.",
-              "context": {
-                "type": "video",
-                "src": "media/ctx-kettingreactie.mp4",
-                "poster": "media/ctx-kettingreactie-poster.jpg",
-                "title": "Van kantoor naar de bouwplaats",
-                "body": "Een onvolledig werkpakket schuift door naar de monteur en de planning."
               }
             }
           ]

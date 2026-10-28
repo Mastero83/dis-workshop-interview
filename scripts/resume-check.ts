@@ -15,8 +15,16 @@ interface SectionFile {
   questions: QuestionFile[]
 }
 
+interface DisabledClip {
+  id: string
+  context?: { src?: string; enabled?: boolean }
+}
+
 interface QuestionnaireFile {
   id: string
+  estimatedMinutes: number
+  intro: string
+  disabledMedia?: DisabledClip[]
   sections: SectionFile[]
 }
 
@@ -31,9 +39,22 @@ const known = new Set(questions.map((question) => question.id))
 
 assert.deepEqual(
   questions.map((question) => question.id),
-  ['organisatie', 'projectverloop', 'rollen', 'urgentie', 'doelen', 'ai-houding'],
-  'de rollen moeten de derde vraag blijven',
+  ['organisatie', 'rollen', 'urgentie', 'doelen', 'ai-houding'],
+  'de rollen moeten de tweede vraag zijn',
 )
+assert.deepEqual(
+  questionnaire.sections.map((section) => section.title),
+  ['Over je bedrijf', 'Rollen en tijdvreters', 'Doelen voor de workshop', 'AI Services'],
+)
+assert.equal(questionnaire.estimatedMinutes, 3)
+assert.match(questionnaire.intro, /±3 minuten/)
+assert.equal(
+  questions.some((question) => question.context?.src?.includes('ctx-kettingreactie')),
+  false,
+)
+const parked = questionnaire.disabledMedia?.find((clip) => clip.id === 'kettingreactie')
+assert.equal(parked?.context?.src, 'media/ctx-kettingreactie.mp4')
+assert.equal(parked?.context?.enabled, false)
 
 const rollen = questions.find((question) => question.id === 'rollen')
 assert.ok(rollen)
@@ -64,7 +85,7 @@ for (const step of [0, 6, 8, 11, 13]) {
   assert.equal(decision.restarted, true, `versie 1 op stap ${step} moet opnieuw beginnen`)
   assert.equal(decision.discard, true)
   assert.equal(decision.session.phase, 'welcome')
-  assert.equal(decision.session.version, 2)
+  assert.equal(decision.session.version, 3)
   assert.equal(decision.session.questionId, null)
   assert.deepEqual(decision.session.answers, {})
 }
@@ -72,9 +93,45 @@ for (const step of [0, 6, 8, 11, 13]) {
 const finished = interpretStored(legacy(13, 'summary'), qid, '', known)
 assert.equal(finished.restarted, true, 'een afgeronde sessie van voor de rollenfix begint opnieuw')
 
-const resumed = interpretStored(
+const previousSchema = interpretStored(
   JSON.stringify({
     version: 2,
+    questionnaireId: qid,
+    phase: 'flow',
+    stepIndex: 5,
+    questionId: 'rollen',
+    answers: { organisatie: 'Test', projectverloop: 'Kort.', rollen: ['planner'] },
+    startedAt: '2020-01-01T00:00:00.000Z',
+    updatedAt: '2020-01-01T00:00:00.000Z',
+  }),
+  qid,
+  '',
+  known,
+)
+assert.equal(previousSchema.restarted, true, 'schemaversie 2 hoort bij het gesprek mét projectverloop')
+assert.equal(previousSchema.session.phase, 'welcome')
+assert.deepEqual(previousSchema.session.answers, {})
+
+const previousSummary = interpretStored(
+  JSON.stringify({
+    version: 2,
+    questionnaireId: qid,
+    phase: 'summary',
+    stepIndex: 10,
+    questionId: null,
+    answers: { organisatie: 'Test', projectverloop: 'Kort.' },
+    startedAt: '2020-01-01T00:00:00.000Z',
+    updatedAt: '2020-01-01T00:00:00.000Z',
+  }),
+  qid,
+  '',
+  known,
+)
+assert.equal(previousSummary.restarted, true, 'een afgeronde sessie van schema 2 begint opnieuw')
+
+const resumed = interpretStored(
+  JSON.stringify({
+    version: 3,
     questionnaireId: qid,
     phase: 'flow',
     stepIndex: 11,
@@ -92,6 +149,23 @@ assert.equal(resumed.discard, false)
 assert.equal(resumed.session.questionId, 'rollen')
 assert.equal(resumed.session.phase, 'flow')
 assert.deepEqual(resumed.session.answers.rollen, ['planner'])
+
+const droppedQuestion = interpretStored(
+  JSON.stringify({
+    version: 3,
+    questionnaireId: qid,
+    phase: 'flow',
+    stepIndex: 3,
+    questionId: 'projectverloop',
+    answers: { projectverloop: 'Kort.' },
+    startedAt: '2020-01-01T00:00:00.000Z',
+    updatedAt: '2020-01-01T00:00:00.000Z',
+  }),
+  qid,
+  '',
+  known,
+)
+assert.equal(droppedQuestion.restarted, true, 'projectverloop mag het gesprek niet meer openen')
 
 const removed = interpretStored(
   JSON.stringify({
