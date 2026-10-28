@@ -1,5 +1,5 @@
 import './style.css'
-import { buildSteps, findQuestionnaire, findStepIndex, loadCatalog, questionAt, questionCount } from './catalog'
+import { buildSteps, findQuestionnaire, findStepIndex, loadCatalog, questionAt, questionCount, questionIds } from './catalog'
 import {
   answerHtml,
   asset,
@@ -15,7 +15,7 @@ import {
   validationMessage,
 } from './format'
 import { pushRemote, remoteStoreUrl } from './remote'
-import { clearSession, createSession, hasProgress, loadSession, saveSession } from './session'
+import { clearSession, createSession, hasProgress, loadSession, saveSession, wipeAppStorage } from './session'
 import type {
   AnswerValue,
   ClipSource,
@@ -37,11 +37,14 @@ const UP =
   '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 14l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 const DOWN =
   '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 10l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+const REFRESH =
+  '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 3v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 16H3v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 
 const params = new URLSearchParams(location.search)
 const klantParam = (params.get('klant') || '').trim()
 const vragenlijstParam = params.get('vragenlijst')
 const naarParam = (params.get('naar') || '').trim()
+const resetOnLoad = params.get('reset') === '1'
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 let questionnaire: Questionnaire | null = null
@@ -49,6 +52,8 @@ let session: Session | null = null
 let steps: Step[] = []
 let totalQuestions = 0
 let catalogError = ''
+let suppressSave = false
+let restarted = false
 
 try {
   const catalog = loadCatalog()
@@ -58,10 +63,29 @@ try {
   catalogError = error instanceof Error ? error.message : 'De vragenlijst kon niet worden geladen.'
 }
 
-if (questionnaire) {
-  session = loadSession(questionnaire.id, klantParam)
+if (resetOnLoad) {
+  suppressSave = true
+  wipeAppStorage()
+  const url = new URL(location.href)
+  url.searchParams.delete('reset')
+  url.searchParams.delete('beheer')
+  location.replace(url.pathname + url.search + url.hash)
+} else if (questionnaire) {
   steps = buildSteps(questionnaire)
   totalQuestions = questionCount(questionnaire)
+  const loaded = loadSession(questionnaire.id, klantParam, new Set(questionIds(questionnaire)))
+  session = loaded.session
+  restarted = loaded.restarted
+  if (session.phase === 'flow') {
+    const index = session.questionId ? findStepIndex(steps, session.questionId, questionnaire) : -1
+    if (index < 0) {
+      clearSession(session)
+      session = createSession(questionnaire.id, klantParam)
+      restarted = true
+    } else {
+      session.stepIndex = index
+    }
+  }
   normalizeStep()
 }
 
@@ -84,9 +108,28 @@ let lastLive = ''
 
 const app = document.getElementById('app')!
 
-function persist(): void {
+function stampSession(): void {
   if (!session) return
+  session.questionId = session.phase === 'flow' ? currentQuestion()?.id ?? null : null
+}
+
+function persist(): void {
+  if (!session || suppressSave) return
+  stampSession()
   memoryOnly = !saveSession(session)
+}
+
+function resetButton(): string {
+  return `<button class="reset-btn no-print" type="button" data-action="ask-reset">${REFRESH}<span>Opnieuw beginnen</span></button>`
+}
+
+function reloadWelcome(): void {
+  suppressSave = true
+  wipeAppStorage()
+  const url = new URL(location.href)
+  url.searchParams.delete('reset')
+  url.searchParams.delete('beheer')
+  location.replace(url.pathname + url.search + url.hash)
 }
 
 function normalizeStep(): void {
@@ -295,13 +338,14 @@ function welcomeView(): string {
     <section class="welcome-card">
       <header class="welcome-bar">
         ${logo('dark')}
-        ${klant}
+        <div class="bar-tools">${klant}${resetButton()}</div>
       </header>
       <div class="welcome-grid">
         <div class="welcome-copy">
           <p class="kicker"><img class="avatar avatar-lg" src="${asset('media/host-buddy.png')}" alt="" /> ${escapeHtml(questionnaire.kicker)}</p>
           <h1 id="screen-title" tabindex="-1">De vragen voor de workshop</h1>
           <p class="lede">${escapeHtml(questionnaire.intro)}</p>
+          ${restarted ? '<p class="reset-note">Het gesprek is bijgewerkt, we beginnen opnieuw.</p>' : ''}
           <div class="actions">
             ${
               progress
@@ -337,7 +381,10 @@ function chatView(): string {
             <span>${escapeHtml(state.label)}</span>
           </div>
         </div>
-        <span class="saved" id="saved" hidden><i></i>Opgeslagen</span>
+        <div class="chat-tools">
+          <span class="saved" id="saved" hidden><i></i>Opgeslagen</span>
+          ${resetButton()}
+        </div>
       </header>
       <div class="meter" aria-hidden="true"><span style="width:${state.pct}%"></span></div>
       <div class="thread" id="thread" role="log" aria-relevant="additions">${transcript()}</div>
@@ -683,7 +730,7 @@ function summaryView(): string {
   const pieces = celebrate && !reduceMotion ? confetti() : ''
   return `${blobs()}${pieces}<article class="summary">
     <header class="sum-hero">
-      <div class="only-screen sum-top">${logo('light')}${avatar()}</div>
+      <div class="only-screen sum-top">${logo('light')}<div class="bar-tools">${resetButton()}${avatar()}</div></div>
       <div class="only-print">${logo('dark')}</div>
       <p class="kicker">Voor de workshop</p>
       <h1 id="screen-title" tabindex="-1">Dit nemen we mee</h1>
@@ -695,7 +742,7 @@ function summaryView(): string {
       ${blocks}
       <div class="sum-links no-print">
         <button class="linkish" type="button" data-action="back">Terug naar het gesprek</button>
-        <button class="linkish" type="button" data-action="ask-reset">Opnieuw beginnen</button>
+        ${resetButton()}
         <a class="text-link" href="${beheerHref()}">Antwoorden vergelijken</a>
       </div>
     </div>
@@ -1061,7 +1108,7 @@ function modalHtml(): string {
     return `<div class="modal-back">
       <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <h2 id="modal-title">Opnieuw beginnen?</h2>
-        <p>De antwoorden op dit apparaat voor ${klantParam ? escapeHtml(klantParam) : 'deze sessie'} worden gewist. Een gedownloade JSON blijft gewoon staan.</p>
+        <p>Weet je het zeker? Je antwoorden worden gewist.</p>
         <div class="actions">
           <button class="btn btn-ghost-dark" type="button" data-action="close-modal">Annuleren</button>
           <button class="btn btn-primary" type="button" data-action="confirm-reset">Wis en begin opnieuw</button>
@@ -1088,17 +1135,8 @@ function modalHtml(): string {
 }
 
 function resetSession(): void {
-  if (!session || !questionnaire) return
-  clearSession(session)
-  session = createSession(questionnaire.id, klantParam)
-  remoteNote = ''
-  errorText = ''
-  editingId = ''
-  rolesOpen = false
-  freshId = ''
-  atWelcome = true
   closeModal()
-  render()
+  reloadWelcome()
 }
 
 function setAnswer(id: string, value: AnswerValue): void {
@@ -1456,8 +1494,10 @@ document.addEventListener('drop', (event) => {
 })
 
 window.addEventListener('pagehide', () => {
+  if (suppressSave || !session) return
   syncText()
-  if (session) saveSession(session)
+  stampSession()
+  saveSession(session)
 })
 
-render()
+if (!resetOnLoad) render()

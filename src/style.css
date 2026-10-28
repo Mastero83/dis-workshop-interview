@@ -195,6 +195,40 @@ button { -webkit-tap-highlight-color: transparent; }
   justify-content: space-between;
   gap: 12px;
 }
+.bar-tools, .chat-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+.reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  border: 1.5px solid #d5dbe3;
+  background: white;
+  color: var(--das-navy);
+  border-radius: 999px;
+  min-height: 40px;
+  padding: 6px 12px 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.1;
+  cursor: pointer;
+}
+.reset-btn svg { flex: none; }
+.reset-note {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--das-tint-yellow);
+  color: var(--das-navy);
+  font-size: 14px;
+  font-weight: 600;
+}
 .welcome-grid { display: flex; flex-direction: column; gap: 18px; margin-top: 18px; }
 .welcome-copy h1 { font-size: clamp(32px, 9vw, 46px); line-height: 1.05; max-width: 14ch; }
 .lede {
@@ -258,7 +292,6 @@ button { -webkit-tap-highlight-color: transparent; }
 .ring-bg { fill: none; stroke: #e4e9f0; stroke-width: 3.5; }
 .ring-fg { fill: none; stroke: var(--das-blue); stroke-width: 3.5; stroke-linecap: round; }
 .saved {
-  margin-left: auto;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -859,6 +892,10 @@ tr.diff td:first-child { font-weight: 600; }
     padding-left: max(10px, env(safe-area-inset-left));
     padding-right: max(10px, env(safe-area-inset-right));
   }
+  .chat-bar { flex-wrap: wrap; row-gap: 6px; }
+  .chat-bar .logo { height: 26px; }
+  .welcome-bar { flex-wrap: wrap; row-gap: 8px; }
+  .reset-btn { min-height: 44px; }
   .msg.host {
     flex-direction: column;
     align-items: stretch;

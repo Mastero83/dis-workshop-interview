@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "check": "node --experimental-strip-types scripts/resume-check.ts",
+    "build": "tsc --noEmit && npm run check && vite build",
     "preview": "vite preview --host 0.0.0.0 --port 4173"
   },
   "devDependencies": {
