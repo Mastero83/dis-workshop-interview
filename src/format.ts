@@ -1,3 +1,4 @@
+import { isQuestionActive, presentQuestion, rolePhrase } from './catalog'
 import type { AnswerValue, ExportDoc, Question, Questionnaire, Session } from './types'
 
 export function escapeHtml(value: string): string {
@@ -34,7 +35,12 @@ export function isValid(question: Question, value: AnswerValue | undefined): boo
     const count = Array.isArray(value) ? value.length : 0
     return count >= (question.minRanked ?? 1)
   }
-  if (question.type === 'multiple' || question.type === 'roles') return Array.isArray(value) && value.length > 0
+  if (question.type === 'multiple' || question.type === 'roles') {
+    if (!Array.isArray(value)) return false
+    if (question.minSelected != null && value.length < question.minSelected) return false
+    if (question.maxSelected != null && value.length > question.maxSelected) return false
+    return value.length > 0
+  }
   if (question.type === 'scale') return typeof value === 'number'
   if (question.type === 'single' || question.type === 'text' || question.type === 'longtext') {
     return typeof value === 'string' && value.trim().length > 0
@@ -47,7 +53,12 @@ export function validationMessage(question: Question): string {
     const min = question.minRanked ?? 1
     return min === 1 ? 'Zet minimaal één punt op volgorde.' : `Zet minimaal ${min} punten op volgorde.`
   }
-  if (question.type === 'multiple') return 'Kies minimaal één optie.'
+  if (question.type === 'multiple') {
+    if (question.minSelected && question.maxSelected && question.minSelected === question.maxSelected) {
+      return `Kies er ${question.minSelected}.`
+    }
+    return 'Kies minimaal één optie.'
+  }
   if (question.type === 'roles') return 'Kies minimaal één rol.'
   if (question.type === 'scale') return 'Tik een cijfer om verder te gaan.'
   if (question.type === 'single') return 'Kies één antwoord om verder te gaan.'
@@ -98,16 +109,23 @@ export function answerHtml(question: Question, value: AnswerValue | undefined): 
 }
 
 export function toExportDoc(questionnaire: Questionnaire, session: Session): ExportDoc {
+  const phrase = rolePhrase(questionnaire, session.answers)
   const answers = questionnaire.sections.flatMap((section) =>
-    section.questions.map((question) => ({
-      id: question.id,
-      sectionId: section.id,
-      section: section.title,
-      question: question.title,
-      type: question.type,
-      value: session.answers[question.id] ?? null,
-      display: displayAnswer(question, session.answers[question.id]),
-    })),
+    section.questions.flatMap((question) => {
+      if (!isQuestionActive(question, session.answers)) return []
+      const view = presentQuestion(question, phrase)
+      return [
+        {
+          id: question.id,
+          sectionId: section.id,
+          section: section.title,
+          question: view.title,
+          type: question.type,
+          value: session.answers[question.id] ?? null,
+          display: displayAnswer(view, session.answers[question.id]),
+        },
+      ]
+    }),
   )
   return {
     version: 1,

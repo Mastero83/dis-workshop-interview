@@ -1,13 +1,22 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
+import { buildSteps, isQuestionActive, loadCatalog } from '../src/catalog.ts'
 import { interpretStored } from '../src/session.ts'
+
+interface FollowFile {
+  id: string
+  title: string
+  options?: unknown[]
+}
 
 interface QuestionFile {
   id: string
   type: string
   title: string
   context?: { type?: string; src?: string }
-  options?: unknown[]
+  options?: { value: string; followUp?: FollowFile }[]
+  focus?: { id: string; whenSelectedMoreThan: number; pick: number }
+  closing?: { id: string; title: string }
 }
 
 interface SectionFile {
@@ -46,8 +55,8 @@ assert.deepEqual(
   questionnaire.sections.map((section) => section.title),
   ['Over je bedrijf', 'Rollen en tijdvreters', 'Doelen voor de workshop', 'AI Services'],
 )
-assert.equal(questionnaire.estimatedMinutes, 3)
-assert.match(questionnaire.intro, /±3 minuten/)
+assert.equal(questionnaire.estimatedMinutes, 4)
+assert.match(questionnaire.intro, /±3–5 minuten/)
 assert.equal(
   questions.some((question) => question.context?.src?.includes('ctx-kettingreactie')),
   false,
@@ -63,6 +72,16 @@ assert.equal(rollen.title, 'Welke rollen herken je bij jullie, en waar gaat de m
 assert.equal(rollen.options?.length, 10)
 assert.equal(rollen.context?.type, 'video')
 assert.equal(rollen.context?.src, 'media/ctx-rollen-tijdvreters.mp4')
+assert.equal(rollen.focus?.id, 'rollen-focus')
+assert.equal(rollen.focus?.whenSelectedMoreThan, 3)
+assert.equal(rollen.focus?.pick, 3)
+assert.equal(rollen.closing?.id, 'slot')
+assert.match(rollen.closing?.title || '', /\{top\}/)
+for (const option of rollen.options || []) {
+  assert.ok(option.followUp, `${option.value} mist een vervolgvraag`)
+  assert.equal(option.followUp?.id, `fu-${option.value}`)
+  assert.ok((option.followUp?.options?.length || 0) >= 3, `${option.value} mist chips`)
+}
 assert.equal(questions.some((question) => question.id === 'sector' || question.id === 'pijnpunten'), false)
 
 const qid = questionnaire.id
@@ -85,7 +104,7 @@ for (const step of [0, 6, 8, 11, 13]) {
   assert.equal(decision.restarted, true, `versie 1 op stap ${step} moet opnieuw beginnen`)
   assert.equal(decision.discard, true)
   assert.equal(decision.session.phase, 'welcome')
-  assert.equal(decision.session.version, 3)
+  assert.equal(decision.session.version, 4)
   assert.equal(decision.session.questionId, null)
   assert.deepEqual(decision.session.answers, {})
 }
@@ -129,9 +148,26 @@ const previousSummary = interpretStored(
 )
 assert.equal(previousSummary.restarted, true, 'een afgeronde sessie van schema 2 begint opnieuw')
 
-const resumed = interpretStored(
+const schema3 = interpretStored(
   JSON.stringify({
     version: 3,
+    questionnaireId: qid,
+    phase: 'flow',
+    stepIndex: 5,
+    questionId: 'rollen',
+    answers: { organisatie: 'Test', rollen: ['planner'] },
+    startedAt: '2020-01-01T00:00:00.000Z',
+    updatedAt: '2020-01-01T00:00:00.000Z',
+  }),
+  qid,
+  '',
+  known,
+)
+assert.equal(schema3.restarted, true, 'schemaversie 3 hoort bij het gesprek zonder vervolgvragen')
+
+const resumed = interpretStored(
+  JSON.stringify({
+    version: 4,
     questionnaireId: qid,
     phase: 'flow',
     stepIndex: 11,
@@ -152,7 +188,7 @@ assert.deepEqual(resumed.session.answers.rollen, ['planner'])
 
 const droppedQuestion = interpretStored(
   JSON.stringify({
-    version: 3,
+    version: 4,
     questionnaireId: qid,
     phase: 'flow',
     stepIndex: 3,
@@ -210,4 +246,36 @@ const broken = interpretStored('{', qid, '', known)
 assert.equal(broken.restarted, false)
 assert.equal(broken.discard, true)
 
-console.log(`resume-check ok (${questions.map((question) => question.id).join(' → ')})`)
+const expanded = loadCatalog().questionnaires[0]
+const expandedIds = expanded.sections.flatMap((section) => section.questions.map((question) => question.id))
+assert.ok(expandedIds.includes('rollen-focus'))
+assert.ok(expandedIds.includes('slot'))
+assert.equal(expandedIds.filter((id) => id.startsWith('fu-')).length, 10)
+
+const twoRoles = { rollen: ['inkoper', 'planner'] }
+const twoActive = expanded.sections
+  .flatMap((section) => section.questions)
+  .filter((question) => isQuestionActive(question, twoRoles))
+  .map((question) => question.id)
+assert.deepEqual(twoActive, ['organisatie', 'rollen', 'fu-planner', 'fu-inkoper', 'urgentie', 'doelen', 'ai-houding', 'slot'])
+
+const manyRoles = { rollen: ['planner', 'inkoper', 'finance', 'uitvoerder'] }
+const beforeFocus = expanded.sections
+  .flatMap((section) => section.questions)
+  .filter((question) => isQuestionActive(question, manyRoles))
+  .map((question) => question.id)
+assert.ok(beforeFocus.includes('rollen-focus'))
+assert.equal(beforeFocus.some((id) => id.startsWith('fu-')), false)
+
+const focused = { ...manyRoles, 'rollen-focus': ['uitvoerder', 'planner', 'finance'] }
+const afterFocus = expanded.sections
+  .flatMap((section) => section.questions)
+  .filter((question) => isQuestionActive(question, focused))
+  .map((question) => question.id)
+assert.deepEqual(
+  afterFocus.filter((id) => id.startsWith('fu-')),
+  ['fu-uitvoerder', 'fu-planner', 'fu-finance'],
+)
+assert.equal(buildSteps(expanded, focused).filter((step) => step.kind === 'question').length, 10)
+
+console.log(`resume-check ok (${questions.map((question) => question.id).join(' → ')} + vervolgvragen)`)
