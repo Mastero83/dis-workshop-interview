@@ -850,6 +850,40 @@ tr.diff td:first-child { font-weight: 600; }
   .modal-back { place-items: center; }
 }
 
+@media (max-width: 600px) {
+  .thread {
+    padding: 10px max(10px, env(safe-area-inset-right)) 8px max(10px, env(safe-area-inset-left));
+  }
+  .chat-bar,
+  .composer {
+    padding-left: max(10px, env(safe-area-inset-left));
+    padding-right: max(10px, env(safe-area-inset-right));
+  }
+  .msg.host {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+  .msg.host .avatar,
+  .avatar-spacer { display: none; }
+  .msg.host.is-lead .avatar {
+    display: block;
+    width: 22px;
+    height: 22px;
+    box-shadow: none;
+  }
+  .msg.host .stack,
+  .bubble.host,
+  .bubble.explainer,
+  .clip-card,
+  .chapter {
+    max-width: 100%;
+    width: 100%;
+  }
+  .chapter { align-self: stretch; }
+  .bubble.user { max-width: 100%; }
+}
+
 @media (max-width: 799px) {
   .welcome { padding: 8px; height: 100dvh; }
   .welcome-card {
