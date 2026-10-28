@@ -14,7 +14,8 @@ interface QuestionFile {
   id: string
   type: string
   title: string
-  context?: { type?: string; src?: string }
+  help?: string
+  context?: { type?: string; src?: string; body?: string }
   options?: { value: string; followUp?: FollowFile }[]
   focus?: { id: string; whenSelectedMoreThan: number; pick: number }
   closing?: { id: string; title: string }
@@ -66,7 +67,9 @@ assert.equal(parked?.context?.enabled, false)
 const rollen = questions.find((question) => question.id === 'rollen')
 assert.ok(rollen)
 assert.equal(rollen.type, 'roles')
-assert.equal(rollen.title, 'Welke rollen herken je?')
+assert.equal(rollen.title, 'Bij welke rollen zie je tijdsdruk, kwaliteitsverlies of kansen voor AI?')
+assert.equal(rollen.help, 'Tik alle rollen aan die je herkent.')
+assert.equal(rollen.context?.body, 'Kies de rollen waar je dat ziet.')
 assert.equal(rollen.options?.length, 10)
 assert.equal(rollen.context?.type, 'video')
 assert.equal(rollen.context?.src, 'media/ctx-rollen-tijdvreters.mp4')
