@@ -58,6 +58,49 @@ export interface Option {
   /** schatting = grijs label, bron = blauw “Bron: …”. */
   sourceKind?: 'schatting' | 'bron'
   tint?: RoleTint
+  /** Korte verdieping, alleen als deze rol gekozen is. */
+  followUp?: FollowUpDef
+  /** Wat AI Services bij deze rol mag voorbereiden. */
+  aiHint?: string
+}
+
+/** Wanneer een vraag in het gesprek komt. Ontbreekt dit, dan is de vraag er altijd. */
+export interface ShowWhen {
+  rolesQuestion?: string
+  /** Toon alleen als deze rol gekozen is. */
+  role?: string
+  focusQuestion?: string
+  /** Bij meer gekozen rollen telt daarna de focuslijst. */
+  focusWhenMoreThan?: number
+  /** Toon alleen als er meer rollen gekozen zijn dan dit aantal. */
+  selectedMoreThan?: number
+}
+
+export interface FollowUpDef {
+  id: string
+  type: QuestionType
+  title: string
+  help?: string
+  required?: boolean
+  aiHint?: string
+  options?: Option[]
+}
+
+export interface FocusDef {
+  id: string
+  whenSelectedMoreThan: number
+  pick: number
+  title: string
+  help?: string
+}
+
+export interface ClosingDef {
+  id: string
+  type?: QuestionType
+  title: string
+  help?: string
+  placeholder?: string
+  required?: boolean
 }
 
 export interface Question {
@@ -77,6 +120,15 @@ export interface Question {
   maxLabel?: string
   /** Minimaal aantal regels dat de gebruiker op volgorde zet. */
   minRanked?: number
+  minSelected?: number
+  maxSelected?: number
+  /** Chipopties beperken tot de waarden van deze vraag. */
+  optionsFrom?: string
+  when?: ShowWhen
+  /** Vraag om een top te kiezen als er veel rollen zijn. */
+  focus?: FocusDef
+  /** Slotvraag, achteraan het gesprek. */
+  closing?: ClosingDef
   media?: Media | null
   /** Bericht van de host vóór de vraag: filmpje of korte uitleg. */
   context?: ContextBlock | null
@@ -122,7 +174,7 @@ export type AnswerValue = string | string[] | number | null
 export type Phase = 'welcome' | 'flow' | 'summary'
 
 export interface Session {
-  version: 3
+  version: 4
   questionnaireId: string
   klant: string
   phase: Phase

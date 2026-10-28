@@ -30,7 +30,7 @@ export function storageKey(questionnaireId: string, klant: string): string {
 export function createSession(questionnaireId: string, klant: string): Session {
   const now = new Date().toISOString()
   return {
-    version: 3,
+    version: 4,
     questionnaireId,
     klant,
     phase: 'welcome',
@@ -52,9 +52,9 @@ function isPhase(value: unknown): value is Phase {
 
 /**
  * Beslist of een opgeslagen sessie nog bij deze vragenlijst hoort.
- * Versie 1 bewaarde alleen een stapnummer. Versie 2 hervat op vraag-id,
- * maar hoort bij een langer gesprek (inclusief projectverloop).
- * Versie 3 is het gesprek van vijf vragen. Alles daaronder begint opnieuw.
+ * Versie 1 bewaarde alleen een stapnummer. Versie 2 en 3 hervatten op vraag-id,
+ * maar zonder de vervolgvragen per rol. Versie 4 is dat gesprek.
+ * Alles daaronder begint opnieuw.
  */
 export function interpretStored(
   raw: string | null,
@@ -76,12 +76,12 @@ export function interpretStored(
   const data = parsed as Record<string, unknown>
   const reset = (): StoredDecision => ({ session: fresh(), restarted: true, discard: true })
   if (data.questionnaireId !== questionnaireId || !isAnswerRecord(data.answers)) return reset()
-  if (data.version !== 3 || !isPhase(data.phase)) return reset()
+  if (data.version !== 4 || !isPhase(data.phase)) return reset()
   const questionId = typeof data.questionId === 'string' && data.questionId ? data.questionId : null
   if (data.phase === 'flow' && (!questionId || !knownQuestionIds.has(questionId))) return reset()
   return {
     session: {
-      version: 3,
+      version: 4,
       questionnaireId,
       klant,
       phase: data.phase,

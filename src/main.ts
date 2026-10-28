@@ -1,5 +1,5 @@
 import './style.css'
-import { buildSteps, findQuestionnaire, findStepIndex, loadCatalog, questionAt, questionCount, questionIds } from './catalog'
+import { buildSteps, findQuestionnaire, findStepIndex, isQuestionActive, loadCatalog, presentQuestion, questionAt, questionIds, rolePhrase } from './catalog'
 import {
   answerHtml,
   asset,
@@ -71,22 +71,25 @@ if (resetOnLoad) {
   url.searchParams.delete('beheer')
   location.replace(url.pathname + url.search + url.hash)
 } else if (questionnaire) {
-  steps = buildSteps(questionnaire)
-  totalQuestions = questionCount(questionnaire)
   const loaded = loadSession(questionnaire.id, klantParam, new Set(questionIds(questionnaire)))
   session = loaded.session
   restarted = loaded.restarted
-  if (session.phase === 'flow') {
-    const index = session.questionId ? findStepIndex(steps, session.questionId, questionnaire) : -1
-    if (index < 0) {
+  steps = buildSteps(questionnaire, session.answers)
+  if (session.phase === 'flow' && session.questionId) {
+    const index = findStepIndex(steps, session.questionId, questionnaire)
+    if (index >= 0) session.stepIndex = index
+    else if (questionById(session.questionId)) {
+      const fallback = steps.findIndex((step) => step.kind === 'question')
+      session.stepIndex = fallback < 0 ? 0 : fallback
+    } else {
       clearSession(session)
       session = createSession(questionnaire.id, klantParam)
       restarted = true
-    } else {
-      session.stepIndex = index
+      steps = buildSteps(questionnaire, session.answers)
     }
   }
   normalizeStep()
+  totalQuestions = steps.filter((step) => step.kind === 'question').length
 }
 
 let atWelcome = !session || session.phase === 'welcome'
@@ -107,6 +110,22 @@ let celebrate = false
 let lastLive = ''
 
 const app = document.getElementById('app')!
+
+function syncSteps(): void {
+  if (!questionnaire || !session) return
+  const currentId = currentQuestion()?.id || null
+  steps = buildSteps(questionnaire, session.answers)
+  totalQuestions = steps.filter((step) => step.kind === 'question').length
+  if (session.phase !== 'flow') return
+  if (!currentId) return
+  const index = findStepIndex(steps, currentId, questionnaire)
+  if (index >= 0) session.stepIndex = index
+}
+
+function shown(question: Question): Question {
+  if (!questionnaire || !session) return question
+  return presentQuestion(question, rolePhrase(questionnaire, session.answers))
+}
 
 function stampSession(): void {
   if (!session) return
@@ -189,7 +208,7 @@ function announcement(): string {
   if (!question) return ''
   const step = steps[session.stepIndex]
   const number = step?.kind === 'question' ? step.number : 0
-  return `Vraag ${number} van ${totalQuestions}. ${question.title}`
+  return `Vraag ${number} van ${totalQuestions}. ${shown(question).title}`
 }
 
 function view(): string {
@@ -338,6 +357,7 @@ function welcomeView(): string {
     <section class="welcome-card">
       <header class="welcome-bar">
         ${logo('dark')}
+        <p class="welcome-title">Workshop</p>
         <div class="bar-tools">${klant}${resetButton()}</div>
       </header>
       <div class="welcome-grid">
@@ -374,6 +394,7 @@ function chatView(): string {
     <section class="chat-panel">
       <header class="chat-bar">
         <button class="logo-btn" type="button" data-action="home" aria-label="Naar het begin">${logo('dark')}</button>
+        <p class="chat-title">Workshop</p>
         <div class="progress-cluster">
           ${ring(state.pct)}
           <div>
@@ -425,6 +446,7 @@ function chapterHtml(section: Section, index: number, fresh: boolean): string {
 
 function turnHtml(question: Question, index: number, fresh: boolean): string {
   if (!session) return ''
+  question = shown(question)
   const value = session.answers[question.id]
   const showUser = index < session.stepIndex
   const typing = fresh
@@ -549,6 +571,7 @@ function composerHtml(question: Question | null): string {
 function controlHtml(question: Question): string {
   if (!session) return ''
   const value = session.answers[question.id]
+  question = shown(question)
   if (question.type === 'text' || question.type === 'longtext') return textComposer(question)
   if (question.type === 'single' || question.type === 'multiple') return chipComposer(question, value)
   if (question.type === 'roles') return rolesComposer(question, value)
@@ -568,11 +591,13 @@ function textComposer(question: Question): string {
 }
 
 function chipComposer(question: Question, value: AnswerValue | undefined): string {
+  const allowed = question.optionsFrom && session ? new Set(asList(session.answers[question.optionsFrom])) : null
+  const options = (question.options || []).filter((option) => !allowed || allowed.has(option.value))
   const selected = question.type === 'multiple' ? asList(value) : typeof value === 'string' ? [value] : []
   const role = question.type === 'single' ? 'radiogroup' : 'group'
   const itemRole = question.type === 'single' ? 'radio' : 'checkbox'
   const action = question.type === 'single' ? 'single' : 'multiple'
-  const chips = (question.options || [])
+  const chips = options
     .map((option) => {
       const on = selected.includes(option.value)
       return `<button class="reply${on ? ' is-on' : ''}" type="button" role="${itemRole}" aria-checked="${on}" data-action="${action}" data-qid="${escapeHtml(question.id)}" data-value="${escapeHtml(option.value)}">
@@ -581,9 +606,13 @@ function chipComposer(question: Question, value: AnswerValue | undefined): strin
       </button>`
     })
     .join('')
+  const minimum = question.minSelected ?? (question.required === false ? 0 : 1)
+  const ready =
+    selected.length >= minimum && (question.maxSelected == null || selected.length <= question.maxSelected)
+  const countLabel = question.maxSelected ? `${selected.length} van ${question.maxSelected}` : selected.length ? String(selected.length) : ''
   const send =
     question.type === 'multiple'
-      ? `<button class="btn btn-primary send-wide" type="submit" data-action="send" ${selected.length === 0 && question.required !== false ? 'disabled' : ''}>Verstuur${selected.length ? ` · ${selected.length}` : ''}</button>`
+      ? `<button class="btn btn-primary send-wide" type="submit" data-action="send" ${ready ? '' : 'disabled'}>Bevestig${countLabel ? ` · ${countLabel}` : ''}</button>`
       : ''
   return `<div class="chips-reply" role="${role}" aria-label="${escapeHtml(question.title)}">${chips}</div>${send}`
 }
@@ -711,16 +740,19 @@ function summaryView(): string {
   const blocks = questionnaire.sections
     .map((section, index) => {
       const items = section.questions
+        .filter((question) => isQuestionActive(question, session!.answers))
         .map((question) => {
+          const view = shown(question)
           return `<div class="qa">
             <div class="qa-top">
-              <h3>${escapeHtml(question.title)}</h3>
+              <h3>${escapeHtml(view.title)}</h3>
               <button class="linkish no-print" type="button" data-action="edit" data-qid="${escapeHtml(question.id)}">Wijzig</button>
             </div>
-            ${answerHtml(question, session!.answers[question.id])}
+            ${answerHtml(view, session!.answers[question.id])}
           </div>`
         })
         .join('')
+      if (!items) return ''
       return `<section class="section-card">
         <h2 class="tint-${section.accent}">Hoofdstuk ${index + 1} · ${escapeHtml(section.title)}</h2>
         ${items}
@@ -735,7 +767,7 @@ function summaryView(): string {
       <p class="kicker">Voor de workshop</p>
       <h1 id="screen-title" tabindex="-1">Dit nemen we mee</h1>
       <p class="sum-meta">${escapeHtml(doc.klant || 'Klant nog niet ingevuld')}<br />
-        ${answered} van ${totalQuestions} vragen ingevuld · ${escapeHtml(formatWhen(doc.exportedAt))}</p>
+        ${answered} van ${doc.answers.length} vragen ingevuld · ${escapeHtml(formatWhen(doc.exportedAt))}</p>
     </header>
     <div class="sum-body">
       <p class="note" id="remote-note">${escapeHtml(remoteNote || privacyLine())}</p>
@@ -916,6 +948,7 @@ function finish(): void {
 
 function advance(): void {
   if (!session) return
+  syncSteps()
   let index = session.stepIndex + 1
   while (index < steps.length && steps[index]?.kind !== 'question') index += 1
   if (index >= steps.length) {
@@ -1143,6 +1176,7 @@ function setAnswer(id: string, value: AnswerValue): void {
   if (!session) return
   session.answers[id] = value
   errorText = ''
+  syncSteps()
   persist()
   freshId = ''
   render()
@@ -1151,10 +1185,19 @@ function setAnswer(id: string, value: AnswerValue): void {
 
 function toggleList(id: string, value: string): void {
   if (!session) return
+  const question = questionById(id)
   const current = asList(session.answers[id])
   const index = current.indexOf(value)
   if (index >= 0) current.splice(index, 1)
-  else current.push(value)
+  else {
+    if (question?.maxSelected && current.length >= question.maxSelected) {
+      errorText = validationMessage(question)
+      freshId = ''
+      render()
+      return
+    }
+    current.push(value)
+  }
   setAnswer(id, current)
 }
 

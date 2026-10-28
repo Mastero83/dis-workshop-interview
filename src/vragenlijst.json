@@ -4,10 +4,10 @@
       "id": "workshop-voorbereiding",
       "title": "Workshopvoorbereiding",
       "kicker": "Workshopvoorbereiding",
-      "intro": "Een paar vragen, ±3 minuten, met korte video's en uitleg.",
+      "intro": "Een paar vragen, ±3–5 minuten, met korte video's en uitleg.",
       "heroImage": "fotos/bouwplaats-zonsondergang-titel.jpeg",
       "heroPosition": "center 40%",
-      "estimatedMinutes": 3,
+      "estimatedMinutes": 4,
       "consultantEmail": "",
       "video": {
         "type": "video",
@@ -122,23 +122,39 @@
                 "title": "Tijd en kwaliteit lekken weg",
                 "body": "Per rol, bij bouw-, GWW- en installatiebedrijven. Daarna kies je wat je herkent."
               },
+              "focus": {
+                "id": "rollen-focus",
+                "whenSelectedMoreThan": 3,
+                "pick": 3,
+                "title": "Welke drie tijdvreters doen bij jullie de meeste pijn?",
+                "help": "Tik eerst de grootste. Alleen over deze drie volgt een korte vraag."
+              },
+              "closing": {
+                "id": "slot",
+                "type": "longtext",
+                "required": false,
+                "title": "Als we voor {top} één ding zouden oplossen, wat zou het grootste verschil maken?",
+                "help": "Optioneel. Een zin is genoeg.",
+                "placeholder": "Bijv. minder zoeken tussen documenten en de bouwplaats"
+              },
               "options": [
-                { "value": "functioneel-beheerder", "label": "Functioneel beheerder", "icon": "icons/roles/n-server-cog.svg", "figure": "30–50%", "hint": "van tickets zijn herhaalvragen", "source": "Schatting", "sourceKind": "schatting", "tint": "sand" },
-                { "value": "key-user", "label": "Key-user", "icon": "icons/roles/n-life-buoy.svg", "figure": "10–25%", "hint": "werktijd aan support naast eigen functie", "source": "Schatting", "sourceKind": "schatting", "tint": "blue" },
-                { "value": "calculator", "label": "Calculator", "icon": "icons/roles/n-calculator.svg", "figure": "49%", "hint": "projecten verliesgevend door onjuiste inschatting", "source": "Exact 2025", "sourceKind": "bron", "tint": "green" },
-                { "value": "werkvoorbereider", "label": "Werkvoorbereider", "icon": "icons/roles/n-clipboard-list.svg", "figure": "60–70%", "hint": "werktijd op kantoor: documenten en afstemming", "source": "werkvoorbereider.nl", "sourceKind": "bron", "tint": "lilac" },
-                { "value": "projectleider", "label": "Projectleider", "icon": "icons/roles/n-folder-kanban.svg", "figure": "35%", "hint": "non-productief: zoeken, conflicten, herstelwerk", "source": "Autodesk/FMI", "sourceKind": "bron", "tint": "sand" },
-                { "value": "uitvoerder", "label": "Uitvoerder", "icon": "icons/roles/n-hard-hat.svg", "figure": "50%", "hint": "bouwplaatsen niet volledig digitaal", "source": "Exact 2025", "sourceKind": "bron", "tint": "sand" },
-                { "value": "planner", "label": "Planner", "icon": "icons/roles/n-calendar-clock.svg", "figure": "89%", "hint": "mist volledig zicht op projecten en capaciteit", "source": "Exact 2025", "sourceKind": "bron", "tint": "blue" },
-                { "value": "servicecoordinator", "label": "Servicecoördinator", "icon": "icons/roles/n-headset.svg", "figure": "40–60%", "hint": "tijd aan intake en werkbonadministratie", "source": "Schatting", "sourceKind": "schatting", "tint": "green" },
-                { "value": "inkoper", "label": "Inkoper", "icon": "icons/roles/n-shopping-cart.svg", "figure": "40%", "hint": "materiaalbeheer niet geautomatiseerd", "source": "Exact 2025", "sourceKind": "bron", "tint": "lilac" },
-                { "value": "finance", "label": "Finance/controller", "icon": "icons/roles/n-chart-line.svg", "figure": "34%", "hint": "administratie (deels) op papier of in Excel", "source": "Exact 2025", "sourceKind": "bron", "tint": "sand" }
+                { "value": "functioneel-beheerder", "label": "Functioneel beheerder", "icon": "icons/roles/n-server-cog.svg", "figure": "30–50%", "hint": "van tickets zijn herhaalvragen", "source": "Schatting", "sourceKind": "schatting", "tint": "sand", "followUp": { "id": "fu-functioneel-beheerder", "type": "single", "aiHint": "herhaalvragen voorbereiden", "title": "Herhaalvragen bij de functioneel beheerder: hoe lossen jullie die nu op?", "options": [ { "value": "handmatig", "label": "Handmatig, telkens opnieuw" }, { "value": "excel", "label": "In Excel of e-mail" }, { "value": "bc", "label": "In Business Central met 4PS" }, { "value": "mix", "label": "Door elkaar" } ] } },
+                { "value": "key-user", "label": "Key-user", "icon": "icons/roles/n-life-buoy.svg", "figure": "10–25%", "hint": "werktijd aan support naast eigen functie", "source": "Schatting", "sourceKind": "schatting", "tint": "blue", "followUp": { "id": "fu-key-user", "type": "single", "aiHint": "supportvragen voorbereiden", "title": "De key-user: hoeveel van de week gaat naar support naast het eigen werk?", "options": [ { "value": "paar-uur", "label": "Een paar uur" }, { "value": "dag", "label": "Ongeveer een dag" }, { "value": "meer", "label": "Meer dan een dag" }, { "value": "wisselend", "label": "Wisselt sterk" } ] } },
+                { "value": "calculator", "label": "Calculator", "icon": "icons/roles/n-calculator.svg", "figure": "49%", "hint": "projecten verliesgevend door onjuiste inschatting", "source": "Exact 2025", "sourceKind": "bron", "tint": "green", "followUp": { "id": "fu-calculator", "type": "single", "aiHint": "calculaties voorbereiden", "title": "De calculatie: waar loopt de inschatting het vaakst mis?", "options": [ { "value": "hoeveelheden", "label": "Hoeveelheden" }, { "value": "uren", "label": "Uren" }, { "value": "materiaal", "label": "Materiaal" }, { "value": "onderaannemers", "label": "Onderaannemers" } ] } },
+                { "value": "werkvoorbereider", "label": "Werkvoorbereider", "icon": "icons/roles/n-clipboard-list.svg", "figure": "60–70%", "hint": "werktijd op kantoor: documenten en afstemming", "source": "werkvoorbereider.nl", "sourceKind": "bron", "tint": "lilac", "followUp": { "id": "fu-werkvoorbereider", "type": "single", "aiHint": "werkpakketten voorbereiden", "title": "De werkvoorbereider: waar gaat de meeste kantoortijd naartoe?", "options": [ { "value": "zoeken", "label": "Documenten zoeken" }, { "value": "afstemmen", "label": "Afstemmen met de bouwplaats" }, { "value": "pakketten", "label": "Werkpakketten maken" }, { "value": "invoeren", "label": "Gegevens opnieuw invoeren" } ] } },
+                { "value": "projectleider", "label": "Projectleider", "icon": "icons/roles/n-folder-kanban.svg", "figure": "35%", "hint": "non-productief: zoeken, conflicten, herstelwerk", "source": "Autodesk/FMI", "sourceKind": "bron", "tint": "sand", "followUp": { "id": "fu-projectleider", "type": "single", "aiHint": "zoekwerk en afstemming voorbereiden", "title": "De projectleider: wat kost de meeste tijd buiten het echte werk?", "options": [ { "value": "zoeken", "label": "Zoeken naar gegevens" }, { "value": "afstemmen", "label": "Afstemmen tussen kantoor en bouwplaats" }, { "value": "herstel", "label": "Herstelwerk" }, { "value": "overleg", "label": "Overleg" } ] } },
+                { "value": "uitvoerder", "label": "Uitvoerder", "icon": "icons/roles/n-hard-hat.svg", "figure": "50%", "hint": "bouwplaatsen niet volledig digitaal", "source": "Exact 2025", "sourceKind": "bron", "tint": "sand", "followUp": { "id": "fu-uitvoerder", "type": "single", "aiHint": "informatie voor de bouwplaats voorbereiden", "title": "De uitvoerder: hoe komt informatie nu op de bouwplaats?", "options": [ { "value": "papier", "label": "Papier of telefoon" }, { "value": "excel", "label": "Excel of e-mail" }, { "value": "bc", "label": "Business Central met 4PS" }, { "value": "mix", "label": "Een mix" } ] } },
+                { "value": "planner", "label": "Planner", "icon": "icons/roles/n-calendar-clock.svg", "figure": "89%", "hint": "mist volledig zicht op projecten en capaciteit", "source": "Exact 2025", "sourceKind": "bron", "tint": "blue", "followUp": { "id": "fu-planner", "type": "single", "aiHint": "de planning voorbereiden", "title": "De planning: waar mist het zicht het meest?", "options": [ { "value": "mensen", "label": "Bezetting van mensen" }, { "value": "materieel", "label": "Materiaal en materieel" }, { "value": "voortgang", "label": "Voortgang op de bouwplaats" }, { "value": "alles", "label": "Alles tegelijk" } ] } },
+                { "value": "servicecoordinator", "label": "Servicecoördinator", "icon": "icons/roles/n-headset.svg", "figure": "40–60%", "hint": "tijd aan intake en werkbonadministratie", "source": "Schatting", "sourceKind": "schatting", "tint": "green", "followUp": { "id": "fu-servicecoordinator", "type": "single", "aiHint": "intake en werkbonnen voorbereiden", "title": "Intake en werkbonnen: hoe gaat dat nu?", "options": [ { "value": "handmatig", "label": "Handmatig" }, { "value": "excel", "label": "Excel of e-mail" }, { "value": "bc", "label": "Business Central met 4PS" }, { "value": "mix", "label": "Door elkaar" } ] } },
+                { "value": "inkoper", "label": "Inkoper", "icon": "icons/roles/n-shopping-cart.svg", "figure": "40%", "hint": "materiaalbeheer niet geautomatiseerd", "source": "Exact 2025", "sourceKind": "bron", "tint": "lilac", "followUp": { "id": "fu-inkoper", "type": "single", "aiHint": "materiaalaanvragen voorbereiden", "title": "Materiaalbeheer: waar zit het knelpunt voor de inkoper?", "options": [ { "value": "aanvragen", "label": "Aanvragen verzamelen" }, { "value": "prijzen", "label": "Prijzen vergelijken" }, { "value": "leveringen", "label": "Leveringen volgen" }, { "value": "voorraad", "label": "Voorraad op de bouwplaats" } ] } },
+                { "value": "finance", "label": "Finance/controller", "icon": "icons/roles/n-chart-line.svg", "figure": "34%", "hint": "administratie (deels) op papier of in Excel", "source": "Exact 2025", "sourceKind": "bron", "tint": "sand", "followUp": { "id": "fu-finance", "type": "single", "aiHint": "de administratie voorbereiden", "title": "De administratie: waar blijft die nog buiten Business Central met 4PS?", "options": [ { "value": "papier", "label": "Op papier" }, { "value": "excel", "label": "In Excel" }, { "value": "deels", "label": "Deels in het systeem" }, { "value": "systeem", "label": "Bijna alles in het systeem" } ] } }
               ]
             },
             {
               "id": "urgentie",
               "type": "scale",
-              "title": "Hoe urgent is het om die tijdvreters aan te pakken?",
+              "title": "Hoe urgent is het om {top} aan te pakken?",
+              "help": "Dit gaat over {rollen}.",
               "required": true,
               "min": 1,
               "max": 5,
@@ -159,7 +175,7 @@
             {
               "id": "doelen",
               "type": "rank",
-              "title": "Wat moet deze workshop vooral opleveren?",
+              "title": "Wat moet deze workshop vooral opleveren voor {rollen}?",
               "help": "Zet minimaal twee uitkomsten op volgorde. 1 staat voorop.",
               "required": true,
               "minRanked": 2,
@@ -193,7 +209,7 @@
             {
               "id": "ai-houding",
               "type": "single",
-              "title": "Hoe staan jullie tegenover AI Services?",
+              "title": "Hoe staan jullie tegenover AI Services bij {top}?",
               "help": "In alle gevallen geeft een mens het laatste akkoord.",
               "required": true,
               "context": {
@@ -204,9 +220,9 @@
                 "body": "AI Services bereidt voor in de systemen die jullie al gebruiken. Een collega keurt goed."
               },
               "options": [
-                { "value": "graag", "label": "Inzetten, zolang een collega akkoord geeft", "hint": "Ondersteuning mag. De beslissing blijft bij het team" },
-                { "value": "basis", "label": "Eerst project en administratie op orde", "hint": "Processen en gegevens, daarna ondersteuning" },
-                { "value": "voorzichtig", "label": "Alleen met duidelijke grenzen", "hint": "Alleen waar het team het kan controleren" },
+                { "value": "graag", "label": "Inzetten bij {top}, zolang een collega akkoord geeft", "hint": "AI Services mag {aiHint}. Een collega geeft het laatste akkoord." },
+                { "value": "basis", "label": "Eerst {top} op orde, daarna AI Services", "hint": "Het proces en de gegevens eerst, daarna ondersteuning" },
+                { "value": "voorzichtig", "label": "Alleen met duidelijke grenzen", "hint": "Alleen waar een collega het kan controleren" },
                 { "value": "nieuwsgierig", "label": "Eerst verkennen, nog geen keuze", "hint": "De workshop mag de mogelijkheden laten zien" }
               ]
             }
