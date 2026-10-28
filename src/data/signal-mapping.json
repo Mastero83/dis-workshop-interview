@@ -1,0 +1,1322 @@
+{
+  "versie": "1.0",
+  "taal": "nl",
+  "toelichting": "Rolspecifieke uitspraken (signalen) voor de voorbereidingsquiz van de AI Services-workshop. Elk signaal verwijst met een gewicht (0,3-1,0) naar een of meer use cases uit usecases.json.",
+  "intensiteitsschaal": [
+    {
+      "waarde": 0,
+      "label": "herken ik niet"
+    },
+    {
+      "waarde": 1,
+      "label": "soms"
+    },
+    {
+      "waarde": 2,
+      "label": "vaak"
+    },
+    {
+      "waarde": 3,
+      "label": "dagelijks"
+    }
+  ],
+  "score": {
+    "formule": "score(usecase) = som over gekozen signalen van gewicht x intensiteit",
+    "toon_top": 3,
+    "minimale_score_om_te_tonen": 1.0,
+    "gelijke_score": "eerst use cases waarvan de gekozen rol de eerste rol is, daarna hogere haalbaarheid"
+  },
+  "rollen": {
+    "functioneel-beheerder": {
+      "rol_label": "Functioneel beheerder",
+      "signalen": [
+        {
+          "id": "FB-S1",
+          "tekst": "Ik beantwoord elke week dezelfde vragen van gebruikers opnieuw.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-FB-01",
+              "gewicht": 1.0
+            },
+            {
+              "usecase": "UC-KU-01",
+              "gewicht": 0.6
+            }
+          ]
+        },
+        {
+          "id": "FB-S2",
+          "tekst": "Een melding naspelen kost me vaak meer tijd dan het oplossen zelf.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-FB-02",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "FB-S3",
+          "tekst": "Tickets naar 4PS of Microsoft gaan heen en weer omdat informatie of schermafbeeldingen ontbreken.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-FB-02",
+              "gewicht": 0.8
+            },
+            {
+              "usecase": "UC-FB-01",
+              "gewicht": 0.5
+            }
+          ]
+        },
+        {
+          "id": "FB-S4",
+          "tekst": "Aanvragen voor accounts en rechten zijn vaak onvolledig ('zelfde rechten als ...').",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-FB-03",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "FB-S5",
+          "tekst": "Ik weet niet zeker of iedereen alleen de rechten heeft die bij zijn functie horen.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-FB-03",
+              "gewicht": 0.8
+            }
+          ]
+        },
+        {
+          "id": "FB-S6",
+          "tekst": "Bij migraties of overnames gaat veel tijd zitten in het opschonen van stamdata.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-FB-04",
+              "gewicht": 1.0
+            },
+            {
+              "usecase": "UC-FIN-04",
+              "gewicht": 0.5
+            }
+          ]
+        }
+      ]
+    },
+    "key-user": {
+      "rol_label": "Key-user",
+      "signalen": [
+        {
+          "id": "KU-S1",
+          "tekst": "Collega's onderbreken me steeds met 'hoe doe ik dit in 4PS?'.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-KU-01",
+              "gewicht": 1.0
+            },
+            {
+              "usecase": "UC-FB-01",
+              "gewicht": 0.4
+            }
+          ]
+        },
+        {
+          "id": "KU-S2",
+          "tekst": "Bij elke release schrijf ik testscripts weer opnieuw.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-KU-02",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "KU-S3",
+          "tekst": "Ik weet niet goed wat een release raakt in onze eigen processen.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-KU-02",
+              "gewicht": 0.8
+            }
+          ]
+        },
+        {
+          "id": "KU-S4",
+          "tekst": "Onze werkinstructies lopen achter op hoe we nu werken.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-KU-03",
+              "gewicht": 1.0
+            },
+            {
+              "usecase": "UC-KU-01",
+              "gewicht": 0.4
+            }
+          ]
+        },
+        {
+          "id": "KU-S5",
+          "tekst": "Collega's werken liever in Excel omdat ze niet weten hoe het in het systeem moet.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-KU-01",
+              "gewicht": 0.7
+            },
+            {
+              "usecase": "UC-KU-03",
+              "gewicht": 0.7
+            }
+          ]
+        },
+        {
+          "id": "KU-S6",
+          "tekst": "Ik moet gemelde fouten van collega's zelf nadoen om ze te kunnen doorzetten.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-FB-02",
+              "gewicht": 0.8
+            }
+          ]
+        }
+      ]
+    },
+    "calculator": {
+      "rol_label": "Calculator",
+      "signalen": [
+        {
+          "id": "CAL-S1",
+          "tekst": "Ik ben veel tijd kwijt aan het opzoeken en bijwerken van materiaalprijzen.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-CAL-01",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "CAL-S2",
+          "tekst": "Ik krijg weinig terug uit de nacalculatie, dus dezelfde inschattingsfouten komen terug.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-CAL-02",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "CAL-S3",
+          "tekst": "Na opdracht klopt de werkbegroting niet helemaal met mijn calculatie.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-CAL-03",
+              "gewicht": 1.0
+            },
+            {
+              "usecase": "UC-INK-03",
+              "gewicht": 0.3
+            }
+          ]
+        },
+        {
+          "id": "CAL-S4",
+          "tekst": "Het doorlezen van bestek en aanvraagdossier kost dagen voordat ik kan rekenen.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-CAL-04",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "CAL-S5",
+          "tekst": "Ik vind eerdere vergelijkbare projecten alleen terug als ik ze zelf nog weet.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-CAL-02",
+              "gewicht": 0.8
+            }
+          ]
+        }
+      ]
+    },
+    "werkvoorbereider": {
+      "rol_label": "Werkvoorbereider",
+      "signalen": [
+        {
+          "id": "WVB-S1",
+          "tekst": "Ik zoek lang naar de laatste tekeningversie.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-WVB-01",
+              "gewicht": 1.0
+            },
+            {
+              "usecase": "UC-UITV-02",
+              "gewicht": 0.5
+            }
+          ]
+        },
+        {
+          "id": "WVB-S2",
+          "tekst": "Ik moet uitzoeken wat er in een nieuwe revisie precies is veranderd.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-WVB-01",
+              "gewicht": 0.9
+            }
+          ]
+        },
+        {
+          "id": "WVB-S3",
+          "tekst": "Ik bel en mail leveranciers achterna om leverdata bevestigd te krijgen.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-WVB-03",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "WVB-S4",
+          "tekst": "Werkpakketten gaan de bouwplaats op terwijl er nog iets ontbreekt.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-WVB-02",
+              "gewicht": 1.0
+            },
+            {
+              "usecase": "UC-CAL-03",
+              "gewicht": 0.3
+            }
+          ]
+        },
+        {
+          "id": "WVB-S5",
+          "tekst": "Ik typ materiaallijsten over in het ERP.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-WVB-04",
+              "gewicht": 1.0
+            },
+            {
+              "usecase": "UC-INK-01",
+              "gewicht": 0.3
+            }
+          ]
+        },
+        {
+          "id": "WVB-S6",
+          "tekst": "De uitvoerder belt me met vragen die al in het dossier staan.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-UITV-02",
+              "gewicht": 0.8
+            },
+            {
+              "usecase": "UC-WVB-01",
+              "gewicht": 0.5
+            }
+          ]
+        }
+      ]
+    },
+    "projectleider": {
+      "rol_label": "Projectleider",
+      "signalen": [
+        {
+          "id": "PL-S1",
+          "tekst": "Ik ben elke week uren bezig met cijfers verzamelen voor een statusrapport.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-PL-01",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "PL-S2",
+          "tekst": "Ik zie budgetoverschrijdingen pas als het te laat is om bij te sturen.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-PL-01",
+              "gewicht": 0.8
+            },
+            {
+              "usecase": "UC-FIN-01",
+              "gewicht": 0.5
+            },
+            {
+              "usecase": "UC-INK-03",
+              "gewicht": 0.4
+            }
+          ]
+        },
+        {
+          "id": "PL-S3",
+          "tekst": "Meerwerk wordt mondeling afgesproken en daarna niet of te laat vastgelegd.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-PL-02",
+              "gewicht": 1.0
+            },
+            {
+              "usecase": "UC-FIN-02",
+              "gewicht": 0.5
+            }
+          ]
+        },
+        {
+          "id": "PL-S4",
+          "tekst": "Na overleggen raken afspraken en actiepunten zoek.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-PL-03",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "PL-S5",
+          "tekst": "Termijnen worden later gefactureerd dan had gekund.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-FIN-02",
+              "gewicht": 0.8
+            }
+          ]
+        },
+        {
+          "id": "PL-S6",
+          "tekst": "Ik besteed veel tijd aan zoeken naar projectinformatie in mail en mappen.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-WVB-01",
+              "gewicht": 0.6
+            },
+            {
+              "usecase": "UC-PL-01",
+              "gewicht": 0.4
+            },
+            {
+              "usecase": "UC-PL-03",
+              "gewicht": 0.4
+            }
+          ]
+        }
+      ]
+    },
+    "uitvoerder": {
+      "rol_label": "Uitvoerder",
+      "signalen": [
+        {
+          "id": "UITV-S1",
+          "tekst": "Ik vul 's avonds nog dagrapporten en uren in.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-UITV-01",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "UITV-S2",
+          "tekst": "Op de bouwplaats weet ik niet altijd zeker of ik de juiste tekening heb.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-UITV-02",
+              "gewicht": 1.0
+            },
+            {
+              "usecase": "UC-WVB-01",
+              "gewicht": 0.5
+            }
+          ]
+        },
+        {
+          "id": "UITV-S3",
+          "tekst": "Ik moet de werkvoorbereider bellen om te horen wanneer materiaal komt.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-UITV-02",
+              "gewicht": 0.7
+            },
+            {
+              "usecase": "UC-WVB-03",
+              "gewicht": 0.6
+            }
+          ]
+        },
+        {
+          "id": "UITV-S4",
+          "tekst": "Opleverpunten raken zoek tussen foto's, mail en lijstjes.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-UITV-03",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "UITV-S5",
+          "tekst": "We beginnen aan werk waarvoor nog niet alles klaar is.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-WVB-02",
+              "gewicht": 0.8
+            }
+          ]
+        },
+        {
+          "id": "UITV-S6",
+          "tekst": "Extra werk op verzoek van de klant wordt niet altijd doorgegeven.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-PL-02",
+              "gewicht": 0.7
+            }
+          ]
+        }
+      ]
+    },
+    "planner": {
+      "rol_label": "Planner",
+      "signalen": [
+        {
+          "id": "PLAN-S1",
+          "tekst": "Bij een ziekmelding ben ik de halve ochtend aan het herplannen.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-PLAN-01",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "PLAN-S2",
+          "tekst": "Ik heb geen totaalbeeld van projecten en beschikbare capaciteit.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-PLAN-01",
+              "gewicht": 0.9
+            }
+          ]
+        },
+        {
+          "id": "PLAN-S3",
+          "tekst": "Monteurs gaan op pad met onvolledige werkorders.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-PLAN-02",
+              "gewicht": 1.0
+            },
+            {
+              "usecase": "UC-SC-01",
+              "gewicht": 0.4
+            }
+          ]
+        },
+        {
+          "id": "PLAN-S4",
+          "tekst": "Ik bel en mail veel om klanten over gewijzigde afspraken te informeren.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-PLAN-03",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "PLAN-S5",
+          "tekst": "Ik plan in terwijl het materiaal nog niet binnen is.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-WVB-03",
+              "gewicht": 0.7
+            },
+            {
+              "usecase": "UC-PLAN-01",
+              "gewicht": 0.5
+            }
+          ]
+        }
+      ]
+    },
+    "servicecoordinator": {
+      "rol_label": "Servicecoördinator",
+      "signalen": [
+        {
+          "id": "SC-S1",
+          "tekst": "Ik typ storingsmeldingen uit mail en telefoon over in het systeem.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-SC-01",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "SC-S2",
+          "tekst": "Ik moet bij elke melding contract en reactietijd opzoeken.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-SC-01",
+              "gewicht": 0.8
+            },
+            {
+              "usecase": "UC-SC-03",
+              "gewicht": 0.3
+            }
+          ]
+        },
+        {
+          "id": "SC-S3",
+          "tekst": "Werkbonnen komen onvolledig terug, waardoor uren of materiaal niet gefactureerd worden.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-SC-02",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "SC-S4",
+          "tekst": "We doen onderhoud aan installaties die niet (meer) onder een contract vallen.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-SC-03",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "SC-S5",
+          "tekst": "Monteurs moeten terug omdat informatie bij de eerste afspraak ontbrak.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-PLAN-02",
+              "gewicht": 0.8
+            },
+            {
+              "usecase": "UC-SC-01",
+              "gewicht": 0.4
+            }
+          ]
+        },
+        {
+          "id": "SC-S6",
+          "tekst": "Opleverpunten en nazorg na een project komen versnipperd bij ons binnen.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-UITV-03",
+              "gewicht": 0.6
+            }
+          ]
+        }
+      ]
+    },
+    "inkoper": {
+      "rol_label": "Inkoper",
+      "signalen": [
+        {
+          "id": "INK-S1",
+          "tekst": "Ik leg facturen handmatig naast inkooporders en pakbonnen.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-INK-01",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "INK-S2",
+          "tekst": "Ik weet vaak niet of iets echt ontvangen is voordat ik de factuur goedkeur.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-INK-01",
+              "gewicht": 0.8
+            }
+          ]
+        },
+        {
+          "id": "INK-S3",
+          "tekst": "Offertes van leveranciers zijn lastig met elkaar te vergelijken.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-INK-02",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "INK-S4",
+          "tekst": "Er wordt besteld zonder dat duidelijk is of er nog budget is.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-INK-03",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "INK-S5",
+          "tekst": "Ik jaag leveranciers na voor orderbevestigingen en leverdata.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-WVB-03",
+              "gewicht": 0.8
+            }
+          ]
+        },
+        {
+          "id": "INK-S6",
+          "tekst": "Prijzen in calculaties en orders zijn niet actueel.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-CAL-01",
+              "gewicht": 0.7
+            },
+            {
+              "usecase": "UC-INK-02",
+              "gewicht": 0.3
+            }
+          ]
+        }
+      ]
+    },
+    "finance-controller": {
+      "rol_label": "Finance / controller",
+      "signalen": [
+        {
+          "id": "FIN-S1",
+          "tekst": "Bij de periodeafsluiting klopt het onderhanden werk niet zonder veel navragen.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-FIN-01",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "FIN-S2",
+          "tekst": "Verlieslatende projecten zien we pas laat.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-FIN-01",
+              "gewicht": 0.8
+            },
+            {
+              "usecase": "UC-PL-01",
+              "gewicht": 0.5
+            }
+          ]
+        },
+        {
+          "id": "FIN-S3",
+          "tekst": "Termijnen en meerwerk worden te laat gefactureerd.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-FIN-02",
+              "gewicht": 1.0
+            },
+            {
+              "usecase": "UC-PL-02",
+              "gewicht": 0.5
+            }
+          ]
+        },
+        {
+          "id": "FIN-S4",
+          "tekst": "Ik stel herinneringen op zonder te weten of er een discussie met de klant loopt.",
+          "vreter_type": "tijd",
+          "leidt_naar": [
+            {
+              "usecase": "UC-FIN-03",
+              "gewicht": 1.0
+            }
+          ]
+        },
+        {
+          "id": "FIN-S5",
+          "tekst": "Rapportages van vestigingen of overgenomen bedrijven zijn niet vergelijkbaar.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-FIN-04",
+              "gewicht": 1.0
+            },
+            {
+              "usecase": "UC-FB-04",
+              "gewicht": 0.4
+            }
+          ]
+        },
+        {
+          "id": "FIN-S6",
+          "tekst": "Werkbonnen en inkoopfacturen komen onvolledig bij ons aan.",
+          "vreter_type": "kwaliteit",
+          "leidt_naar": [
+            {
+              "usecase": "UC-SC-02",
+              "gewicht": 0.7
+            },
+            {
+              "usecase": "UC-INK-01",
+              "gewicht": 0.6
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "usecase_naar_signalen": {
+    "UC-CAL-01": [
+      {
+        "signaal": "CAL-S1",
+        "rol": "calculator",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "INK-S6",
+        "rol": "inkoper",
+        "gewicht": 0.7
+      }
+    ],
+    "UC-CAL-02": [
+      {
+        "signaal": "CAL-S2",
+        "rol": "calculator",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "CAL-S5",
+        "rol": "calculator",
+        "gewicht": 0.8
+      }
+    ],
+    "UC-CAL-03": [
+      {
+        "signaal": "CAL-S3",
+        "rol": "calculator",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "WVB-S4",
+        "rol": "werkvoorbereider",
+        "gewicht": 0.3
+      }
+    ],
+    "UC-CAL-04": [
+      {
+        "signaal": "CAL-S4",
+        "rol": "calculator",
+        "gewicht": 1.0
+      }
+    ],
+    "UC-FB-01": [
+      {
+        "signaal": "FB-S1",
+        "rol": "functioneel-beheerder",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "FB-S3",
+        "rol": "functioneel-beheerder",
+        "gewicht": 0.5
+      },
+      {
+        "signaal": "KU-S1",
+        "rol": "key-user",
+        "gewicht": 0.4
+      }
+    ],
+    "UC-FB-02": [
+      {
+        "signaal": "FB-S2",
+        "rol": "functioneel-beheerder",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "FB-S3",
+        "rol": "functioneel-beheerder",
+        "gewicht": 0.8
+      },
+      {
+        "signaal": "KU-S6",
+        "rol": "key-user",
+        "gewicht": 0.8
+      }
+    ],
+    "UC-FB-03": [
+      {
+        "signaal": "FB-S4",
+        "rol": "functioneel-beheerder",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "FB-S5",
+        "rol": "functioneel-beheerder",
+        "gewicht": 0.8
+      }
+    ],
+    "UC-FB-04": [
+      {
+        "signaal": "FB-S6",
+        "rol": "functioneel-beheerder",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "FIN-S5",
+        "rol": "finance-controller",
+        "gewicht": 0.4
+      }
+    ],
+    "UC-FIN-01": [
+      {
+        "signaal": "PL-S2",
+        "rol": "projectleider",
+        "gewicht": 0.5
+      },
+      {
+        "signaal": "FIN-S1",
+        "rol": "finance-controller",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "FIN-S2",
+        "rol": "finance-controller",
+        "gewicht": 0.8
+      }
+    ],
+    "UC-FIN-02": [
+      {
+        "signaal": "PL-S3",
+        "rol": "projectleider",
+        "gewicht": 0.5
+      },
+      {
+        "signaal": "PL-S5",
+        "rol": "projectleider",
+        "gewicht": 0.8
+      },
+      {
+        "signaal": "FIN-S3",
+        "rol": "finance-controller",
+        "gewicht": 1.0
+      }
+    ],
+    "UC-FIN-03": [
+      {
+        "signaal": "FIN-S4",
+        "rol": "finance-controller",
+        "gewicht": 1.0
+      }
+    ],
+    "UC-FIN-04": [
+      {
+        "signaal": "FB-S6",
+        "rol": "functioneel-beheerder",
+        "gewicht": 0.5
+      },
+      {
+        "signaal": "FIN-S5",
+        "rol": "finance-controller",
+        "gewicht": 1.0
+      }
+    ],
+    "UC-INK-01": [
+      {
+        "signaal": "WVB-S5",
+        "rol": "werkvoorbereider",
+        "gewicht": 0.3
+      },
+      {
+        "signaal": "INK-S1",
+        "rol": "inkoper",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "INK-S2",
+        "rol": "inkoper",
+        "gewicht": 0.8
+      },
+      {
+        "signaal": "FIN-S6",
+        "rol": "finance-controller",
+        "gewicht": 0.6
+      }
+    ],
+    "UC-INK-02": [
+      {
+        "signaal": "INK-S3",
+        "rol": "inkoper",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "INK-S6",
+        "rol": "inkoper",
+        "gewicht": 0.3
+      }
+    ],
+    "UC-INK-03": [
+      {
+        "signaal": "CAL-S3",
+        "rol": "calculator",
+        "gewicht": 0.3
+      },
+      {
+        "signaal": "PL-S2",
+        "rol": "projectleider",
+        "gewicht": 0.4
+      },
+      {
+        "signaal": "INK-S4",
+        "rol": "inkoper",
+        "gewicht": 1.0
+      }
+    ],
+    "UC-KU-01": [
+      {
+        "signaal": "FB-S1",
+        "rol": "functioneel-beheerder",
+        "gewicht": 0.6
+      },
+      {
+        "signaal": "KU-S1",
+        "rol": "key-user",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "KU-S4",
+        "rol": "key-user",
+        "gewicht": 0.4
+      },
+      {
+        "signaal": "KU-S5",
+        "rol": "key-user",
+        "gewicht": 0.7
+      }
+    ],
+    "UC-KU-02": [
+      {
+        "signaal": "KU-S2",
+        "rol": "key-user",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "KU-S3",
+        "rol": "key-user",
+        "gewicht": 0.8
+      }
+    ],
+    "UC-KU-03": [
+      {
+        "signaal": "KU-S4",
+        "rol": "key-user",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "KU-S5",
+        "rol": "key-user",
+        "gewicht": 0.7
+      }
+    ],
+    "UC-PL-01": [
+      {
+        "signaal": "PL-S1",
+        "rol": "projectleider",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "PL-S2",
+        "rol": "projectleider",
+        "gewicht": 0.8
+      },
+      {
+        "signaal": "PL-S6",
+        "rol": "projectleider",
+        "gewicht": 0.4
+      },
+      {
+        "signaal": "FIN-S2",
+        "rol": "finance-controller",
+        "gewicht": 0.5
+      }
+    ],
+    "UC-PL-02": [
+      {
+        "signaal": "PL-S3",
+        "rol": "projectleider",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "UITV-S6",
+        "rol": "uitvoerder",
+        "gewicht": 0.7
+      },
+      {
+        "signaal": "FIN-S3",
+        "rol": "finance-controller",
+        "gewicht": 0.5
+      }
+    ],
+    "UC-PL-03": [
+      {
+        "signaal": "PL-S4",
+        "rol": "projectleider",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "PL-S6",
+        "rol": "projectleider",
+        "gewicht": 0.4
+      }
+    ],
+    "UC-PLAN-01": [
+      {
+        "signaal": "PLAN-S1",
+        "rol": "planner",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "PLAN-S2",
+        "rol": "planner",
+        "gewicht": 0.9
+      },
+      {
+        "signaal": "PLAN-S5",
+        "rol": "planner",
+        "gewicht": 0.5
+      }
+    ],
+    "UC-PLAN-02": [
+      {
+        "signaal": "PLAN-S3",
+        "rol": "planner",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "SC-S5",
+        "rol": "servicecoordinator",
+        "gewicht": 0.8
+      }
+    ],
+    "UC-PLAN-03": [
+      {
+        "signaal": "PLAN-S4",
+        "rol": "planner",
+        "gewicht": 1.0
+      }
+    ],
+    "UC-SC-01": [
+      {
+        "signaal": "PLAN-S3",
+        "rol": "planner",
+        "gewicht": 0.4
+      },
+      {
+        "signaal": "SC-S1",
+        "rol": "servicecoordinator",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "SC-S2",
+        "rol": "servicecoordinator",
+        "gewicht": 0.8
+      },
+      {
+        "signaal": "SC-S5",
+        "rol": "servicecoordinator",
+        "gewicht": 0.4
+      }
+    ],
+    "UC-SC-02": [
+      {
+        "signaal": "SC-S3",
+        "rol": "servicecoordinator",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "FIN-S6",
+        "rol": "finance-controller",
+        "gewicht": 0.7
+      }
+    ],
+    "UC-SC-03": [
+      {
+        "signaal": "SC-S2",
+        "rol": "servicecoordinator",
+        "gewicht": 0.3
+      },
+      {
+        "signaal": "SC-S4",
+        "rol": "servicecoordinator",
+        "gewicht": 1.0
+      }
+    ],
+    "UC-UITV-01": [
+      {
+        "signaal": "UITV-S1",
+        "rol": "uitvoerder",
+        "gewicht": 1.0
+      }
+    ],
+    "UC-UITV-02": [
+      {
+        "signaal": "WVB-S1",
+        "rol": "werkvoorbereider",
+        "gewicht": 0.5
+      },
+      {
+        "signaal": "WVB-S6",
+        "rol": "werkvoorbereider",
+        "gewicht": 0.8
+      },
+      {
+        "signaal": "UITV-S2",
+        "rol": "uitvoerder",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "UITV-S3",
+        "rol": "uitvoerder",
+        "gewicht": 0.7
+      }
+    ],
+    "UC-UITV-03": [
+      {
+        "signaal": "UITV-S4",
+        "rol": "uitvoerder",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "SC-S6",
+        "rol": "servicecoordinator",
+        "gewicht": 0.6
+      }
+    ],
+    "UC-WVB-01": [
+      {
+        "signaal": "WVB-S1",
+        "rol": "werkvoorbereider",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "WVB-S2",
+        "rol": "werkvoorbereider",
+        "gewicht": 0.9
+      },
+      {
+        "signaal": "WVB-S6",
+        "rol": "werkvoorbereider",
+        "gewicht": 0.5
+      },
+      {
+        "signaal": "PL-S6",
+        "rol": "projectleider",
+        "gewicht": 0.6
+      },
+      {
+        "signaal": "UITV-S2",
+        "rol": "uitvoerder",
+        "gewicht": 0.5
+      }
+    ],
+    "UC-WVB-02": [
+      {
+        "signaal": "WVB-S4",
+        "rol": "werkvoorbereider",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "UITV-S5",
+        "rol": "uitvoerder",
+        "gewicht": 0.8
+      }
+    ],
+    "UC-WVB-03": [
+      {
+        "signaal": "WVB-S3",
+        "rol": "werkvoorbereider",
+        "gewicht": 1.0
+      },
+      {
+        "signaal": "UITV-S3",
+        "rol": "uitvoerder",
+        "gewicht": 0.6
+      },
+      {
+        "signaal": "PLAN-S5",
+        "rol": "planner",
+        "gewicht": 0.7
+      },
+      {
+        "signaal": "INK-S5",
+        "rol": "inkoper",
+        "gewicht": 0.8
+      }
+    ],
+    "UC-WVB-04": [
+      {
+        "signaal": "WVB-S5",
+        "rol": "werkvoorbereider",
+        "gewicht": 1.0
+      }
+    ]
+  }
+}

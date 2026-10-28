@@ -1,4 +1,5 @@
 import raw from './vragenlijst.json' with { type: 'json' }
+import { kansenQuestion, signalQuestions } from './kansen.ts'
 import type { AnswerValue, Catalog, Question, Questionnaire, Section, Step } from './types'
 
 export interface RolePhrase {
@@ -86,25 +87,8 @@ function expandBranching(questionnaire: Questionnaire): void {
           when: { rolesQuestion: question.id, selectedMoreThan: focus.whenSelectedMoreThan },
         })
       }
-      for (const option of question.options) {
-        const follow = option.followUp
-        if (!follow) continue
-        if (follow.aiHint) option.aiHint = follow.aiHint
-        extra.push({
-          id: follow.id,
-          type: follow.type,
-          title: follow.title,
-          help: follow.help,
-          required: follow.required !== false,
-          options: follow.options,
-          when: {
-            role: option.value,
-            rolesQuestion: question.id,
-            focusQuestion: focus?.id,
-            focusWhenMoreThan: focus?.whenSelectedMoreThan ?? 3,
-          },
-        })
-      }
+      extra.push(...signalQuestions(question.options, focus))
+      extra.push(kansenQuestion())
       if (question.closing) {
         closing.push({
           id: question.closing.id,

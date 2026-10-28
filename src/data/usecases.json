@@ -1,0 +1,2396 @@
+{
+  "versie": "1.0",
+  "taal": "nl",
+  "toelichting": "Use-case-bibliotheek AI Services voor klanten van 4PS Construct op Microsoft Dynamics 365 Business Central (bouw en installatie). Geen klantnamen. Impact en haalbaarheid zijn kwalitatieve inschattingen; broncijfers staan alleen in bronankers, met label [S] = bron, [E] = eigen schatting/rekenvoorbeeld, [C] = doel/criterium.",
+  "rollen": [
+    {
+      "id": "functioneel-beheerder",
+      "label": "Functioneel beheerder"
+    },
+    {
+      "id": "key-user",
+      "label": "Key-user"
+    },
+    {
+      "id": "calculator",
+      "label": "Calculator"
+    },
+    {
+      "id": "werkvoorbereider",
+      "label": "Werkvoorbereider"
+    },
+    {
+      "id": "projectleider",
+      "label": "Projectleider"
+    },
+    {
+      "id": "uitvoerder",
+      "label": "Uitvoerder"
+    },
+    {
+      "id": "planner",
+      "label": "Planner"
+    },
+    {
+      "id": "servicecoordinator",
+      "label": "Servicecoördinator"
+    },
+    {
+      "id": "inkoper",
+      "label": "Inkoper"
+    },
+    {
+      "id": "finance-controller",
+      "label": "Finance / controller"
+    }
+  ],
+  "bronlabels": {
+    "[S]": "openbare bron",
+    "[E]": "schatting of rekenvoorbeeld, te valideren",
+    "[C]": "succescriterium/doel, geen meting"
+  },
+  "usecases": [
+    {
+      "id": "UC-FB-01",
+      "naam": "Ticket-triage en conceptantwoord op herhaalvragen",
+      "omschrijving": "De agent leest nieuwe meldingen, bepaalt categorie, prioriteit en module, zoekt in de kennisbank en eerdere oplossingen en zet een conceptantwoord plus voorgestelde ticketstatus klaar. Laatste akkoord ligt altijd bij een mens: de functioneel beheerder keurt elk antwoord en elke statuswijziging goed of past ze aan voordat er iets naar de gebruiker gaat of het ticket wordt bijgewerkt.",
+      "rollen": [
+        "functioneel-beheerder",
+        "key-user"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "Groot volume herhaalvragen ('waar vind ik...', 'hoe boek ik...'), handmatig triëren en doorzetten naar 4PS of Microsoft.",
+      "voorbeeld_bouw_installatie": "Een installateur meldt op maandagochtend dat een monteur zijn uren niet kan afsluiten in de Buitendienst App. Dezelfde vraag kwam vorige maand drie keer binnen; de oplossing staat in de kennisbank.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Melding komt binnen via mail of tickettool",
+          "tool": "Outlook / tickettool"
+        },
+        {
+          "stap": 2,
+          "actie": "Beheerder leest, zoekt eerdere tickets en werkinstructies",
+          "tool": "SharePoint (kennisbank)"
+        },
+        {
+          "stap": 3,
+          "actie": "Beheerder kijkt mee in de omgeving van de gebruiker",
+          "tool": "BC/4PS"
+        },
+        {
+          "stap": 4,
+          "actie": "Antwoord typen en ticket bijwerken of doorzetten naar leverancier",
+          "tool": "Outlook / Teams"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Classificeert de melding (module, type, urgentie), herkent of het een bekende vraag is en kiest: zelf beantwoorden met bronverwijzing, extra informatie opvragen of doorzetten met een complete overdracht.",
+        "tools": [
+          "Power Automate-trigger op nieuwe mail of ticket",
+          "SharePoint-kennisbank als knowledge",
+          "BC-connector (alleen lezen, bijv. gebruikersinstellingen)",
+          "Teams Adaptive Card voor akkoord"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of het concept klopt met de geciteerde kennisbankbron, geen gevoelige gegevens bevat en past bij de klantspecifieke inrichting.",
+        "iteratie": "Bij afkeur door de reviewer herschrijft de agent het concept of vraagt via 'request for information' aanvullende gegevens op; na maximaal twee rondes gaat het voorstel naar de beheerder."
+      },
+      "human_approval": "De functioneel beheerder keurt elk antwoord en elke statuswijziging goed of past ze aan voordat er iets naar de gebruiker gaat of het ticket wordt bijgewerkt.",
+      "impact": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Dagelijks volume en direct merkbaar voor gebruikers; in het rollenonderzoek gerangschikt als sterkste eerste pilot.",
+        "bronankers": [
+          {
+            "anker": "FB3050",
+            "cijfer": "30-50% van de tickets zijn herhaalvragen",
+            "betekenis": "schatting uit ITSM-praktijk, geen publieke bron; te valideren bij de klant",
+            "label": "[E]",
+            "bron": "Schatting in rollenonderzoek; bronverificatie: geen betere bron gevonden",
+            "url": null,
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          },
+          {
+            "anker": "HDI30",
+            "cijfer": "ongeveer 3 op de 10 tickets gaan over wachtwoordresets",
+            "betekenis": "één repetitieve ticketcategorie, zwakke proxy",
+            "label": "[S]",
+            "bron": "HDI Research Corner, Password-Reset Practices in Support",
+            "url": "https://www.thinkhdi.com/library/supportworld/2011/password-reset-practices",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Werkt met kennisbank en mail; geen schrijfacties in BC nodig. Afhankelijk van de kwaliteit van de kennisbank en de koppeling met de tickettool (vaak via maatwerkconnector of sync)."
+      },
+      "bc_4ps_koppeling": "Beperkt: lezen van gebruikers, rechtensets en instellingen ter controle. Ticketdata in de tickettool, kennis in SharePoint.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-FB-02",
+      "naam": "Meldingen naspelen in een testomgeving",
+      "omschrijving": "De agent speelt een gemelde fout in BC/4PS na in een aparte testomgeving: hij zet testdata klaar, doorloopt het schermpad met computer use (Cloud PC pool of eigen Windows-machine), legt foutmelding en status vast en levert een reproductiepakket met schermafbeeldingen. Laatste akkoord ligt altijd bij een mens: de functioneel beheerder of key-user bekijkt het reproductierapport en de schermafbeeldingen en beslist of het als bijlage naar het ticket of de leverancier gaat. Alleen testomgeving, nooit productie, nooit boeken.",
+      "rollen": [
+        "functioneel-beheerder",
+        "key-user"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "Een melding handmatig en consistent reproduceren kost veel tijd, zeker bij onvolledige toestanden zoals een half ingevulde werkbon; zonder reproductie blijft het pingpongen met gebruiker en leverancier.",
+      "voorbeeld_bouw_installatie": "Een servicecoördinator meldt dat een werkbon met een materiaalregel zonder verplicht veld niet afgerond kan worden en een onduidelijke fout toont. De agent maakt een testwerkorder aan en speelt het pad na.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Melding lezen en navragen bij de gebruiker",
+          "tool": "Outlook / Teams"
+        },
+        {
+          "stap": 2,
+          "actie": "Testdata handmatig opbouwen in een sandbox",
+          "tool": "BC/4PS (test)"
+        },
+        {
+          "stap": 3,
+          "actie": "Pad doorklikken, schermafbeeldingen maken",
+          "tool": "BC/4PS (test)"
+        },
+        {
+          "stap": 4,
+          "actie": "Bevindingen vastleggen en naar leverancier sturen",
+          "tool": "SharePoint / Outlook"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Leidt uit de melding de stappen en verwachte foutsignatuur af, zet testdata klaar via de BC MCP-server, voert alleen het schermpad uit met computer use en vergelijkt het resultaat met de verwachte signatuur. Stopt bij twijfel of een onverwachte dialoog.",
+        "tools": [
+          "BC MCP-server (testcompany, schrijven alleen op testdata)",
+          "Copilot Studio computer use op Cloud PC pool of eigen Windows-machine",
+          "SharePoint voor bewijs en log",
+          "Power Automate Desktop als terugvaloptie"
+        ],
+        "review_door_tweede_model": "Een tweede model beoordeelt of de vastgelegde fouttekst en schermafbeeldingen echt de melding aantonen en of er geen boek- of factuuracties zijn uitgevoerd.",
+        "iteratie": "Bij een mismatch past de agent de stappen aan en draait maximaal één keer opnieuw; daarna vraagt hij de beheerder: doorgaan, afbreken of alleen vastleggen."
+      },
+      "human_approval": "De functioneel beheerder of key-user bekijkt het reproductierapport en de schermafbeeldingen en beslist of het als bijlage naar het ticket of de leverancier gaat. Alleen testomgeving, nooit productie, nooit boeken.",
+      "impact": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Herhaalbare reproductiepakketten versnellen supportketen en oplossing bij leverancier.",
+        "bronankers": [
+          {
+            "anker": "BP_POC",
+            "cijfer": "POC-doel: 8 van 10 opeenvolgende runs leveren dezelfde foutsignatuur, tijd van trigger tot rapport maximaal 15 minuten, 0 boekingen",
+            "betekenis": "succescriterium (doel) voor de proef, geen gemeten resultaat",
+            "label": "[C]",
+            "bron": "Blueprint meldingen naspelen in BC/4PS",
+            "url": null,
+            "bronbestand": "4ps-bug-reproduce-blueprint.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Technisch beschikbaar (computer use, MCP), maar vraagt een aparte testcompany, eigen machine, inrichting per 4PS-versie en schermpaden die soms instabiel zijn."
+      },
+      "bc_4ps_koppeling": "Service: serviceorders/werkorders en werkbonregels (uren, materiaal) in een testcompany; via BC MCP-server en de webclient.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-FB-03",
+      "naam": "Autorisatie- en gebruikersaanvragen voorbereiden",
+      "omschrijving": "De agent zet een aanvraag voor een nieuwe gebruiker of extra rechten om in een voorstel met de juiste rechtensets, gebaseerd op functie en vergelijkbare collega's, en signaleert afwijkingen. Laatste akkoord ligt altijd bij een mens: de functioneel beheerder keurt de rechtenwijziging goed en voert hem uit of laat hem pas na akkoord uitvoeren; de agent wijzigt zelf geen rechten zonder dat akkoord.",
+      "rollen": [
+        "functioneel-beheerder"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "Veel kleine aanvragen voor accounts en autorisaties, vaak onvolledig ('zelfde rechten als Jan'), met risico op te ruime rechten.",
+      "voorbeeld_bouw_installatie": "Een nieuwe werkvoorbereider begint maandag en heeft toegang nodig tot projecten, inkoop en documenten, maar niet tot financiën.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Aanvraag per mail van leidinggevende",
+          "tool": "Outlook"
+        },
+        {
+          "stap": 2,
+          "actie": "Navragen welke functie en welke modules",
+          "tool": "Outlook / Teams"
+        },
+        {
+          "stap": 3,
+          "actie": "Rechten van een collega opzoeken en kopiëren",
+          "tool": "BC/4PS"
+        },
+        {
+          "stap": 4,
+          "actie": "Bevestigen en vastleggen",
+          "tool": "Outlook / SharePoint"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Leest de aanvraag, bepaalt de functie, vergelijkt met het rechtenprofiel van die functie en met collega's, en maakt een voorstel met verschillen en risico's (bijv. toegang tot financiële boekingen).",
+        "tools": [
+          "Power Automate-trigger op aanvraagformulier of mail",
+          "BC-connector (lezen gebruikers en rechtensets)",
+          "SharePoint met rechtenmatrix",
+          "Teams Adaptive Card"
+        ],
+        "review_door_tweede_model": "Een tweede model toetst het voorstel aan de rechtenmatrix en het principe van minimale rechten en markeert alles wat ruimer is dan de functie vraagt.",
+        "iteratie": "Punten die de reviewer markeert worden aangepast of als open vraag aan de aanvrager voorgelegd; daarna een nieuw voorstel."
+      },
+      "human_approval": "De functioneel beheerder keurt de rechtenwijziging goed en voert hem uit of laat hem pas na akkoord uitvoeren; de agent wijzigt zelf geen rechten zonder dat akkoord.",
+      "impact": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Frequent maar klein per aanvraag; vooral winst in kwaliteit (geen te ruime rechten) en doorlooptijd.",
+        "bronankers": [
+          {
+            "anker": "HDI30",
+            "cijfer": "ongeveer 3 op de 10 tickets gaan over wachtwoordresets",
+            "betekenis": "één repetitieve ticketcategorie, zwakke proxy",
+            "label": "[S]",
+            "bron": "HDI Research Corner, Password-Reset Practices in Support",
+            "url": "https://www.thinkhdi.com/library/supportworld/2011/password-reset-practices",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Rechtensets zijn uit te lezen; een bijgehouden rechtenmatrix per functie is vaak nog niet aanwezig."
+      },
+      "bc_4ps_koppeling": "Gebruikers, rechtensets en gebruikersgroepen (systeemtabellen BC), plus 4PS-rolcentra.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-FB-04",
+      "naam": "Kwaliteitspoort voor datamigratie na een overname",
+      "omschrijving": "Bij het overzetten van een overgenomen administratie of legacy-systeem naar 4PS/BC controleert de agent migratiebestanden op dubbele klanten en artikelen, ontbrekende projectstructuur en afwijkende codes, en maakt hij een bevindingenlijst per migratieronde. Laatste akkoord ligt altijd bij een mens: de functioneel beheerder en de verantwoordelijke key-user keuren elke samenvoeging, mapping en import goed; de agent importeert niets in productie.",
+      "rollen": [
+        "functioneel-beheerder",
+        "finance-controller"
+      ],
+      "vreter_type": "kwaliteit",
+      "vreter": "Slechte stamdata en handmatige mapping bij overnames en migraties leiden tot vertraging en fouten in inkoop, facturatie en rapportage.",
+      "voorbeeld_bouw_installatie": "Een installatiegroep neemt een regionale installateur over die op een ander pakket draait. Klanten, serviceobjecten en artikelen moeten worden overgezet; een deel bestaat al.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Exportbestanden ontvangen",
+          "tool": "SharePoint"
+        },
+        {
+          "stap": 2,
+          "actie": "Handmatig vergelijken en opschonen in Excel",
+          "tool": "SharePoint (Excel)"
+        },
+        {
+          "stap": 3,
+          "actie": "Testimport en fouten nalopen",
+          "tool": "BC/4PS (test)"
+        },
+        {
+          "stap": 4,
+          "actie": "Afstemmen met key-users",
+          "tool": "Teams"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Vergelijkt de exportbestanden met bestaande stamdata, zoekt waarschijnlijke dubbelen, controleert verplichte velden en mapping van codes, en rangschikt bevindingen op risico.",
+        "tools": [
+          "SharePoint (bestanden)",
+          "BC-connector of MCP (lezen stamdata, testimport in sandbox)",
+          "Power Automate-flow per migratieronde",
+          "Teams voor bevindingenlijst"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert steekproefsgewijs de voorgestelde samenvoegingen en mappings op valse positieven.",
+        "iteratie": "Bevindingen die de reviewer afwijst gaan terug met uitleg; de agent past zijn regels aan en draait de controle opnieuw op de volgende ronde."
+      },
+      "human_approval": "De functioneel beheerder en de verantwoordelijke key-user keuren elke samenvoeging, mapping en import goed; de agent importeert niets in productie.",
+      "impact": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Migraties en overnames zijn foutgevoelig en duur; datakwaliteit bepaalt vertraging.",
+        "bronankers": [
+          {
+            "anker": "PANORAMA",
+            "cijfer": "meer dan 25% van de ERP-projecten gaat over budget; dataproblemen zijn een hoofdoorzaak van vertraging",
+            "betekenis": "internationaal, niet bouwspecifiek",
+            "label": "[S]",
+            "bron": "Panorama Consulting, ERP Report 2026",
+            "url": "https://4439340.fs1.hubspotusercontent-na1.net/hubfs/4439340/Reports/ERP%20Report/2026-erp-report-panorama-consulting-group.pdf",
+            "bronbestand": "dis-financieel-schaalrisico-onderzoek.md"
+          },
+          {
+            "anker": "VENDOR",
+            "cijfer": "IT-integratiekosten bij overnames 2,2-4,8% van de dealwaarde over 24-36 maanden",
+            "betekenis": "panel van grote enterprise-deals; alleen het percentage als anker gebruiken",
+            "label": "[S]",
+            "bron": "VendorBenchmark, M&A IT Integration Cost Benchmark 2026 (n=156)",
+            "url": "https://vendorbenchmark.com/guides/m-and-a-it-integration-cost-benchmark",
+            "bronbestand": "dis-financieel-schaalrisico-onderzoek.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "laag",
+        "label": "inschatting",
+        "onderbouwing": "Per migratie verschillend, veel uitzonderingen en klantspecifieke codes; vraagt eerst vaste mappingregels."
+      },
+      "bc_4ps_koppeling": "Stamdata: klanten, leveranciers, artikelen, serviceobjecten, projectstructuur, dimensies; meerdere companies.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-KU-01",
+      "naam": "'Hoe doe ik dit in 4PS?'-assistent in Teams",
+      "omschrijving": "Collega's stellen in Teams een procesvraag; de agent antwoordt op basis van de eigen werkinstructies en procesafspraken van het bedrijf, met verwijzing naar de bron, en schakelt de key-user in als hij het niet zeker weet. Laatste akkoord ligt altijd bij een mens: de key-user beoordeelt doorgezette vragen en keurt nieuwe of gewijzigde antwoorden goed voordat ze in de kennisbron komen; procesantwoorden zonder bron worden niet gegeven.",
+      "rollen": [
+        "key-user",
+        "functioneel-beheerder"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "Steeds onderbroken worden door dezelfde vragen van collega's naast de eigen functie.",
+      "voorbeeld_bouw_installatie": "Een uitvoerder vraagt hoe hij meerwerk op een project vastlegt; een nieuwe inkoper vraagt hoe hij een inkooporder aan een project koppelt.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Collega belt of stuurt een Teams-bericht",
+          "tool": "Teams"
+        },
+        {
+          "stap": 2,
+          "actie": "Key-user zoekt werkinstructie of doet het voor",
+          "tool": "SharePoint / BC/4PS"
+        },
+        {
+          "stap": 3,
+          "actie": "Uitleg per mail of chat",
+          "tool": "Outlook / Teams"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Herkent het proces en de module, zoekt in de werkinstructies, controleert of de instructie past bij de versie en inrichting en geeft een stappenantwoord met bron. Bij een onbekend onderwerp of lage zekerheid geeft hij geen antwoord maar zet hij de vraag door.",
+        "tools": [
+          "Copilot Studio-agent in Teams",
+          "SharePoint met werkinstructies als knowledge",
+          "Power Automate voor doorzetten naar key-user"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of het antwoord letterlijk te herleiden is tot de werkinstructie en of er geen stappen ontbreken.",
+        "iteratie": "Bij een twijfelachtig antwoord herformuleert de agent of zet hij door; vragen zonder antwoord komen op een lijst voor nieuwe werkinstructies."
+      },
+      "human_approval": "De key-user beoordeelt doorgezette vragen en keurt nieuwe of gewijzigde antwoorden goed voordat ze in de kennisbron komen; procesantwoorden zonder bron worden niet gegeven.",
+      "impact": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Verlaagt supportlast van key-users en verhoogt adoptie van het ERP.",
+        "bronankers": [
+          {
+            "anker": "KU1025",
+            "cijfer": "10-25% van de werktijd aan support en adoptie naast de eigen functie",
+            "betekenis": "schatting, te valideren; vuistregel ERP 5-15% na livegang (erp-software.org, advies, geen survey)",
+            "label": "[E]",
+            "bron": "Schatting in rollenonderzoek; bronverificatie",
+            "url": "https://erp-software.org/en/erp-key-user-concept/",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Alleen lezen uit SharePoint; standaard Copilot Studio-patroon. Vraagt wel actuele werkinstructies."
+      },
+      "bc_4ps_koppeling": "Geen directe data nodig; inhoud gaat over processen in projecten, inkoop, uren en service.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-KU-02",
+      "naam": "Testscripts en acceptatietest voorbereiden bij een release",
+      "omschrijving": "Bij een nieuwe 4PS- of BC-release of een wijzigingsverzoek stelt de agent op basis van de releasenotes en de eigen processen een testscript en testchecklist per module op en verzamelt hij de testresultaten. Laatste akkoord ligt altijd bij een mens: de key-user keurt het testscript goed vóór de testronde en geeft na de test zelf akkoord of afkeur voor livegang.",
+      "rollen": [
+        "key-user",
+        "functioneel-beheerder"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "Dubbel werk bij elke release: zelf uitzoeken wat er verandert, testscripts opnieuw schrijven en resultaten verzamelen.",
+      "voorbeeld_bouw_installatie": "Een release wijzigt de werking van termijnfacturatie; de key-user finance en de key-user projecten moeten testen vóór de update naar productie gaat.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Releasenotes lezen",
+          "tool": "Outlook / SharePoint"
+        },
+        {
+          "stap": 2,
+          "actie": "Testscript in Word of Excel schrijven",
+          "tool": "SharePoint"
+        },
+        {
+          "stap": 3,
+          "actie": "Testen in sandbox",
+          "tool": "BC/4PS (test)"
+        },
+        {
+          "stap": 4,
+          "actie": "Resultaten verzamelen en afstemmen",
+          "tool": "Teams"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Koppelt wijzigingen uit de releasenotes aan de processen die het bedrijf gebruikt en kiest per proces de testgevallen; markeert wat geraakt wordt door maatwerk of koppelingen.",
+        "tools": [
+          "SharePoint (releasenotes, procesbeschrijvingen, eerdere testscripts)",
+          "Teams-lijst of Planner voor testtaken",
+          "Power Automate voor verzamelen resultaten"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of elk gewijzigd onderdeel in de releasenotes een testgeval heeft en of er geen processen zijn gemist.",
+        "iteratie": "Ontbrekende dekking leidt tot extra testgevallen; na de testronde vat de agent de resultaten samen en stelt hij een hertest voor bij fouten."
+      },
+      "human_approval": "De key-user keurt het testscript goed vóór de testronde en geeft na de test zelf akkoord of afkeur voor livegang.",
+      "impact": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Releases komen enkele keren per jaar; winst per keer is fors, maar niet dagelijks.",
+        "bronankers": [
+          {
+            "anker": "KU1025",
+            "cijfer": "10-25% van de werktijd aan support en adoptie naast de eigen functie",
+            "betekenis": "schatting, te valideren; vuistregel ERP 5-15% na livegang (erp-software.org, advies, geen survey)",
+            "label": "[E]",
+            "bron": "Schatting in rollenonderzoek; bronverificatie",
+            "url": "https://erp-software.org/en/erp-key-user-concept/",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Releasenotes zijn beschikbaar; eigen procesbeschrijvingen zijn vaak onvolledig."
+      },
+      "bc_4ps_koppeling": "Indirect: alle gebruikte modules (projecten, inkoop, uren, service, financiën) in de testomgeving.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-KU-03",
+      "naam": "Werkinstructies actueel houden",
+      "omschrijving": "De agent signaleert welke werkinstructies verouderd zijn na een release of procesafspraak, en schrijft een concept-update met de gewijzigde stappen. Laatste akkoord ligt altijd bij een mens: de key-user keurt elke gewijzigde werkinstructie goed voordat die gepubliceerd wordt.",
+      "rollen": [
+        "key-user"
+      ],
+      "vreter_type": "kwaliteit",
+      "vreter": "Slechte of verouderde documentatie, waardoor collega's in Excel gaan werken of steeds opnieuw vragen stellen.",
+      "voorbeeld_bouw_installatie": "Na een wijziging in het meerwerkproces staan er nog drie oude instructies op SharePoint die het oude pad beschrijven.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Wijziging afgesproken in overleg",
+          "tool": "Teams"
+        },
+        {
+          "stap": 2,
+          "actie": "Instructie zoeken en handmatig aanpassen (als er tijd is)",
+          "tool": "SharePoint"
+        },
+        {
+          "stap": 3,
+          "actie": "Collega's informeren",
+          "tool": "Outlook / Teams"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Vergelijkt releasenotes, besluiten en veelgestelde vragen met de bestaande instructies en bepaalt welke instructies tegenstrijdig of verouderd zijn.",
+        "tools": [
+          "SharePoint (instructies, versiegeschiedenis)",
+          "Teams-vergaderverslagen",
+          "Power Automate voor goedkeuringsflow"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert het concept op juistheid ten opzichte van de bron en op leesbaarheid voor eindgebruikers.",
+        "iteratie": "Opmerkingen van de reviewer worden verwerkt; daarna gaat het concept naar de key-user."
+      },
+      "human_approval": "De key-user keurt elke gewijzigde werkinstructie goed voordat die gepubliceerd wordt.",
+      "impact": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Indirecte winst: betere adoptie en minder vragen; versterkt UC-KU-01.",
+        "bronankers": [],
+        "bronlabel": "inschatting (geen broncijfer beschikbaar)"
+      },
+      "haalbaarheid": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Alleen documenten; geen ERP-koppeling nodig."
+      },
+      "bc_4ps_koppeling": "Geen.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-CAL-01",
+      "naam": "Prijsactualisatie en afwijkende prijzen in de calculatie signaleren",
+      "omschrijving": "De agent vergelijkt de prijzen in een lopende calculatie met actuele artikelprijzen uit de groothandelskoppeling (2BA) en recente inkoopprijzen, en markeert regels met grote afwijkingen of verlopen prijzen. Laatste akkoord ligt altijd bij een mens: de calculator beslist per regel of de prijs wordt aangepast; de agent wijzigt de calculatie niet zelf.",
+      "rollen": [
+        "calculator",
+        "inkoper"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "Prijzen opzoeken en actualiseren, vooral bij materiaalprijzen die snel veranderen.",
+      "voorbeeld_bouw_installatie": "Een calculatie voor een warmtepompinstallatie gebruikt koperprijzen van een half jaar geleden; drie posten liggen inmiddels flink hoger.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Calculatie openen",
+          "tool": "BC/4PS (Calculatie)"
+        },
+        {
+          "stap": 2,
+          "actie": "Prijzen per regel opzoeken bij groothandel",
+          "tool": "BC/4PS (2BA) / browser"
+        },
+        {
+          "stap": 3,
+          "actie": "Afwijkingen in Excel bijhouden",
+          "tool": "SharePoint (Excel)"
+        },
+        {
+          "stap": 4,
+          "actie": "Calculatie handmatig bijwerken",
+          "tool": "BC/4PS"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Haalt de calculatieregels op, zoekt per artikel de actuele prijs en laatste inkoopprijs en berekent afwijkingen; rangschikt op invloed op de totale kostprijs.",
+        "tools": [
+          "BC-connector of MCP (calculatieregels, artikelen, inkoopprijzen)",
+          "2BA-artikeldata in 4PS",
+          "Teams-bericht met afwijkingenlijst"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of de vergeleken artikelen echt hetzelfde zijn (eenheid, verpakking) en of de berekening klopt.",
+        "iteratie": "Twijfelgevallen worden als vraag gemarkeerd in plaats van als afwijking; de agent herberekent na correctie."
+      },
+      "human_approval": "De calculator beslist per regel of de prijs wordt aangepast; de agent wijzigt de calculatie niet zelf.",
+      "impact": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Raakt de nauwkeurigheid van inschattingen, een bekende oorzaak van verliesprojecten.",
+        "bronankers": [
+          {
+            "anker": "EX52",
+            "cijfer": "52% noemt hoge materiaalprijzen als uitdaging; 40% onderhandelt over inkoopprijzen voor marge",
+            "betekenis": "aandeel bedrijven",
+            "label": "[S]",
+            "bron": "Exact MKB Barometer Bouw 2025",
+            "url": "https://files.exact.com/static/web/pdf/mkb-barometer/2025/NL-CST-mkb-barometer-sectorrapport.pdf",
+            "bronbestand": "dis-klantrollen-onderzoek.md"
+          },
+          {
+            "anker": "EX49",
+            "cijfer": "gemiddeld 49% van de projecten verliesgevend door inschattingen die achteraf onjuist blijken",
+            "betekenis": "aandeel projecten (bedrijfsenquête), geen tijdpercentage",
+            "label": "[S]",
+            "bron": "Exact MKB Barometer Bouw 2025 (n=62)",
+            "url": "https://files.exact.com/static/web/pdf/mkb-barometer/2025/NL-CST-mkb-barometer-sectorrapport.pdf",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Artikel- en prijsdata zitten al in 4PS; vergelijken is goed af te bakenen."
+      },
+      "bc_4ps_koppeling": "Calculatie: calculatieregels en moederbegrotingen; artikelen en 2BA-prijzen; inkoop: laatste inkoopprijzen.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-CAL-02",
+      "naam": "Nacalculatie terugkoppelen bij een nieuwe calculatie",
+      "omschrijving": "Bij het starten van een nieuwe calculatie zoekt de agent vergelijkbare afgeronde projecten en laat zien waar begroting en werkelijkheid uiteenliepen (uren per post, materiaal, onderaanneming). Laatste akkoord ligt altijd bij een mens: de calculator bepaalt zelf of en hoe de inzichten in de nieuwe calculatie worden verwerkt; de agent past geen calculatie aan.",
+      "rollen": [
+        "calculator",
+        "projectleider"
+      ],
+      "vreter_type": "kwaliteit",
+      "vreter": "Weinig feedback uit nacalculatie, waardoor dezelfde inschattingsfouten terugkomen.",
+      "voorbeeld_bouw_installatie": "Bij een nieuwe calculatie voor een schoolrenovatie toont de agent dat bij drie eerdere renovaties de uren voor sparingen en afwerking structureel te laag waren.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Oude calculaties opzoeken op geheugen",
+          "tool": "BC/4PS (Calculatie)"
+        },
+        {
+          "stap": 2,
+          "actie": "Projectresultaat opvragen bij projectleider of controller",
+          "tool": "Outlook / Teams"
+        },
+        {
+          "stap": 3,
+          "actie": "Zelf vergelijken in Excel",
+          "tool": "SharePoint (Excel)"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Bepaalt vergelijkbaarheid (type werk, omvang, regio), haalt per project begroot versus werkelijk op en vat de grootste structurele afwijkingen samen per calculatiepost.",
+        "tools": [
+          "BC-connector of MCP (projecten, budgetregels, projectposten)",
+          "Power BI-dataset indien aanwezig",
+          "Teams of Outlook voor samenvatting"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of de gekozen projecten echt vergelijkbaar zijn en of afwijkingen niet door meerwerk of scopewijziging komen.",
+        "iteratie": "Niet-vergelijkbare projecten worden verwijderd; de agent vult aan met andere projecten tot er een bruikbare set is."
+      },
+      "human_approval": "De calculator bepaalt zelf of en hoe de inzichten in de nieuwe calculatie worden verwerkt; de agent past geen calculatie aan.",
+      "impact": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Pakt de oorzaak van verkeerde inschattingen aan.",
+        "bronankers": [
+          {
+            "anker": "EX49",
+            "cijfer": "gemiddeld 49% van de projecten verliesgevend door inschattingen die achteraf onjuist blijken",
+            "betekenis": "aandeel projecten (bedrijfsenquête), geen tijdpercentage",
+            "label": "[S]",
+            "bron": "Exact MKB Barometer Bouw 2025 (n=62)",
+            "url": "https://files.exact.com/static/web/pdf/mkb-barometer/2025/NL-CST-mkb-barometer-sectorrapport.pdf",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Vraagt een consistente projectstructuur en nacalculatiedata; die is niet bij elk bedrijf schoon."
+      },
+      "bc_4ps_koppeling": "Projecten: werkbegroting, budgetregels, projectposten (uren, materiaal, onderaanneming), projectresultaat; calculatie.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-CAL-03",
+      "naam": "Overdracht calculatie naar werkbegroting controleren",
+      "omschrijving": "Na opdracht controleert de agent of de calculatie volledig en in de juiste structuur in de werkbegroting is overgekomen, en zet hij afwijkingen op een lijst voor calculator en werkvoorbereider. Laatste akkoord ligt altijd bij een mens: de werkvoorbereider en calculator keuren de overdracht samen goed; correcties in de werkbegroting voeren zij zelf uit.",
+      "rollen": [
+        "calculator",
+        "werkvoorbereider",
+        "projectleider"
+      ],
+      "vreter_type": "kwaliteit",
+      "vreter": "Slechte overdracht van calculatie naar project: structuurverschillen, ontbrekende posten en correcties achteraf.",
+      "voorbeeld_bouw_installatie": "Bij een utiliteitsproject is de post 'stelposten installaties' niet overgenomen in de werkbegroting, waardoor inkoop later geen budget vindt.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Calculatie omzetten naar werkbegroting",
+          "tool": "BC/4PS"
+        },
+        {
+          "stap": 2,
+          "actie": "Handmatig vergelijken en corrigeren",
+          "tool": "BC/4PS / SharePoint (Excel)"
+        },
+        {
+          "stap": 3,
+          "actie": "Overdrachtsoverleg",
+          "tool": "Teams"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Vergelijkt totalen en posten tussen calculatie en werkbegroting, herkent verplaatste of samengevoegde posten en markeert echte gaten.",
+        "tools": [
+          "BC-connector of MCP (calculatie, werkbegroting)",
+          "Teams-bericht met overdrachtslijst"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of gemarkeerde verschillen echte gaten zijn en geen bewuste herstructurering.",
+        "iteratie": "Verschillen die de reviewer als bewust ziet worden als 'te bevestigen' getoond; de lijst wordt bijgewerkt na reacties."
+      },
+      "human_approval": "De werkvoorbereider en calculator keuren de overdracht samen goed; correcties in de werkbegroting voeren zij zelf uit.",
+      "impact": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Fouten in de overdracht werken door in inkoop, planning en projectresultaat.",
+        "bronankers": [
+          {
+            "anker": "EX49",
+            "cijfer": "gemiddeld 49% van de projecten verliesgevend door inschattingen die achteraf onjuist blijken",
+            "betekenis": "aandeel projecten (bedrijfsenquête), geen tijdpercentage",
+            "label": "[S]",
+            "bron": "Exact MKB Barometer Bouw 2025 (n=62)",
+            "url": "https://files.exact.com/static/web/pdf/mkb-barometer/2025/NL-CST-mkb-barometer-sectorrapport.pdf",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          },
+          {
+            "anker": "ABN_WVB",
+            "cijfer": "slechte werkvoorbereiding is de tweede belangrijkste oorzaak van faalkosten; 39% schat faalkosten op 5% of meer van de omzet",
+            "betekenis": "oorzaak en aandeel bedrijven (2019)",
+            "label": "[S]",
+            "bron": "ABN AMRO, Verspilde moeite (2019, n=151)",
+            "url": "https://www.abnamro.nl/nl/zakelijk/insights/sectoren-en-trends/bouw/faalkosten-in-de-bouw-lopen-jaarlijks-op-tot-miljarden-euros.html",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Data is aanwezig; de mapping tussen structuren verschilt per bedrijf."
+      },
+      "bc_4ps_koppeling": "Calculatie en projecten: werkbegroting, budgetregels, kostensoorten.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-CAL-04",
+      "naam": "Bestek en tekeningen samenvatten tot calculatie-uitgangspunten",
+      "omschrijving": "De agent vat een aanvraagdossier (bestek, tekeningen, nota's) samen tot uitgangspunten, risico's en een lijst met vragen voor de nota van inlichtingen. Laatste akkoord ligt altijd bij een mens: de calculator controleert de samenvatting en beslist welke vragen worden ingediend; er gaat niets naar de opdrachtgever zonder zijn akkoord.",
+      "rollen": [
+        "calculator",
+        "werkvoorbereider"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "Veel tijd aan doorlezen van omvangrijke aanvraagdossiers voordat de calculatie kan starten.",
+      "voorbeeld_bouw_installatie": "Een aanbesteding voor de installaties van een zorggebouw bevat een bestek van honderden pagina's plus tekeningen; de calculator wil snel weten wat afwijkt van standaard.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Dossier downloaden en opslaan",
+          "tool": "SharePoint"
+        },
+        {
+          "stap": 2,
+          "actie": "Doorlezen en notities maken",
+          "tool": "SharePoint (Word)"
+        },
+        {
+          "stap": 3,
+          "actie": "Vragen opstellen voor nota van inlichtingen",
+          "tool": "Outlook"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Leest het dossier, haalt eisen, afwijkingen en onduidelijkheden eruit met paginaverwijzing en zet ze in een vaste structuur.",
+        "tools": [
+          "SharePoint (dossier)",
+          "Copilot Studio met documentverwerking",
+          "Outlook-concept voor vragen"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of elk uitgangspunt en elke vraag een juiste paginaverwijzing heeft en of er geen eisen zijn verzonnen.",
+        "iteratie": "Punten zonder bronverwijzing worden geschrapt of opnieuw gezocht."
+      },
+      "human_approval": "De calculator controleert de samenvatting en beslist welke vragen worden ingediend; er gaat niets naar de opdrachtgever zonder zijn akkoord.",
+      "impact": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Versnelt de start van de calculatie; inhoudelijke beslissingen blijven bij de calculator.",
+        "bronankers": [],
+        "bronlabel": "inschatting (geen broncijfer beschikbaar)"
+      },
+      "haalbaarheid": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Tekstdocumenten goed te verwerken; tekeningen en maatvoering lastiger."
+      },
+      "bc_4ps_koppeling": "Geen (documenten), optioneel aanmaken van een calculatiekop na akkoord.",
+      "status": "illustratief"
+    },
+    {
+      "id": "UC-WVB-01",
+      "naam": "Laatste tekeningversie en revisiewijzigingen vinden",
+      "omschrijving": "De agent beantwoordt de vraag 'wat is de geldende versie van deze tekening en wat is er veranderd?' door SharePoint, mailbijlagen en het projectdossier te doorzoeken, de nieuwste revisie te bepalen en de verschillen met de vorige revisie samen te vatten. Laatste akkoord ligt altijd bij een mens: de werkvoorbereider bevestigt welke versie geldend is voordat de agent iets doorzet of een document als 'geldend' markeert; verspreiding naar derden gebeurt pas na zijn akkoord.",
+      "rollen": [
+        "werkvoorbereider",
+        "uitvoerder",
+        "projectleider"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "Lang zoeken naar de laatste tekeningversie en uitzoeken wat er in een revisie is gewijzigd.",
+      "voorbeeld_bouw_installatie": "De constructeur stuurt revisie D van de sparingstekening per mail, terwijl op SharePoint nog revisie C staat. De werkvoorbereider wil weten welke sparingen zijn verschoven voordat hij de installateur informeert.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Mailbox en projectmap doorzoeken",
+          "tool": "Outlook / SharePoint"
+        },
+        {
+          "stap": 2,
+          "actie": "Revisieletters en datums vergelijken",
+          "tool": "SharePoint"
+        },
+        {
+          "stap": 3,
+          "actie": "Tekeningen naast elkaar leggen",
+          "tool": "SharePoint / pdf-viewer"
+        },
+        {
+          "stap": 4,
+          "actie": "Betrokkenen informeren",
+          "tool": "Outlook / Teams"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Zoekt alle versies van de tekening op nummer en revisie, bepaalt de geldende versie op basis van revisiekop en datum en vat de wijzigingen uit het revisievak en de begeleidende mail samen. Meldt tegenstrijdigheden (bijv. twee 'laatste' versies).",
+        "tools": [
+          "SharePoint-zoekfunctie en documentbibliotheek",
+          "Outlook (mailbijlagen)",
+          "Teams-bericht met antwoord",
+          "Optioneel BC/4PS-projectdocumenten"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of de aangewezen versie echt de nieuwste is en of de samengevatte wijzigingen in het revisievak of de mail terug te vinden zijn.",
+        "iteratie": "Bij tegenspraak zoekt de agent verder (bijv. in de documentenlijst van de adviseur) of legt hij de keuze aan de werkvoorbereider voor."
+      },
+      "human_approval": "De werkvoorbereider bevestigt welke versie geldend is voordat de agent iets doorzet of een document als 'geldend' markeert; verspreiding naar derden gebeurt pas na zijn akkoord.",
+      "impact": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Zoeken naar projectdata en communicatieproblemen zijn grote tijd- en faalkostenposten.",
+        "bronankers": [
+          {
+            "anker": "FMI55",
+            "cijfer": "5,5 uur per week zoeken naar projectdata",
+            "betekenis": "deel van de 14,1 uur per week; tijdmeting bij bouwprofessionals (vooral VS)",
+            "label": "[S]",
+            "bron": "Autodesk/PlanGrid + FMI, Construction Disconnected (2018)",
+            "url": "https://www.autodesk.com/blogs/construction/construction-disconnected-fmi-report/",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          },
+          {
+            "anker": "WV",
+            "cijfer": "een werkvoorbereider besteedt gemiddeld 60-70% van de tijd op kantoor (tot 80% in de voorbereidingsfase)",
+            "betekenis": "kantoortijd, geen verspilling",
+            "label": "[S]",
+            "bron": "Werkvoorbereider.nl (praktijkbron, geen survey)",
+            "url": "https://werkvoorbereider.nl/hoeveel-tijd-besteedt-een-werkvoorbereider-op-kantoor-vs-bouwplaats/",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          },
+          {
+            "anker": "FMI48",
+            "cijfer": "48% van het herstelwerk komt door slechte communicatie of projectdata",
+            "betekenis": "oorzaakaandeel herstelwerk (VS-onderzoek)",
+            "label": "[S]",
+            "bron": "Autodesk/PlanGrid + FMI, Construction Disconnected (2018)",
+            "url": "https://www.autodesk.com/blogs/construction/construction-disconnected-fmi-report/",
+            "bronbestand": "dis-klantrollen-onderzoek.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Alleen lezen in SharePoint en Outlook; werkt het best met consistente bestandsnamen of een documentbeheersysteem."
+      },
+      "bc_4ps_koppeling": "Optioneel: projectnummer en projectdocumenten in 4PS; verder SharePoint.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-WVB-02",
+      "naam": "Werkpakket controleren op uitvoeringsgereedheid",
+      "omschrijving": "Voordat een werkpakket naar de bouwplaats of monteur gaat, controleert de agent of tekeningen, materiaal, onderaanneming, vergunningen en planning compleet en op elkaar afgestemd zijn, en levert hij een checklist met open punten. Laatste akkoord ligt altijd bij een mens: de werkvoorbereider geeft het werkpakket pas vrij na eigen akkoord op de checklist; de agent verstuurt niets naar de bouwplaats zelf.",
+      "rollen": [
+        "werkvoorbereider",
+        "uitvoerder",
+        "planner"
+      ],
+      "vreter_type": "kwaliteit",
+      "vreter": "Onvolledige werkvoorbereiding leidt tot stilstand en herstelwerk op de bouwplaats.",
+      "voorbeeld_bouw_installatie": "Het werkpakket voor de tweede verdieping staat klaar, maar de bestelling van de brandwerende doorvoeringen is nog niet bevestigd en de tekening is van een oude revisie.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Checklist doorlopen (als die er is)",
+          "tool": "SharePoint (Excel)"
+        },
+        {
+          "stap": 2,
+          "actie": "Status inkooporders en leveringen opzoeken",
+          "tool": "BC/4PS (Inkoop)"
+        },
+        {
+          "stap": 3,
+          "actie": "Tekeningstatus controleren",
+          "tool": "SharePoint"
+        },
+        {
+          "stap": 4,
+          "actie": "Planning afstemmen met uitvoerder",
+          "tool": "Teams / Outlook"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Loopt per werkpakket de gereedheidscriteria na: geldende tekeningen, bevestigde orders en leverdata vóór de geplande start, beschikbaarheid van onderaannemers en open RFI's. Zet ontbrekende punten met eigenaar in een lijst.",
+        "tools": [
+          "BC-connector of MCP (inkooporders, leverdata, projectplanning)",
+          "SharePoint (tekeningen, checklists)",
+          "Outlook (bevestigingen)",
+          "Teams Adaptive Card"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of elk 'gereed' oordeel onderbouwd is met een bron (orderregel, document) en niets is aangenomen.",
+        "iteratie": "Ongefundeerde punten worden teruggezet naar 'onbekend' en opnieuw nagezocht; daarna wordt de checklist ververst."
+      },
+      "human_approval": "De werkvoorbereider geeft het werkpakket pas vrij na eigen akkoord op de checklist; de agent verstuurt niets naar de bouwplaats zelf.",
+      "impact": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Slechte werkvoorbereiding is een hoofdoorzaak van faalkosten, die zich vooral in de uitvoering tonen.",
+        "bronankers": [
+          {
+            "anker": "ABN_WVB",
+            "cijfer": "slechte werkvoorbereiding is de tweede belangrijkste oorzaak van faalkosten; 39% schat faalkosten op 5% of meer van de omzet",
+            "betekenis": "oorzaak en aandeel bedrijven (2019)",
+            "label": "[S]",
+            "bron": "ABN AMRO, Verspilde moeite (2019, n=151)",
+            "url": "https://www.abnamro.nl/nl/zakelijk/insights/sectoren-en-trends/bouw/faalkosten-in-de-bouw-lopen-jaarlijks-op-tot-miljarden-euros.html",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          },
+          {
+            "anker": "ABN54",
+            "cijfer": "54% ziet faalkosten vooral in de uitvoeringsfase",
+            "betekenis": "aandeel respondenten (2019)",
+            "label": "[S]",
+            "bron": "ABN AMRO, Verspilde moeite (2019)",
+            "url": "https://www.abnamro.nl/nl/zakelijk/insights/sectoren-en-trends/bouw/faalkosten-in-de-bouw-lopen-jaarlijks-op-tot-miljarden-euros.html",
+            "bronbestand": "dis-financieel-schaalrisico-onderzoek.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Vraagt gegevens uit meerdere bronnen en heldere gereedheidscriteria per bedrijf."
+      },
+      "bc_4ps_koppeling": "Projecten (fasering, planning), inkoop (orders, verwachte leverdatum, ontvangsten), onderaanneming.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-WVB-03",
+      "naam": "Leveringen najagen",
+      "omschrijving": "De agent bewaakt bevestigde leverdata van inkooporders tegen de planning, stuurt na akkoord herinneringen naar leveranciers en verwerkt hun antwoord als voorstel voor een nieuwe leverdatum. Laatste akkoord ligt altijd bij een mens: de werkvoorbereider of inkoper keurt elke herinnering goed voordat die verstuurd wordt en bevestigt elke wijziging van de leverdatum voordat die in BC wordt vastgelegd.",
+      "rollen": [
+        "werkvoorbereider",
+        "inkoper",
+        "planner"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "Leveranciers bellen en mailen om leverdata te bevestigen, en de planning handmatig bijwerken.",
+      "voorbeeld_bouw_installatie": "De luchtbehandelingskast moet over twee weken worden gehesen; de leverancier heeft de leverdatum nog niet bevestigd en de kraan is al geboekt.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Openstaande orders zonder bevestiging opzoeken",
+          "tool": "BC/4PS (Inkoop)"
+        },
+        {
+          "stap": 2,
+          "actie": "Leverancier mailen of bellen",
+          "tool": "Outlook"
+        },
+        {
+          "stap": 3,
+          "actie": "Antwoord verwerken in order en planning",
+          "tool": "BC/4PS"
+        },
+        {
+          "stap": 4,
+          "actie": "Uitvoerder informeren",
+          "tool": "Teams"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Selecteert orders met risico (geen bevestiging, leverdatum na geplande inzet), stelt per leverancier een herinnering op en leest antwoorden uit, inclusief gewijzigde data en deelleveringen.",
+        "tools": [
+          "BC-connector (inkooporders, leverdata)",
+          "Outlook (concepten en inkomende antwoorden)",
+          "Power Automate (dagelijkse trigger)",
+          "Teams Adaptive Card"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of de uitgelezen leverdatum en hoeveelheid overeenkomen met de mail en de juiste orderregel.",
+        "iteratie": "Onduidelijke antwoorden leiden tot een vervolgvraag aan de leverancier (na akkoord) of een vraag aan de werkvoorbereider."
+      },
+      "human_approval": "De werkvoorbereider of inkoper keurt elke herinnering goed voordat die verstuurd wordt en bevestigt elke wijziging van de leverdatum voordat die in BC wordt vastgelegd.",
+      "impact": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Materiaalbeheer is bij een groot deel van de bedrijven nog niet geautomatiseerd; te late levering raakt de planning direct.",
+        "bronankers": [
+          {
+            "anker": "EX40",
+            "cijfer": "40% van de bedrijven heeft materiaalbeheer (nog) niet geautomatiseerd (60% wel)",
+            "betekenis": "aandeel bedrijven, geen tijdpercentage",
+            "label": "[S]",
+            "bron": "Exact MKB Barometer Bouw 2025",
+            "url": "https://files.exact.com/static/web/pdf/mkb-barometer/2025/NL-CST-mkb-barometer-sectorrapport.pdf",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Standaardgegevens in BC en mail; ook op de voorbeeldkansenkaart als quick win aangemerkt."
+      },
+      "bc_4ps_koppeling": "Inkoop: inkooporders en orderregels (verwachte ontvangstdatum, bevestigde datum), leveranciers, projectkoppeling.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-WVB-04",
+      "naam": "Materiaalstaat omzetten naar inkoopaanvraag",
+      "omschrijving": "De agent zet een materiaalstaat of uittrekstaat (bijv. uit een tekenpakket) om in een conceptinkoopaanvraag per leverancier, met koppeling aan project en budgetregel. Laatste akkoord ligt altijd bij een mens: de werkvoorbereider en inkoper keuren de conceptaanvraag goed; pas daarna wordt er een inkooporder gemaakt of verstuurd.",
+      "rollen": [
+        "werkvoorbereider",
+        "inkoper"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "Overtypen van materiaallijsten in het ERP en zoeken naar de juiste artikelnummers.",
+      "voorbeeld_bouw_installatie": "Uit het 3D-model komt een lijst met leidingen, bochten en beugels voor een sanitaire installatie, die als bestelling klaar moet staan.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Materiaalstaat exporteren",
+          "tool": "SharePoint (Excel)"
+        },
+        {
+          "stap": 2,
+          "actie": "Artikelen zoeken en aanvraag invoeren",
+          "tool": "BC/4PS (Inkoop, 2BA)"
+        },
+        {
+          "stap": 3,
+          "actie": "Controle door inkoper",
+          "tool": "Teams / Outlook"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Matcht omschrijvingen aan artikelen (2BA/artikelbestand), groepeert per leverancier en koppelt aan de juiste budgetregel; markeert niet-gevonden of dubbelzinnige artikelen.",
+        "tools": [
+          "SharePoint (materiaalstaat)",
+          "BC-connector of MCP (artikelen, inkoopaanvragen als concept)",
+          "Teams Adaptive Card"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert matches op eenheid, diameter en type en vergelijkt totalen met de materiaalstaat.",
+        "iteratie": "Twijfelachtige matches gaan als keuzelijst naar de werkvoorbereider; daarna wordt het concept bijgewerkt."
+      },
+      "human_approval": "De werkvoorbereider en inkoper keuren de conceptaanvraag goed; pas daarna wordt er een inkooporder gemaakt of verstuurd.",
+      "impact": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Bespaart overtypwerk; foutreductie in artikelkeuze.",
+        "bronankers": [],
+        "bronlabel": "inschatting (geen broncijfer beschikbaar)"
+      },
+      "haalbaarheid": {
+        "niveau": "laag",
+        "label": "inschatting",
+        "onderbouwing": "Artikelmatching op vrije omschrijvingen is foutgevoelig en verschilt per tekenpakket."
+      },
+      "bc_4ps_koppeling": "Inkoop: inkoopaanvragen/-orders; artikelen en 2BA; projecten en budgetregels.",
+      "status": "illustratief"
+    },
+    {
+      "id": "UC-PL-01",
+      "naam": "Wekelijkse projectstatus: budget versus werkelijk",
+      "omschrijving": "Elke week haalt de agent per project begroot versus werkelijk (uren, materiaal, onderaanneming) en de verwachte eindstand uit 4PS/BC, licht de grootste afwijkingen toe, zet een statusrapport op SharePoint en een conceptmail in Outlook klaar. Laatste akkoord ligt altijd bij een mens: de projectleider leest en past het rapport aan en verstuurt de mail zelf; de agent verstuurt niets automatisch.",
+      "rollen": [
+        "projectleider",
+        "finance-controller"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "Iedere week handmatig cijfers verzamelen uit het ERP en Excel voor een statusrapport, en uitzoeken waar afwijkingen vandaan komen.",
+      "voorbeeld_bouw_installatie": "Een projectleider met vijf lopende installatieprojecten wil op vrijdag weten bij welk project de uren of het materiaal uit de pas lopen, voordat het voortgangsoverleg begint.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Projectcijfers exporteren",
+          "tool": "BC/4PS (Projecten)"
+        },
+        {
+          "stap": 2,
+          "actie": "Excel bijwerken en afwijkingen opzoeken",
+          "tool": "SharePoint (Excel)"
+        },
+        {
+          "stap": 3,
+          "actie": "Statusrapport schrijven",
+          "tool": "SharePoint (Word)"
+        },
+        {
+          "stap": 4,
+          "actie": "Rapport mailen aan directie of opdrachtgever",
+          "tool": "Outlook"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Haalt per project de cijfers op, vergelijkt met vorige week en de begroting, zoekt bij grote afwijkingen de onderliggende posten (bijv. veel uren op één post, nog niet geboekte facturen) en schrijft een korte toelichting per project.",
+        "tools": [
+          "BC-connector of MCP (projecten, budgetregels, projectposten)",
+          "SharePoint (rapport)",
+          "Outlook (conceptmail)",
+          "Power Automate (wekelijkse trigger)"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert elke genoemde afwijking tegen de brondata en markeert toelichtingen die niet uit de data volgen.",
+        "iteratie": "Niet-onderbouwde toelichtingen worden geschrapt of als open vraag aan de projectleider gesteld; het rapport wordt opnieuw opgebouwd."
+      },
+      "human_approval": "De projectleider leest en past het rapport aan en verstuurt de mail zelf; de agent verstuurt niets automatisch.",
+      "impact": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Wekelijks terugkerend en raakt direct de bijsturing van projecten; zoeken naar projectdata is een bekende tijdvreter.",
+        "bronankers": [
+          {
+            "anker": "FMI35",
+            "cijfer": "35% van de werkuren (ca. 14,1 uur per week) aan niet-optimale activiteiten: 5,5 uur zoeken naar projectdata, 4,7 uur conflicten, 3,9 uur herstelwerk",
+            "betekenis": "tijdpercentage bij bouwprofessionals (vooral VS), geen meting bij deze klantgroep",
+            "label": "[S]",
+            "bron": "Autodesk/PlanGrid + FMI, Construction Disconnected (2018, n≈599)",
+            "url": "https://www.autodesk.com/blogs/construction/construction-disconnected-fmi-report/",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Alleen lezen uit BC; rapport en mail zijn standaardacties."
+      },
+      "bc_4ps_koppeling": "Projecten: werkbegroting, budgetregels, projectposten (uren, materiaal, onderaanneming), prognose/verwacht resultaat.",
+      "status": "illustratief"
+    },
+    {
+      "id": "UC-PL-02",
+      "naam": "Meerwerk herkennen in mail en bouwverslagen",
+      "omschrijving": "De agent leest projectmail en bouwverslagen en herkent verzoeken en afspraken die op meerwerk wijzen, maakt een conceptmeerwerkregistratie en signaleert meerwerk dat al wordt uitgevoerd zonder akkoord van de opdrachtgever. Laatste akkoord ligt altijd bij een mens: de projectleider beoordeelt elke voorgestelde meerwerkregistratie en beslist over offerte en vastlegging; de agent communiceert niet met de opdrachtgever.",
+      "rollen": [
+        "projectleider",
+        "uitvoerder",
+        "finance-controller"
+      ],
+      "vreter_type": "kwaliteit",
+      "vreter": "Meerwerk wordt mondeling of per mail afgesproken maar niet (tijdig) vastgelegd en daardoor niet gefactureerd.",
+      "voorbeeld_bouw_installatie": "In het bouwverslag staat 'opdrachtgever wil extra wandcontactdozen in vergaderruimtes', maar er is nog geen meerwerkopdracht.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Mail en verslagen lezen",
+          "tool": "Outlook / SharePoint"
+        },
+        {
+          "stap": 2,
+          "actie": "Meerwerk handmatig noteren",
+          "tool": "SharePoint (Excel)"
+        },
+        {
+          "stap": 3,
+          "actie": "Meerwerkofferte maken en laten tekenen",
+          "tool": "BC/4PS / Outlook"
+        },
+        {
+          "stap": 4,
+          "actie": "Registreren op project",
+          "tool": "BC/4PS (Projecten)"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Herkent formuleringen die wijzen op scopewijziging, vergelijkt met de opdracht en bestaande meerwerkregistraties en bepaalt of het nieuw, al geregistreerd of al uitgevoerd is.",
+        "tools": [
+          "Outlook en SharePoint (verslagen)",
+          "BC-connector (projecten, meerwerkregistratie)",
+          "Teams Adaptive Card"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of het echt om meerwerk gaat (en niet om binnen-scope werk) en of de bronpassage klopt.",
+        "iteratie": "Twijfelgevallen gaan als vraag naar de projectleider; zijn antwoord wordt gebruikt om de herkenning bij te stellen."
+      },
+      "human_approval": "De projectleider beoordeelt elke voorgestelde meerwerkregistratie en beslist over offerte en vastlegging; de agent communiceert niet met de opdrachtgever.",
+      "impact": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Niet-gefactureerd meerwerk is een bekende bron van omzetlekkage in de installatietechniek.",
+        "bronankers": [
+          {
+            "anker": "AUTOMAAT",
+            "cijfer": "rekenvoorbeeld omzetlekkage installatie ca. 2,5% van de omzet (circa 152k op 6 mln)",
+            "betekenis": "illustratief rekenvoorbeeld, geen gemiddelde; de auteur zegt zelf: meet het zelf",
+            "label": "[E]",
+            "bron": "AutoMaat, Omzetlekkage installatiebedrijven (sep 2026)",
+            "url": "https://automaatvof.nl/nl/blog/omzetlekkage-installatiebedrijven",
+            "bronbestand": "dis-financieel-schaalrisico-onderzoek.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Tekstherkenning goed haalbaar; vastlegging vraagt een consequent meerwerkproces in 4PS."
+      },
+      "bc_4ps_koppeling": "Projecten: meer- en minderwerk, wijzigingen, verkoopprijzen; koppeling met termijnfacturatie.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-PL-03",
+      "naam": "Besluiten en actiepunten uit overleggen vastleggen",
+      "omschrijving": "Na een bouw- of projectoverleg in Teams maakt de agent een verslag met besluiten, actiepunten met eigenaar en deadline, en signaleert hij actiepunten uit eerdere overleggen die nog openstaan. Laatste akkoord ligt altijd bij een mens: de projectleider keurt het verslag en de taken goed voordat ze worden verstuurd of toegewezen.",
+      "rollen": [
+        "projectleider",
+        "werkvoorbereider"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "Verslagen uitwerken en actiepunten nalopen kost na elk overleg tijd; afspraken raken zoek.",
+      "voorbeeld_bouw_installatie": "In het wekelijkse bouwoverleg is afgesproken dat de installateur vóór vrijdag een aangepast schema aanlevert; twee weken later blijkt niemand het te hebben opgevolgd.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Aantekeningen maken tijdens overleg",
+          "tool": "Teams / papier"
+        },
+        {
+          "stap": 2,
+          "actie": "Verslag uitwerken",
+          "tool": "SharePoint (Word)"
+        },
+        {
+          "stap": 3,
+          "actie": "Verslag mailen",
+          "tool": "Outlook"
+        },
+        {
+          "stap": 4,
+          "actie": "Actiepunten nalopen in het volgende overleg",
+          "tool": "Teams"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Gebruikt het transcript, haalt besluiten en acties eruit, koppelt ze aan eerdere open punten en stelt een conceptverslag en takenlijst op.",
+        "tools": [
+          "Teams-transcript",
+          "SharePoint (verslagen)",
+          "Planner of To Do voor taken",
+          "Outlook (concept)"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of elk besluit en elke actie in het transcript terug te vinden is en of eigenaars juist zijn toegewezen.",
+        "iteratie": "Onzekere toewijzingen worden als vraag gemarkeerd; het verslag wordt na correctie opnieuw opgesteld."
+      },
+      "human_approval": "De projectleider keurt het verslag en de taken goed voordat ze worden verstuurd of toegewezen.",
+      "impact": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Bespaart nawerk en verbetert opvolging; minder communicatiefouten.",
+        "bronankers": [
+          {
+            "anker": "FMI48",
+            "cijfer": "48% van het herstelwerk komt door slechte communicatie of projectdata",
+            "betekenis": "oorzaakaandeel herstelwerk (VS-onderzoek)",
+            "label": "[S]",
+            "bron": "Autodesk/PlanGrid + FMI, Construction Disconnected (2018)",
+            "url": "https://www.autodesk.com/blogs/construction/construction-disconnected-fmi-report/",
+            "bronbestand": "dis-klantrollen-onderzoek.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Standaard Microsoft 365-functionaliteit; geen ERP-koppeling nodig."
+      },
+      "bc_4ps_koppeling": "Geen; optioneel koppeling met projectnummer.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-UITV-01",
+      "naam": "Dagrapport uit spraak en foto's",
+      "omschrijving": "De uitvoerder spreekt aan het eind van de dag een korte update in en maakt foto's; de agent zet dit om in een gestructureerd dagrapport (bezetting, weer, voortgang, problemen, materiaal) en conceptuurregels. Laatste akkoord ligt altijd bij een mens: de uitvoerder bevestigt het dagrapport en de uurregels voordat ze worden opgeslagen of in BC/4PS worden geboekt.",
+      "rollen": [
+        "uitvoerder",
+        "projectleider"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "'s Avonds of op kantoor nog dagrapporten en uren invullen na een dag op de bouwplaats.",
+      "voorbeeld_bouw_installatie": "Op een woningbouwproject spreekt de uitvoerder in: 'vandaag zes man, regen tot tien uur, kozijnen blok B gesteld, levering isolatie niet gekomen'.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Aantekeningen op papier of in een app",
+          "tool": "papier / app"
+        },
+        {
+          "stap": 2,
+          "actie": "Dagrapport uittypen",
+          "tool": "SharePoint (Word/Excel) / BC/4PS"
+        },
+        {
+          "stap": 3,
+          "actie": "Uren invoeren of laten invoeren",
+          "tool": "BC/4PS (Uren)"
+        },
+        {
+          "stap": 4,
+          "actie": "Problemen doorgeven aan werkvoorbereiding",
+          "tool": "Teams / Outlook"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Zet spraak om in tekst, structureert naar het vaste dagrapportformat, koppelt foto's aan onderdelen en herkent problemen die opvolging nodig hebben (bijv. niet geleverde materialen).",
+        "tools": [
+          "Teams of mobiele app voor spraak en foto's",
+          "SharePoint (dagrapporten, foto's)",
+          "BC-connector (conceptuurregels, project)",
+          "Power Automate voor melding aan werkvoorbereider"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of aantallen, namen en onderdelen in het rapport overeenkomen met de spraakopname en geen informatie is toegevoegd.",
+        "iteratie": "Ontbrekende verplichte velden worden als korte vraag aan de uitvoerder teruggestuurd."
+      },
+      "human_approval": "De uitvoerder bevestigt het dagrapport en de uurregels voordat ze worden opgeslagen of in BC/4PS worden geboekt.",
+      "impact": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Bouwplaatsdigitalisering is bij een deel van de bedrijven nog beperkt; spraak verlaagt de drempel.",
+        "bronankers": [
+          {
+            "anker": "EX50",
+            "cijfer": "50% van de mkb-bouwbedrijven heeft de bouwplaats volledig gedigitaliseerd; 32% beperkt (Excel e.d.), 18% alleen papier",
+            "betekenis": "aandeel bedrijven, geen tijdpercentage",
+            "label": "[S]",
+            "bron": "Exact MKB Barometer Bouw 2025",
+            "url": "https://files.exact.com/static/web/pdf/mkb-barometer/2025/NL-CST-mkb-barometer-sectorrapport.pdf",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Spraak en tekst goed haalbaar; urenboeking vraagt een nette koppeling en controle."
+      },
+      "bc_4ps_koppeling": "Uren: urenstaten/weekstaten; projecten en fasen; optioneel dagrapporten als projectdocument.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-UITV-02",
+      "naam": "Juiste tekening en informatie opvragen vanaf de bouwplaats",
+      "omschrijving": "De uitvoerder vraagt via Teams op zijn telefoon 'welke tekening geldt voor de sparingen op verdieping 3?' of 'wanneer komt het kozijnmateriaal?'; de agent antwoordt met de geldende tekening of de leverstatus uit BC, met bronvermelding. Laatste akkoord ligt altijd bij een mens: de werkvoorbereider blijft eigenaar van wat 'geldend' is: hij bevestigt de status van tekeningen (zie UC-WVB-01) en beantwoordt doorgezette vragen; de uitvoerder besluit zelf of hij op basis van het antwoord gaat werken.",
+      "rollen": [
+        "uitvoerder",
+        "werkvoorbereider"
+      ],
+      "vreter_type": "kwaliteit",
+      "vreter": "Werken met een verouderde tekening of verkeerde informatie, met herstelwerk als gevolg.",
+      "voorbeeld_bouw_installatie": "Een monteur staat op het punt leidingwerk aan te leggen op basis van revisie B, terwijl revisie C de leidingroute verlegt.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Werkvoorbereider bellen",
+          "tool": "telefoon"
+        },
+        {
+          "stap": 2,
+          "actie": "Werkvoorbereider zoekt in SharePoint of BC",
+          "tool": "SharePoint / BC/4PS"
+        },
+        {
+          "stap": 3,
+          "actie": "Tekening doorsturen",
+          "tool": "Outlook / Teams"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Herkent de vraag (tekening, levering, planning), zoekt in de juiste bron en geeft alleen een antwoord als de bron eenduidig is; anders zet hij de vraag door naar de werkvoorbereider.",
+        "tools": [
+          "Copilot Studio-agent in Teams mobiel",
+          "SharePoint (tekeningen)",
+          "BC-connector (inkooporders, planning)"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of het antwoord en de bijgevoegde tekening overeenkomen met de vraag en de geldende revisie.",
+        "iteratie": "Bij twijfel stelt de agent een verduidelijkingsvraag of zet hij door; doorgezette vragen worden gebruikt om de bronnen te verbeteren."
+      },
+      "human_approval": "De werkvoorbereider blijft eigenaar van wat 'geldend' is: hij bevestigt de status van tekeningen (zie UC-WVB-01) en beantwoordt doorgezette vragen; de uitvoerder besluit zelf of hij op basis van het antwoord gaat werken.",
+      "impact": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Herstelwerk door slechte communicatie of projectdata en faalkosten in de uitvoering zijn groot.",
+        "bronankers": [
+          {
+            "anker": "FMI48",
+            "cijfer": "48% van het herstelwerk komt door slechte communicatie of projectdata",
+            "betekenis": "oorzaakaandeel herstelwerk (VS-onderzoek)",
+            "label": "[S]",
+            "bron": "Autodesk/PlanGrid + FMI, Construction Disconnected (2018)",
+            "url": "https://www.autodesk.com/blogs/construction/construction-disconnected-fmi-report/",
+            "bronbestand": "dis-klantrollen-onderzoek.md"
+          },
+          {
+            "anker": "ABN54",
+            "cijfer": "54% ziet faalkosten vooral in de uitvoeringsfase",
+            "betekenis": "aandeel respondenten (2019)",
+            "label": "[S]",
+            "bron": "ABN AMRO, Verspilde moeite (2019)",
+            "url": "https://www.abnamro.nl/nl/zakelijk/insights/sectoren-en-trends/bouw/faalkosten-in-de-bouw-lopen-jaarlijks-op-tot-miljarden-euros.html",
+            "bronbestand": "dis-financieel-schaalrisico-onderzoek.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Leesacties; hergebruikt de bronnen van UC-WVB-01."
+      },
+      "bc_4ps_koppeling": "Inkoop (leverstatus), projecten (planning); verder SharePoint.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-UITV-03",
+      "naam": "Opleverpunten uit foto's registreren",
+      "omschrijving": "Bij een voorschouw of oplevering maakt de uitvoerder foto's met een korte toelichting; de agent maakt per foto een opleverpunt met locatie, omschrijving en voorgestelde verantwoordelijke partij en houdt de afhandeling bij. Laatste akkoord ligt altijd bij een mens: de uitvoerder controleert de puntenlijst en keurt verzending naar onderaannemers goed; afmelden van punten gebeurt na zijn akkoord.",
+      "rollen": [
+        "uitvoerder",
+        "projectleider",
+        "servicecoordinator"
+      ],
+      "vreter_type": "kwaliteit",
+      "vreter": "Opleverpunten raken zoek tussen foto's, mail en lijsten; onduidelijk wie wat moet oplossen.",
+      "voorbeeld_bouw_installatie": "Bij de oplevering van een appartementencomplex worden in één ochtend tientallen punten gefotografeerd, van beschadigd tegelwerk tot een niet werkende thermostaat.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Foto's maken en notities",
+          "tool": "telefoon"
+        },
+        {
+          "stap": 2,
+          "actie": "Lijst in Excel opstellen",
+          "tool": "SharePoint (Excel)"
+        },
+        {
+          "stap": 3,
+          "actie": "Punten mailen naar onderaannemers",
+          "tool": "Outlook"
+        },
+        {
+          "stap": 4,
+          "actie": "Afhandeling nalopen",
+          "tool": "Teams / Outlook"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Leest foto en toelichting, bepaalt het type gebrek en de waarschijnlijke partij, groepeert per partij en volgt de status.",
+        "tools": [
+          "SharePoint-lijst voor opleverpunten",
+          "Outlook (concepten aan partijen)",
+          "BC-connector (project, onderaannemers; optioneel serviceorder voor nazorg)"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert de toewijzing aan partijen en de omschrijving tegen de foto.",
+        "iteratie": "Onzekere toewijzingen gaan als keuze naar de uitvoerder; na afhandeling vraagt de agent om een bevestigingsfoto."
+      },
+      "human_approval": "De uitvoerder controleert de puntenlijst en keurt verzending naar onderaannemers goed; afmelden van punten gebeurt na zijn akkoord.",
+      "impact": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Verbetert opleverkwaliteit en klanttevredenheid; tijdwinst in nawerk.",
+        "bronankers": [],
+        "bronlabel": "inschatting (geen broncijfer beschikbaar)"
+      },
+      "haalbaarheid": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Foto-analyse is haalbaar; de toewijzing aan partijen vraagt projectkennis."
+      },
+      "bc_4ps_koppeling": "Projecten en onderaanneming; optioneel service (nazorgorders).",
+      "status": "illustratief"
+    },
+    {
+      "id": "UC-PLAN-01",
+      "naam": "Planningsconflicten signaleren en herplanvoorstel doen",
+      "omschrijving": "De agent zoekt dagelijks conflicten in de planning (dubbel ingeplande monteurs, ontbrekende kwalificatie, materiaal niet op tijd, ziekmelding) en stelt een herplanning voor met de gevolgen per klant en project. Laatste akkoord ligt altijd bij een mens: de planner keurt elke herplanning goed; de agent wijzigt de planning niet en informeert niemand zonder dat akkoord. Volledig autonoom plannen wordt niet voorgesteld.",
+      "rollen": [
+        "planner",
+        "servicecoordinator",
+        "werkvoorbereider"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "Handmatig puzzelen bij elke wijziging en geen totaalbeeld van projecten en beschikbare capaciteit.",
+      "voorbeeld_bouw_installatie": "Twee monteurs melden zich ziek; vijf onderhoudsafspraken en één installatie moeten worden herverdeeld, rekening houdend met F-gassencertificaat en reistijd.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Ziekmeldingen en wijzigingen verzamelen",
+          "tool": "Outlook / Teams / telefoon"
+        },
+        {
+          "stap": 2,
+          "actie": "Planbord handmatig aanpassen",
+          "tool": "BC/4PS (Planning)"
+        },
+        {
+          "stap": 3,
+          "actie": "Klanten en monteurs informeren",
+          "tool": "Outlook / telefoon"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Analyseert de planning, beschikbaarheid, kwalificaties en materiaalstatus, berekent alternatieven en kiest het voorstel met de minste verschuivingen en geen SLA-overschrijding.",
+        "tools": [
+          "BC-connector of MCP (planning, resources, kwalificaties, serviceorders)",
+          "Outlook-agenda's",
+          "Teams Adaptive Card met voorstel"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert het voorstel op harde regels (kwalificatie, werktijden, SLA) en op dubbele boekingen.",
+        "iteratie": "Bij overtreding maakt de agent een nieuw voorstel; als er geen sluitende oplossing is, legt hij de keuzes aan de planner voor."
+      },
+      "human_approval": "De planner keurt elke herplanning goed; de agent wijzigt de planning niet en informeert niemand zonder dat akkoord. Volledig autonoom plannen wordt niet voorgesteld.",
+      "impact": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Gebrek aan inzicht in projecten en capaciteit is breed herkend.",
+        "bronankers": [
+          {
+            "anker": "EX89",
+            "cijfer": "89% heeft geen volledig inzicht in projecten en beschikbare capaciteit (11% wel)",
+            "betekenis": "aandeel bedrijven, geen tijdpercentage",
+            "label": "[S]",
+            "bron": "Exact MKB Barometer Bouw 2025",
+            "url": "https://files.exact.com/static/web/pdf/mkb-barometer/2025/NL-CST-mkb-barometer-sectorrapport.pdf",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Vraagt betrouwbare resourcegegevens en kwalificaties in BC/4PS; planlogica is complex."
+      },
+      "bc_4ps_koppeling": "Planning: resources, capaciteit, planningsregels; service: serviceorders en SLA; HR/kwalificaties indien vastgelegd.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-PLAN-02",
+      "naam": "Werkorders controleren op volledigheid vóór inplannen",
+      "omschrijving": "Voordat een werkorder wordt ingepland controleert de agent of adres, contactpersoon, object, storingsomschrijving, benodigd materiaal en kwalificatie bekend zijn, en vraagt hij ontbrekende informatie op. Laatste akkoord ligt altijd bij een mens: de planner keurt aanvullingen en de vraag aan de klant goed; de werkorder wordt pas na zijn akkoord bijgewerkt en ingepland.",
+      "rollen": [
+        "planner",
+        "servicecoordinator"
+      ],
+      "vreter_type": "kwaliteit",
+      "vreter": "Monteurs gaan op pad met onvolledige werkorders, wat leidt tot tweede bezoeken.",
+      "voorbeeld_bouw_installatie": "Een werkorder voor een cv-storing heeft geen toestelmerk en geen toegangsinstructie voor het complex; de monteur staat voor een dichte deur.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Werkorder openen",
+          "tool": "BC/4PS (Service)"
+        },
+        {
+          "stap": 2,
+          "actie": "Ontbrekende gegevens navragen",
+          "tool": "telefoon / Outlook"
+        },
+        {
+          "stap": 3,
+          "actie": "Aanvullen en inplannen",
+          "tool": "BC/4PS (Planning)"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Toetst de werkorder aan een volledigheidsprofiel per type werk, zoekt ontbrekende gegevens op in het serviceobject en eerdere orders, en stelt alleen vragen over wat echt ontbreekt.",
+        "tools": [
+          "BC-connector (serviceorders, serviceobjecten, contactpersonen)",
+          "Outlook (conceptvraag aan klant)",
+          "Teams Adaptive Card"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of de automatisch aangevulde gegevens uit een betrouwbare bron komen.",
+        "iteratie": "Antwoorden van de klant worden uitgelezen; bij onvolledig antwoord volgt één vervolgvraag."
+      },
+      "human_approval": "De planner keurt aanvullingen en de vraag aan de klant goed; de werkorder wordt pas na zijn akkoord bijgewerkt en ingepland.",
+      "impact": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Minder tweede bezoeken; kwaliteitswinst in service.",
+        "bronankers": [
+          {
+            "anker": "SC4060",
+            "cijfer": "40-60% van de tijd aan intake en werkbonadministratie",
+            "betekenis": "schatting op basis van vacaturepatronen, geen urenstudie",
+            "label": "[E]",
+            "bron": "Schatting in rollenonderzoek; bronverificatie",
+            "url": null,
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Duidelijke regels en standaardvelden in de servicemodule."
+      },
+      "bc_4ps_koppeling": "Service: serviceorders/werkorders, serviceobjecten, contactpersonen, artikelen.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-PLAN-03",
+      "naam": "Afspraakwijzigingen communiceren",
+      "omschrijving": "Na een goedgekeurde planningswijziging stelt de agent per klant en monteur een bericht op met nieuwe datum, tijdvak en reden, en verwerkt hij reacties (akkoord, ander moment). Laatste akkoord ligt altijd bij een mens: de planner keurt de berichten goed voordat ze worden verzonden en bevestigt elk tegenvoorstel voordat de planning wordt aangepast.",
+      "rollen": [
+        "planner",
+        "servicecoordinator"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "Veel bel- en mailwerk om klanten en monteurs over wijzigingen te informeren.",
+      "voorbeeld_bouw_installatie": "Door een vertraagde levering schuiven acht onderhoudsbeurten een week op; alle bewoners moeten bericht krijgen.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Klanten bellen of mailen",
+          "tool": "telefoon / Outlook"
+        },
+        {
+          "stap": 2,
+          "actie": "Monteurs informeren",
+          "tool": "Teams"
+        },
+        {
+          "stap": 3,
+          "actie": "Reacties verwerken in planning",
+          "tool": "BC/4PS (Planning)"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Maakt per ontvanger een passend bericht, herkent reacties en stelt bij een tegenvoorstel een alternatief tijdvak voor binnen de planning.",
+        "tools": [
+          "Outlook",
+          "Teams",
+          "BC-connector (planning, contactgegevens)",
+          "Power Automate"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of datum, tijd en adres in elk bericht overeenkomen met de goedgekeurde planning.",
+        "iteratie": "Bij afwijkingen wordt het bericht gecorrigeerd vóór het ter goedkeuring komt."
+      },
+      "human_approval": "De planner keurt de berichten goed voordat ze worden verzonden en bevestigt elk tegenvoorstel voordat de planning wordt aangepast.",
+      "impact": {
+        "niveau": "laag",
+        "label": "inschatting",
+        "onderbouwing": "Tijdwinst per wijziging is klein; vooral prettig bij grote verschuivingen.",
+        "bronankers": [],
+        "bronlabel": "inschatting (geen broncijfer beschikbaar)"
+      },
+      "haalbaarheid": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Eenvoudig communicatiepatroon met standaardtools."
+      },
+      "bc_4ps_koppeling": "Planning en service: afspraken, contactpersonen.",
+      "status": "illustratief"
+    },
+    {
+      "id": "UC-SC-01",
+      "naam": "Storingsmelding omzetten naar serviceorder",
+      "omschrijving": "De agent leest storingsmeldingen uit mail, webformulier of telefoonnotitie, herkent klant, object en storingstype, controleert contract en SLA en maakt een conceptserviceorder met prioriteit. Laatste akkoord ligt altijd bij een mens: de servicecoördinator keurt de conceptserviceorder en de bevestiging aan de melder goed voordat de order definitief wordt en naar de planning gaat.",
+      "rollen": [
+        "servicecoordinator",
+        "planner"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "Veel tijd aan intake: meldingen overtypen, klant en object opzoeken, contract en prioriteit bepalen.",
+      "voorbeeld_bouw_installatie": "Een VvE-beheerder mailt dat de collectieve ventilatie in een woongebouw uitvalt; de servicecoördinator moet het object, het onderhoudscontract en de reactietijd vinden.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Mail of telefoon aannemen",
+          "tool": "Outlook / telefoon"
+        },
+        {
+          "stap": 2,
+          "actie": "Klant en serviceobject zoeken",
+          "tool": "BC/4PS (Service)"
+        },
+        {
+          "stap": 3,
+          "actie": "Contract en SLA controleren",
+          "tool": "BC/4PS (Servicecontracten)"
+        },
+        {
+          "stap": 4,
+          "actie": "Serviceorder aanmaken en doorzetten naar planning",
+          "tool": "BC/4PS"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Haalt de kerngegevens uit de melding, zoekt het object en het contract, bepaalt prioriteit en reactietijd en vraagt ontbrekende informatie op.",
+        "tools": [
+          "Power Automate-trigger op servicemailbox",
+          "BC-connector of MCP (klanten, serviceobjecten, contracten, conceptserviceorder)",
+          "Outlook (bevestiging of vraag aan melder)",
+          "Teams Adaptive Card"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of klant, object en contract juist zijn gekoppeld en of de prioriteit klopt met de SLA.",
+        "iteratie": "Bij een twijfelachtige koppeling geeft de agent alternatieven of vraagt hij via 'request for information' om bevestiging."
+      },
+      "human_approval": "De servicecoördinator keurt de conceptserviceorder en de bevestiging aan de melder goed voordat de order definitief wordt en naar de planning gaat.",
+      "impact": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Intake en werkbonadministratie vragen een groot deel van de tijd van deze rol.",
+        "bronankers": [
+          {
+            "anker": "SC4060",
+            "cijfer": "40-60% van de tijd aan intake en werkbonadministratie",
+            "betekenis": "schatting op basis van vacaturepatronen, geen urenstudie",
+            "label": "[E]",
+            "bron": "Schatting in rollenonderzoek; bronverificatie",
+            "url": null,
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Standaardstappen en gegevens in de servicemodule; meldingen komen al digitaal binnen."
+      },
+      "bc_4ps_koppeling": "Service: serviceorders, serviceobjecten, servicecontracten, SLA, klanten.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-SC-02",
+      "naam": "Werkbon controleren op volledigheid vóór facturatie",
+      "omschrijving": "Na afmelding van een werkbon controleert de agent uren, materiaal, handtekening, foto's en contractdekking, en signaleert hij ontbrekende of afwijkende regels voordat de werkbon naar facturatie gaat. Laatste akkoord ligt altijd bij een mens: de servicecoördinator keurt correcties op de werkbon en de vrijgave voor facturatie goed; de agent factureert niet zelf.",
+      "rollen": [
+        "servicecoordinator",
+        "finance-controller"
+      ],
+      "vreter_type": "kwaliteit",
+      "vreter": "Onvolledige werkbonnen leiden tot niet-gefactureerde uren en materiaal, of tot discussie met de klant.",
+      "voorbeeld_bouw_installatie": "Een monteur heeft een expansievat vervangen maar het materiaal niet op de werkbon gezet; de klant heeft een contract dat arbeid dekt maar materiaal niet.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Afgemelde werkbonnen doorlopen",
+          "tool": "BC/4PS (Service)"
+        },
+        {
+          "stap": 2,
+          "actie": "Navragen bij monteur",
+          "tool": "telefoon / Teams"
+        },
+        {
+          "stap": 3,
+          "actie": "Corrigeren en vrijgeven voor facturatie",
+          "tool": "BC/4PS"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Vergelijkt de werkbon met de storingsomschrijving, de foto's, het gebruikelijke materiaal voor dit type werk en de contractvoorwaarden, en markeert wat waarschijnlijk ontbreekt of verkeerd is ingedeeld.",
+        "tools": [
+          "BC-connector of MCP (werkbonnen, serviceorders, contracten, artikelen)",
+          "SharePoint of app (foto's)",
+          "Teams-vraag aan monteur",
+          "Teams Adaptive Card"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of gesignaleerde ontbrekende regels onderbouwd zijn (foto, omschrijving) en geen aannames zijn.",
+        "iteratie": "Na antwoord van de monteur wordt de controle herhaald; onopgeloste punten gaan naar de servicecoördinator."
+      },
+      "human_approval": "De servicecoördinator keurt correcties op de werkbon en de vrijgave voor facturatie goed; de agent factureert niet zelf.",
+      "impact": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Omzetlekkage door niet-gefactureerd werk is een bekend risico in installatie; werkbonadministratie is een grote tijdpost.",
+        "bronankers": [
+          {
+            "anker": "AUTOMAAT",
+            "cijfer": "rekenvoorbeeld omzetlekkage installatie ca. 2,5% van de omzet (circa 152k op 6 mln)",
+            "betekenis": "illustratief rekenvoorbeeld, geen gemiddelde; de auteur zegt zelf: meet het zelf",
+            "label": "[E]",
+            "bron": "AutoMaat, Omzetlekkage installatiebedrijven (sep 2026)",
+            "url": "https://automaatvof.nl/nl/blog/omzetlekkage-installatiebedrijven",
+            "bronbestand": "dis-financieel-schaalrisico-onderzoek.md"
+          },
+          {
+            "anker": "SC4060",
+            "cijfer": "40-60% van de tijd aan intake en werkbonadministratie",
+            "betekenis": "schatting op basis van vacaturepatronen, geen urenstudie",
+            "label": "[E]",
+            "bron": "Schatting in rollenonderzoek; bronverificatie",
+            "url": null,
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Werkbondata staat in de servicemodule; regels zijn goed te formuleren."
+      },
+      "bc_4ps_koppeling": "Service: werkbonnen/serviceorderregels (uren, materiaal), servicecontracten; verkoop: facturatie.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-SC-03",
+      "naam": "Contractdekking en jaarlijkse indexatie controleren",
+      "omschrijving": "De agent controleert periodiek of servicecontracten, objecten en prijzen kloppen: verlopen contracten, objecten zonder contract, niet-toegepaste indexatie, en zet een lijst met voorstellen klaar. Laatste akkoord ligt altijd bij een mens: de servicecoördinator en de controller keuren elke contract- of prijswijziging goed; de agent wijzigt geen contracten en communiceert niet met klanten.",
+      "rollen": [
+        "servicecoordinator",
+        "finance-controller"
+      ],
+      "vreter_type": "kwaliteit",
+      "vreter": "Contracten die niet worden geïndexeerd of verlengd, en objecten die zonder contract worden onderhouden.",
+      "voorbeeld_bouw_installatie": "Bij een woningcorporatie zijn bij een renovatie nieuwe warmtepompen geplaatst, maar die zijn nooit aan het onderhoudscontract toegevoegd.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Contractlijst exporteren",
+          "tool": "BC/4PS (Servicecontracten)"
+        },
+        {
+          "stap": 2,
+          "actie": "Vergelijken met objecten en prijzen in Excel",
+          "tool": "SharePoint (Excel)"
+        },
+        {
+          "stap": 3,
+          "actie": "Aanpassingen invoeren",
+          "tool": "BC/4PS"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Vergelijkt contracten, objecten, onderhoudshistorie en prijsafspraken, en markeert afwijkingen met de verwachte financiële richting (meer of minder omzet).",
+        "tools": [
+          "BC-connector of MCP (servicecontracten, objecten, prijzen)",
+          "SharePoint (contractdocumenten)",
+          "Teams-overzicht"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of de afwijking past bij de contracttekst en de indexatieclausule.",
+        "iteratie": "Twijfelgevallen worden als vraag aan de servicecoördinator of controller gemarkeerd."
+      },
+      "human_approval": "De servicecoördinator en de controller keuren elke contract- of prijswijziging goed; de agent wijzigt geen contracten en communiceert niet met klanten.",
+      "impact": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Periodiek, maar raakt contractomzet en marge.",
+        "bronankers": [
+          {
+            "anker": "AUTOMAAT",
+            "cijfer": "rekenvoorbeeld omzetlekkage installatie ca. 2,5% van de omzet (circa 152k op 6 mln)",
+            "betekenis": "illustratief rekenvoorbeeld, geen gemiddelde; de auteur zegt zelf: meet het zelf",
+            "label": "[E]",
+            "bron": "AutoMaat, Omzetlekkage installatiebedrijven (sep 2026)",
+            "url": "https://automaatvof.nl/nl/blog/omzetlekkage-installatiebedrijven",
+            "bronbestand": "dis-financieel-schaalrisico-onderzoek.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Contractdata is aanwezig; contractteksten en indexatieclausules verschillen."
+      },
+      "bc_4ps_koppeling": "Service: servicecontracten, contractregels, serviceobjecten, prijzen; financiën: indexatie.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-INK-01",
+      "naam": "Inkoopfacturen matchen aan inkooporder en ontvangst",
+      "omschrijving": "De agent leest inkoopfacturen uit de Outlook-mailbox, zoekt in BC/4PS de bijbehorende inkooporder en ontvangst, vergelijkt hoeveelheden, prijzen en kortingen en zet een conceptmatch of een afwijkingenlijst klaar. Laatste akkoord ligt altijd bij een mens: de inkoper of crediteurenadministratie keurt elke match en elke afwijkingsvraag goed; boeken en vrijgeven voor betaling gebeurt alleen na menselijk akkoord.",
+      "rollen": [
+        "inkoper",
+        "werkvoorbereider",
+        "finance-controller"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "Facturen handmatig naast orders en pakbonnen leggen en afwijkingen uitzoeken bij leverancier of bouwplaats.",
+      "voorbeeld_bouw_installatie": "Een groothandel factureert 120 meter kabel terwijl de uitvoerder 100 meter heeft ontvangen en de order een projectkorting bevat die niet op de factuur staat.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Factuur in mailbox openen",
+          "tool": "Outlook"
+        },
+        {
+          "stap": 2,
+          "actie": "Order en ontvangst opzoeken",
+          "tool": "BC/4PS (Inkoop)"
+        },
+        {
+          "stap": 3,
+          "actie": "Regels vergelijken",
+          "tool": "BC/4PS / SharePoint (Excel)"
+        },
+        {
+          "stap": 4,
+          "actie": "Afwijking navragen bij leverancier of uitvoerder",
+          "tool": "Outlook / Teams"
+        },
+        {
+          "stap": 5,
+          "actie": "Factuur boeken of blokkeren",
+          "tool": "BC/4PS (Financiën)"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Leest de factuurregels, vindt de order via ordernummer, project of leverancier en vergelijkt per regel met order en ontvangst; bepaalt per afwijking de waarschijnlijke oorzaak (deellevering, prijsfout, ontbrekende ontvangst).",
+        "tools": [
+          "Power Automate-trigger op factuurmailbox",
+          "Documentherkenning voor factuurregels",
+          "BC-connector of MCP (inkooporders, ontvangsten, conceptinkoopfactuur)",
+          "Teams Adaptive Card",
+          "Outlook (conceptvraag aan leverancier)"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert de match per regel (artikel, eenheid, bedrag) en of de voorgestelde oorzaak volgt uit de data.",
+        "iteratie": "Bij afwijkingen vraagt de agent na akkoord de ontbrekende informatie op (bijv. ontvangstbevestiging van de uitvoerder) en doet daarna een nieuwe match."
+      },
+      "human_approval": "De inkoper of crediteurenadministratie keurt elke match en elke afwijkingsvraag goed; boeken en vrijgeven voor betaling gebeurt alleen na menselijk akkoord.",
+      "impact": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Grote administratieve stroom; materiaalbeheer en administratie zijn bij veel bedrijven nog niet geautomatiseerd.",
+        "bronankers": [
+          {
+            "anker": "EX40",
+            "cijfer": "40% van de bedrijven heeft materiaalbeheer (nog) niet geautomatiseerd (60% wel)",
+            "betekenis": "aandeel bedrijven, geen tijdpercentage",
+            "label": "[S]",
+            "bron": "Exact MKB Barometer Bouw 2025",
+            "url": "https://files.exact.com/static/web/pdf/mkb-barometer/2025/NL-CST-mkb-barometer-sectorrapport.pdf",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          },
+          {
+            "anker": "EX34",
+            "cijfer": "34% gebruikt nog (deels) papier voor de administratie (24% papier plus spreadsheets, 10% vooral papier); 29% heeft een end-to-end systeem",
+            "betekenis": "aandeel bedrijven, geen tijdpercentage",
+            "label": "[S]",
+            "bron": "Exact MKB Barometer Bouw 2025",
+            "url": "https://files.exact.com/static/web/pdf/mkb-barometer/2025/NL-CST-mkb-barometer-sectorrapport.pdf",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Factuurformaten en ontvangstregistratie op de bouwplaats verschillen; op de voorbeeldkansenkaart als strategisch (hoge impact, lagere haalbaarheid) geplaatst."
+      },
+      "bc_4ps_koppeling": "Inkoop: inkooporders, ontvangsten (pakbonnen), inkoopfacturen; leveranciers; projecten en budgetregels; financiën: crediteuren.",
+      "status": "illustratief"
+    },
+    {
+      "id": "UC-INK-02",
+      "naam": "Leveranciersoffertes vergelijken",
+      "omschrijving": "De agent zet ontvangen offertes van leveranciers en onderaannemers naast elkaar op prijs, levertijd, voorwaarden en scope, en markeert wat ontbreekt of afwijkt van de aanvraag. Laatste akkoord ligt altijd bij een mens: de inkoper beslist over de keuze en de vragen aan leveranciers; de agent bestelt en communiceert niet zelf.",
+      "rollen": [
+        "inkoper",
+        "werkvoorbereider"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "Offertes met verschillende opbouw handmatig vergelijkbaar maken.",
+      "voorbeeld_bouw_installatie": "Drie offertes voor de elektrotechnische installatie van een bedrijfshal: één is exclusief bekabeling buiten, één heeft een langere levertijd voor de verdeelinrichting.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Offertes uit mail opslaan",
+          "tool": "Outlook / SharePoint"
+        },
+        {
+          "stap": 2,
+          "actie": "Vergelijkingsstaat maken",
+          "tool": "SharePoint (Excel)"
+        },
+        {
+          "stap": 3,
+          "actie": "Navragen bij leveranciers",
+          "tool": "Outlook"
+        },
+        {
+          "stap": 4,
+          "actie": "Keuze vastleggen en bestellen",
+          "tool": "BC/4PS (Inkoop)"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Leest de offertes, normaliseert posten naar de aanvraag en budgetregels, en markeert uitsluitingen, voorbehouden en afwijkende voorwaarden.",
+        "tools": [
+          "Outlook en SharePoint (offertes)",
+          "BC-connector (inkoopaanvraag, budgetregels)",
+          "Teams-overzicht"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of elke genoemde uitsluiting en elk bedrag letterlijk in de offerte staat.",
+        "iteratie": "Onduidelijkheden worden als conceptvraag aan de leverancier geformuleerd."
+      },
+      "human_approval": "De inkoper beslist over de keuze en de vragen aan leveranciers; de agent bestelt en communiceert niet zelf.",
+      "impact": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Inkoopprijzen en marge staan onder druk; betere vergelijking ondersteunt onderhandeling.",
+        "bronankers": [
+          {
+            "anker": "EX52",
+            "cijfer": "52% noemt hoge materiaalprijzen als uitdaging; 40% onderhandelt over inkoopprijzen voor marge",
+            "betekenis": "aandeel bedrijven",
+            "label": "[S]",
+            "bron": "Exact MKB Barometer Bouw 2025",
+            "url": "https://files.exact.com/static/web/pdf/mkb-barometer/2025/NL-CST-mkb-barometer-sectorrapport.pdf",
+            "bronbestand": "dis-klantrollen-onderzoek.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Offerteformaten verschillen sterk."
+      },
+      "bc_4ps_koppeling": "Inkoop: inkoopaanvragen, offertes, leveranciers; projecten: budgetregels.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-INK-03",
+      "naam": "Bestellingen toetsen aan werkbegroting",
+      "omschrijving": "Voordat een inkooporder wordt vrijgegeven controleert de agent of er budget is op de budgetregel, of de prijs past bij de begroting en of er al eerder voor dezelfde post is besteld. Laatste akkoord ligt altijd bij een mens: de inkoper en bij overschrijding de projectleider geven akkoord op de order; de agent geeft geen orders vrij.",
+      "rollen": [
+        "inkoper",
+        "projectleider"
+      ],
+      "vreter_type": "kwaliteit",
+      "vreter": "Bestellingen buiten budget of dubbele bestellingen worden pas bij de nacalculatie ontdekt.",
+      "voorbeeld_bouw_installatie": "Voor een project wordt een tweede bestelling radiatoren geplaatst, terwijl de eerste levering nog niet is ontvangen en het budget voor deze post bijna op is.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Order invoeren",
+          "tool": "BC/4PS (Inkoop)"
+        },
+        {
+          "stap": 2,
+          "actie": "Budget en eerdere orders handmatig checken (als er tijd is)",
+          "tool": "BC/4PS (Projecten)"
+        },
+        {
+          "stap": 3,
+          "actie": "Akkoord vragen aan projectleider",
+          "tool": "Outlook / Teams"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Vergelijkt de order met budgetregel, verplichtingen en eerdere orders en geeft een signaal (in orde, let op, blokkeren voorstel) met uitleg.",
+        "tools": [
+          "BC-connector of MCP (inkooporders, budgetregels, verplichtingen)",
+          "Teams Adaptive Card voor akkoord projectleider"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of het signaal klopt met de budgetcijfers en de juiste budgetregel.",
+        "iteratie": "Bij twijfel over de budgetregel vraagt de agent de inkoper om de koppeling te bevestigen en rekent opnieuw."
+      },
+      "human_approval": "De inkoper en bij overschrijding de projectleider geven akkoord op de order; de agent geeft geen orders vrij.",
+      "impact": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Voorkomt budgetoverschrijding en dubbele bestellingen.",
+        "bronankers": [
+          {
+            "anker": "EX49",
+            "cijfer": "gemiddeld 49% van de projecten verliesgevend door inschattingen die achteraf onjuist blijken",
+            "betekenis": "aandeel projecten (bedrijfsenquête), geen tijdpercentage",
+            "label": "[S]",
+            "bron": "Exact MKB Barometer Bouw 2025 (n=62)",
+            "url": "https://files.exact.com/static/web/pdf/mkb-barometer/2025/NL-CST-mkb-barometer-sectorrapport.pdf",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Budget- en orderdata staan in 4PS."
+      },
+      "bc_4ps_koppeling": "Inkoop: inkooporders; projecten: budgetregels, verplichtingen.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-FIN-01",
+      "naam": "Projectresultaat en onderhanden werk controleren bij de periodeafsluiting",
+      "omschrijving": "Bij de maand- of kwartaalafsluiting controleert de agent per project voortgang, gefactureerde termijnen, kosten en verwachte eindresultaat, en signaleert hij verlieslatende projecten, onverwerkt meer- en minderwerk en onlogische voortgang. Laatste akkoord ligt altijd bij een mens: de controller beslist over elke correctie, voorziening of verliesneming en boekt die zelf; de agent boekt niets.",
+      "rollen": [
+        "finance-controller",
+        "projectleider"
+      ],
+      "vreter_type": "kwaliteit",
+      "vreter": "Onderhanden werk en projectresultaat kloppen niet door verkeerde voortgang of onverwerkt meerwerk; verliezen worden te laat genomen.",
+      "voorbeeld_bouw_installatie": "Een installatieproject is al grotendeels gefactureerd terwijl de kosten duidelijk achterlopen, terwijl de projectleider een positieve prognose geeft.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "OHW-overzicht draaien",
+          "tool": "BC/4PS (Projecten, Financiën)"
+        },
+        {
+          "stap": 2,
+          "actie": "Per project nalopen met projectleiders",
+          "tool": "Teams / Outlook"
+        },
+        {
+          "stap": 3,
+          "actie": "Correcties en voorzieningen boeken",
+          "tool": "BC/4PS (Financiën)"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Analyseert per project de verhouding tussen kosten, opbrengsten, voortgang en prognose, past de regel 'verwacht verlies direct nemen' toe als signaal en vraagt projectleiders om toelichting bij afwijkingen.",
+        "tools": [
+          "BC-connector of MCP (projecten, OHW, projectposten, termijnen)",
+          "Teams of Outlook (vragen aan projectleiders)",
+          "SharePoint (afsluitdossier)"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert elk signaal tegen de cijfers en de verslaggevingsregel en markeert overhaaste conclusies.",
+        "iteratie": "Na toelichting van de projectleider herbeoordeelt de agent het signaal en werkt hij het afsluitdossier bij."
+      },
+      "human_approval": "De controller beslist over elke correctie, voorziening of verliesneming en boekt die zelf; de agent boekt niets.",
+      "impact": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Verlieslatende projecten door onjuiste inschattingen komen veel voor; OHW-fouten raken direct het resultaat.",
+        "bronankers": [
+          {
+            "anker": "GT_OHW",
+            "cijfer": "verwachte verliezen op onderhanden projecten direct en volledig nemen; veelvoorkomende fouten: verkeerde voortgang, meer- en minderwerk niet verwerkt",
+            "betekenis": "verslaggevingsregel (geen cijfer)",
+            "label": "[S]",
+            "bron": "Grant Thornton (apr 2025) / RJ 221",
+            "url": "https://www.grantthornton.nl/insights/actualiteiten/van-project-naar-balans-onderhanden-projecten-helder-in-beeld/",
+            "bronbestand": "dis-financieel-schaalrisico-onderzoek.md"
+          },
+          {
+            "anker": "EX34",
+            "cijfer": "34% gebruikt nog (deels) papier voor de administratie (24% papier plus spreadsheets, 10% vooral papier); 29% heeft een end-to-end systeem",
+            "betekenis": "aandeel bedrijven, geen tijdpercentage",
+            "label": "[S]",
+            "bron": "Exact MKB Barometer Bouw 2025",
+            "url": "https://files.exact.com/static/web/pdf/mkb-barometer/2025/NL-CST-mkb-barometer-sectorrapport.pdf",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          },
+          {
+            "anker": "EX49",
+            "cijfer": "gemiddeld 49% van de projecten verliesgevend door inschattingen die achteraf onjuist blijken",
+            "betekenis": "aandeel projecten (bedrijfsenquête), geen tijdpercentage",
+            "label": "[S]",
+            "bron": "Exact MKB Barometer Bouw 2025 (n=62)",
+            "url": "https://files.exact.com/static/web/pdf/mkb-barometer/2025/NL-CST-mkb-barometer-sectorrapport.pdf",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Vraagt betrouwbare voortgangsregistratie per project."
+      },
+      "bc_4ps_koppeling": "Projecten: OHW, projectposten, termijnschema's, prognoses; financiën: grootboek, voorzieningen.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-FIN-02",
+      "naam": "Klaar-voor-factuur: termijnen en meerwerk",
+      "omschrijving": "De agent bewaakt welke termijnen en meerwerkposten volgens voortgang en afspraken gefactureerd kunnen worden, en zet conceptfacturen klaar met onderbouwing. Laatste akkoord ligt altijd bij een mens: de projectleider bevestigt dat de mijlpaal of het meerwerk gereed is en de controller keurt de conceptfactuur goed; pas daarna wordt gefactureerd.",
+      "rollen": [
+        "finance-controller",
+        "projectleider",
+        "servicecoordinator"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "Termijnen en meerwerk worden te laat gefactureerd omdat de informatie verspreid is over projectleiders en systemen.",
+      "voorbeeld_bouw_installatie": "De mijlpaal 'ruwbouw installaties gereed' is volgens het bouwverslag gehaald, maar de bijbehorende termijn staat nog niet gefactureerd.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Termijnschema's doorlopen",
+          "tool": "BC/4PS (Projecten)"
+        },
+        {
+          "stap": 2,
+          "actie": "Projectleider vragen of mijlpaal gehaald is",
+          "tool": "Outlook / Teams"
+        },
+        {
+          "stap": 3,
+          "actie": "Factuur maken",
+          "tool": "BC/4PS (Verkoop)"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Koppelt termijnschema's aan voortgangsinformatie (verslagen, gereedmeldingen) en goedgekeurd meerwerk, en stelt conceptfacturen voor met bronverwijzing.",
+        "tools": [
+          "BC-connector of MCP (termijnschema's, meerwerk, conceptverkoopfacturen)",
+          "SharePoint (bouwverslagen)",
+          "Teams Adaptive Card voor projectleider en controller"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of de onderbouwing voor elke termijn klopt en of er niet dubbel wordt gefactureerd.",
+        "iteratie": "Bij onvoldoende onderbouwing vraagt de agent de projectleider om bevestiging en past hij het voorstel aan."
+      },
+      "human_approval": "De projectleider bevestigt dat de mijlpaal of het meerwerk gereed is en de controller keurt de conceptfactuur goed; pas daarna wordt gefactureerd.",
+      "impact": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Een langere debiteurentermijn bindt veel werkkapitaal.",
+        "bronankers": [
+          {
+            "anker": "WC_DSO",
+            "cijfer": "rekenvoorbeeld: 10 dagen langere debiteurentermijn bij 50 mln omzet is ca. 1,4 mln extra werkkapitaal",
+            "betekenis": "rekenvoorbeeld voor een referentiebedrijf, geen meting",
+            "label": "[E]",
+            "bron": "Financieel- en schaalrisico-onderzoek, F4",
+            "url": null,
+            "bronbestand": "dis-financieel-schaalrisico-onderzoek.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Termijnschema's en meerwerk staan in 4PS; bevestiging via Teams is eenvoudig."
+      },
+      "bc_4ps_koppeling": "Projecten: termijnschema's, meer- en minderwerk; verkoop: conceptfacturen; service: contractfacturatie.",
+      "status": "gebaseerd op bron"
+    },
+    {
+      "id": "UC-FIN-03",
+      "naam": "Debiteurenopvolging voorbereiden",
+      "omschrijving": "De agent stelt per vervallen factuur een passend herinneringsconcept op, rekening houdend met lopende discussies, inhoudingen en afspraken, en markeert dossiers die een persoonlijk gesprek nodig hebben. Laatste akkoord ligt altijd bij een mens: de controller of debiteurenbeheerder keurt elke herinnering goed voordat die verstuurd wordt.",
+      "rollen": [
+        "finance-controller"
+      ],
+      "vreter_type": "tijd",
+      "vreter": "Herinneringen handmatig opstellen en per klant uitzoeken of er een geschil of afspraak loopt.",
+      "voorbeeld_bouw_installatie": "Een opdrachtgever betaalt een termijn niet vanwege een openstaand opleverpunt; een standaardaanmaning zou de relatie schaden.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Ouderdomsanalyse draaien",
+          "tool": "BC/4PS (Financiën)"
+        },
+        {
+          "stap": 2,
+          "actie": "Navragen bij projectleider",
+          "tool": "Outlook / Teams"
+        },
+        {
+          "stap": 3,
+          "actie": "Herinnering versturen",
+          "tool": "Outlook"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Combineert vervaldata met projectstatus, opleverpunten en eerdere correspondentie en kiest per dossier het juiste type opvolging.",
+        "tools": [
+          "BC-connector (debiteurenposten, klanten, projecten)",
+          "Outlook (eerdere mail, concepten)",
+          "Teams Adaptive Card"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert toon, bedragen en vervaldata in elk concept.",
+        "iteratie": "Concepten met fouten of verkeerde toon worden herschreven vóór ze ter goedkeuring komen."
+      },
+      "human_approval": "De controller of debiteurenbeheerder keurt elke herinnering goed voordat die verstuurd wordt.",
+      "impact": {
+        "niveau": "middel",
+        "label": "inschatting",
+        "onderbouwing": "Verbetert kasstroom en relatie; tijdwinst per herinnering is beperkt.",
+        "bronankers": [],
+        "bronlabel": "inschatting (geen broncijfer beschikbaar)"
+      },
+      "haalbaarheid": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Standaardgegevens en mailacties."
+      },
+      "bc_4ps_koppeling": "Financiën: debiteurenposten, betalingstermijnen; projecten en klanten.",
+      "status": "illustratief"
+    },
+    {
+      "id": "UC-FIN-04",
+      "naam": "Rapportageverschillen tussen administraties verklaren na een overname",
+      "omschrijving": "Bij een groep met meerdere companies of overgenomen bedrijven zoekt de agent verklaringen voor verschillen in rapportages (andere grootboekindeling, dimensies, intercompany) en maakt hij een aansluitingsvoorstel. Laatste akkoord ligt altijd bij een mens: de controller keurt elke mapping en verklaring goed; wijzigingen in rekeningschema of boekingen gebeuren alleen door mensen na akkoord.",
+      "rollen": [
+        "finance-controller",
+        "functioneel-beheerder"
+      ],
+      "vreter_type": "kwaliteit",
+      "vreter": "Rapportages per vestiging of overgenomen bedrijf zijn niet vergelijkbaar; aansluiten gebeurt handmatig in Excel.",
+      "voorbeeld_bouw_installatie": "Een installatiegroep consolideert drie overgenomen bedrijven; bij één ervan worden onderaannemerskosten op een andere grootboekrekening geboekt.",
+      "vaste_workflow": [
+        {
+          "stap": 1,
+          "actie": "Rapportages per company exporteren",
+          "tool": "BC/4PS (Financiën)"
+        },
+        {
+          "stap": 2,
+          "actie": "Aansluiten en mappen in Excel",
+          "tool": "SharePoint (Excel)"
+        },
+        {
+          "stap": 3,
+          "actie": "Verschillen navragen bij vestigingen",
+          "tool": "Outlook / Teams"
+        }
+      ],
+      "agent_versie": {
+        "redenering": "Vergelijkt rekeningschema's, dimensies en boekingspatronen per company en stelt een mapping en verklaring per verschil voor.",
+        "tools": [
+          "BC-connector of MCP (meerdere companies, grootboek, dimensies)",
+          "SharePoint (mappingtabel)",
+          "Teams"
+        ],
+        "review_door_tweede_model": "Een tweede model controleert of de verklaring het verschil volledig dekt en of de mapping consistent is.",
+        "iteratie": "Onverklaarde restverschillen worden opnieuw onderzocht of als open punt aan de controller voorgelegd."
+      },
+      "human_approval": "De controller keurt elke mapping en verklaring goed; wijzigingen in rekeningschema of boekingen gebeuren alleen door mensen na akkoord.",
+      "impact": {
+        "niveau": "hoog",
+        "label": "inschatting",
+        "onderbouwing": "Integratie na overnames is kostbaar; papier en spreadsheets in de administratie komen nog veel voor.",
+        "bronankers": [
+          {
+            "anker": "VENDOR",
+            "cijfer": "IT-integratiekosten bij overnames 2,2-4,8% van de dealwaarde over 24-36 maanden",
+            "betekenis": "panel van grote enterprise-deals; alleen het percentage als anker gebruiken",
+            "label": "[S]",
+            "bron": "VendorBenchmark, M&A IT Integration Cost Benchmark 2026 (n=156)",
+            "url": "https://vendorbenchmark.com/guides/m-and-a-it-integration-cost-benchmark",
+            "bronbestand": "dis-financieel-schaalrisico-onderzoek.md"
+          },
+          {
+            "anker": "EX34",
+            "cijfer": "34% gebruikt nog (deels) papier voor de administratie (24% papier plus spreadsheets, 10% vooral papier); 29% heeft een end-to-end systeem",
+            "betekenis": "aandeel bedrijven, geen tijdpercentage",
+            "label": "[S]",
+            "bron": "Exact MKB Barometer Bouw 2025",
+            "url": "https://files.exact.com/static/web/pdf/mkb-barometer/2025/NL-CST-mkb-barometer-sectorrapport.pdf",
+            "bronbestand": "rollen-slide-bronnen-verificatie.md"
+          }
+        ],
+        "bronlabel": "inschatting (onderbouwd met bronankers)"
+      },
+      "haalbaarheid": {
+        "niveau": "laag",
+        "label": "inschatting",
+        "onderbouwing": "Sterk afhankelijk van de inrichting per company en de kwaliteit van historische data."
+      },
+      "bc_4ps_koppeling": "Financiën: grootboek, rekeningschema, dimensies, intercompany, meerdere companies.",
+      "status": "gebaseerd op bron"
+    }
+  ]
+}

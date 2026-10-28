@@ -508,6 +508,161 @@ button { -webkit-tap-highlight-color: transparent; }
   flex: none;
 }
 .send-wide { width: 100%; }
+.signal-card,
+.kans-card {
+  background: white;
+  border: 1.5px solid #e6ebf2;
+  border-radius: 18px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.signal-count {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--das-text);
+}
+.signal-text {
+  margin: 0;
+  color: var(--das-navy);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.signal-scale { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.kans-card .signal-scale { grid-template-columns: 1fr; }
+.signal-choice {
+  min-height: 48px;
+  border-radius: 14px;
+  border: 1.5px solid #d5dbe3;
+  background: white;
+  color: var(--das-navy);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 10px;
+}
+.signal-choice.is-on {
+  background: var(--das-navy);
+  color: white;
+  border-color: var(--das-navy);
+}
+.signal-nav { display: flex; gap: 8px; }
+.signal-nav .btn { flex: 1; min-height: 44px; }
+.kans-card h3 { font-size: 18px; }
+.kans-card p,
+.kans-empty { margin: 0; }
+.kans-example { color: var(--das-text-dark); font-size: 14px; }
+.kans-empty { color: var(--das-navy); }
+.mens { margin: 0; font-size: 13px; font-weight: 600; color: var(--das-navy); }
+.kans-note {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--das-navy);
+  font-weight: 600;
+  font-size: 14px;
+}
+.kans-note span { font-weight: 300; color: var(--das-text); }
+.composer:has(.kans-card),
+.composer:has(.kans-empty) { max-height: min(62vh, 720px); }
+.kaart-wrap { margin: 8px 0 18px; }
+.kaart {
+  position: relative;
+  width: min(100%, 640px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  background: linear-gradient(180deg, rgba(49, 159, 218, 0.1), #fff 42%);
+  border: 1px solid #e6ebf2;
+  border-radius: 20px;
+  overflow: hidden;
+}
+.kaart-q {
+  position: absolute;
+  z-index: 1;
+  max-width: 46%;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--das-navy);
+  pointer-events: none;
+}
+.q-tl { top: 12px; left: 12px; }
+.q-tr { top: 12px; right: 12px; text-align: right; }
+.q-bl { bottom: 12px; left: 12px; }
+.q-br { bottom: 12px; right: 12px; text-align: right; }
+.kaart-threshold {
+  position: absolute;
+  z-index: 1;
+  background: rgba(0, 26, 63, 0.2);
+  pointer-events: none;
+}
+.kaart-threshold.x { left: 8%; right: 8%; bottom: 75%; height: 1px; }
+.kaart-threshold.y { top: 8%; bottom: 8%; left: 75%; width: 1px; }
+.kaart-dot {
+  position: absolute;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  transform: translate(-50%, 50%);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.kaart-dot i {
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: var(--kleur);
+  display: block;
+  box-shadow: 0 2px 6px rgba(0, 26, 63, 0.18);
+}
+.kaart-dot.is-dim { opacity: 0.22; z-index: 1; }
+.kaart-dot.is-top,
+.kaart-dot.is-on { z-index: 3; }
+.kaart-dot.is-top i { box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--kleur); }
+.kaart-dot.is-on i { box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--das-navy); }
+.kaart-axes,
+.kaart-detail,
+.kaart-hint,
+.kaart-none,
+.kaart-list { width: min(100%, 640px); margin-left: auto; margin-right: auto; }
+.kaart-axes {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--das-text);
+}
+.kaart-detail,
+.kaart-hint { margin-top: 10px; }
+.kaart-detail {
+  background: white;
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+.kaart-detail strong { color: var(--das-navy); }
+.kaart-detail p { margin: 4px 0 0; }
+.kaart-list {
+  margin-top: 16px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.kaart-list li { background: white; border-radius: 16px; padding: 12px 14px; }
+.kaart-list strong { display: block; color: var(--das-navy); }
+.kaart-list span { display: block; margin-top: 2px; font-size: 13px; color: var(--das-text); }
+.kaart-list p { margin: 6px 0 0; }
 .composer-footer { display: flex; justify-content: flex-end; }
 .edit-banner {
   margin: 0;
@@ -1103,7 +1258,6 @@ tr.diff td:first-child { font-weight: 600; }
     padding: calc(6px + env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
   }
   .welcome-copy h1,
-  .welcome-copy .lede,
   .welcome-copy .kicker,
   .welcome-foot { display: none; }
   .welcome-grid {
@@ -1115,19 +1269,31 @@ tr.diff td:first-child { font-weight: 600; }
     flex-direction: column;
   }
   .welcome-copy { display: contents; }
-  .welcome-copy .actions { order: 2; margin: 0; }
-  .welcome-copy .privacy { order: 3; margin: 0; font-size: 12px; line-height: 1.35; }
-  .welcome-copy .reset-note { order: 0; }
-  .intro-slot,
-  .intro-slot.has-portrait {
+  .welcome-copy .lede {
+    display: block;
+    order: 2;
+    margin: 0;
+    max-width: none;
+    font-size: 14px;
+    line-height: 1.35;
+    font-weight: 400;
+  }
+  .welcome-copy .actions { order: 4; margin: 0; }
+  .welcome-copy .privacy { order: 5; margin: 0; font-size: 12px; line-height: 1.35; }
+  .welcome-copy .reset-note { order: 3; margin: 0; }
+  .intro-slot {
     order: 1;
     flex: 0 1 auto;
     align-self: stretch;
     width: 100%;
     min-height: 0;
     height: auto;
+    aspect-ratio: 16 / 9;
+    max-height: calc(100dvh - 210px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+  .intro-slot.has-portrait {
     aspect-ratio: 4 / 5;
-    max-height: calc(100dvh - 168px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    max-height: calc(100dvh - 210px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   }
   .intro-slot video { width: 100%; height: 100%; object-fit: contain; background: #0b2348; }
   .actions .btn { min-height: 48px; }
@@ -1140,6 +1306,9 @@ tr.diff td:first-child { font-weight: 600; }
     max-width: 100%;
     width: 100%;
   }
+  .kaart-dot.is-dim { display: none; }
+  .kaart-q { font-size: 11px; }
+  .signal-text { font-size: 17px; }
   .role-launch { display: flex; flex-direction: column; gap: 8px; }
   .role-sheet { display: none; }
   .role-sheet.is-open {
@@ -1182,7 +1351,9 @@ tr.diff td:first-child { font-weight: 600; }
   .sum-hero { background: white !important; color: var(--das-navy) !important; padding: 0 0 12px; }
   .sum-eyebrow, .sum-hero h1, .sum-meta, .sum-roles li { color: var(--das-navy) !important; }
   .sum-roles li { background: white !important; border: 1px solid #d5dbe3; }
-  .qa, .section-card { break-inside: avoid; }
+  .qa, .section-card, .kaart-wrap, .kans-card { break-inside: avoid; }
+  .kaart { overflow: visible; }
+  .kaart-dot.is-dim { opacity: 0.35; display: grid; }
   a { color: inherit; text-decoration: none; }
   @page { margin: 16mm; }
 }

@@ -74,7 +74,7 @@ Toon: Nederlands, zakelijk en niet-promotioneel. De app spreekt de klant aan met
 
 Zet bestanden in `public/media/`. Paden in de JSON zijn relatief aan `public/`, zonder slash ervoor. Een nieuw filmpje toevoegen is een bestand neerzetten en de JSON aanpassen. Geen codewijziging nodig.
 
-Het welkomstscherm toont `introVideo`: `media/intro.mp4` (16:9) en op een smal scherm `media/intro-4x5.mp4`. *Volledig scherm* op een telefoon gebruikt `media/intro-vertical.mp4` (9:16). De losse ondertitels staan in `media/intro.vtt` (zelfde tekst als `intro.srt`). `media/dis-zijn-wij.mp4` blijft het contextfilmpje bij “Wie zijn wij”, niet de intro.
+Het welkomstscherm toont `openingVideo`: `media/dis-group-ai-v13.mp4` (1280×720, zonder klantnamen) met poster `media/dis-group-ai-v13-poster.jpg`. Dat is de enige plek waar de openingsfilm vandaan komt. `introVideo` en `video` blijven als reserve als `openingVideo` ontbreekt. “Wie zijn wij” (`media/dis-zijn-wij.mp4`) zit niet in het gesprek.
 
 ```json
 "introVideo": {
@@ -87,7 +87,7 @@ Het welkomstscherm toont `introVideo`: `media/intro.mp4` (16:9) en op een smal s
 }
 ```
 
-Het gesprek begint met vijf vaste vragen en duurt ongeveer drie tot vijf minuten. Na de rollen volgen korte vervolgvragen, één per gekozen rol. Bij meer dan drie rollen kiest iemand eerst een top 3. We vragen niet welk systeem iemand gebruikt: klanten werken al met Business Central met 4PS. Clips hangen als `context` aan de bijpassende vraag: Wie zijn wij, rollen (vraag 2, `media/ctx-rollen-tijdvreters.mp4`), doelen en AI Services. `ctx-kettingreactie.mp4`, `ctx-herkenbaar.mp4`, `ctx-werksessie-dagdelen.mp4` en `ctx-systemen-bc-4ps.mp4` staan in `disabledMedia` en worden niet getoond. Zet `enabled` niet op `true` tot dat wel zo is.
+Het gesprek duurt ongeveer vier tot vijf minuten. Na de film kiest iemand de tijd- en kwaliteitsvreters. Bij meer dan drie rollen volgt eerst een top 3. Per gekozen rol (of die top 3) komen de “ik”-uitspraken uit `src/data/signal-mapping.json`, met een score van 0 tot 3. Daaruit komen maximaal drie kansen, als de score minstens 1,0 is. Per kans: graag in de workshop, misschien of niet nu, plus een optionele zin. Daarna één urgentiecijfer. De kansenkaart staat op het overzicht “Jullie kansenkaart”. We vragen niet welk systeem iemand gebruikt en niet om de organisatienaam: klanten werken al met Business Central met 4PS. De clip bij de rollen is `media/ctx-rollen-tijdvreters.mp4`. `ctx-kettingreactie.mp4`, `ctx-herkenbaar.mp4`, `ctx-werksessie-dagdelen.mp4` en `ctx-systemen-bc-4ps.mp4` staan in `disabledMedia` en worden niet getoond. Zet `enabled` niet op `true` tot dat wel zo is.
 
 Op een telefoon vullen contextfilmpjes de breedte van de ballon. *Volledig scherm* vergroot ze, zodat de ingebrande ondertitel leesbaar is.
 
