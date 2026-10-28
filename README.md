@@ -87,7 +87,7 @@ Het welkomstscherm toont `introVideo`: `media/intro.mp4` (16:9) en op een smal s
 }
 ```
 
-Het gesprek telt zes vragen, ongeveer vier minuten. We vragen niet welk systeem iemand gebruikt: klanten werken al met Business Central met 4PS. Clips hangen als `context` aan de bijpassende vraag: Wie zijn wij, projectverloop, rollen (vraag 3, `media/ctx-rollen-tijdvreters.mp4`), doelen en AI Services. `ctx-herkenbaar.mp4`, `ctx-werksessie-dagdelen.mp4` en `ctx-systemen-bc-4ps.mp4` staan in `disabledMedia` en worden niet getoond. Zet `enabled` niet op `true` tot dat wel zo is.
+Het gesprek telt vijf vragen, ongeveer drie minuten. We vragen niet welk systeem iemand gebruikt: klanten werken al met Business Central met 4PS. Clips hangen als `context` aan de bijpassende vraag: Wie zijn wij, rollen (vraag 2, `media/ctx-rollen-tijdvreters.mp4`), doelen en AI Services. `ctx-kettingreactie.mp4`, `ctx-herkenbaar.mp4`, `ctx-werksessie-dagdelen.mp4` en `ctx-systemen-bc-4ps.mp4` staan in `disabledMedia` en worden niet getoond. Zet `enabled` niet op `true` tot dat wel zo is.
 
 Op een telefoon vullen contextfilmpjes de breedte van de ballon. *Volledig scherm* vergroot ze, zodat de ingebrande ondertitel leesbaar is.
 
@@ -146,7 +146,7 @@ Er is geen backend. Bij elke wijziging schrijft de app de sessie naar `localStor
 dis-workshop-v1:workshop-voorbereiding:van-gelder
 ```
 
-Sluiten en later terugkomen op dezelfde link herstelt de antwoorden op de vraag waar iemand was. De sessie bewaart het vraag-id (schemaversie 2). Een oudere sessie, die alleen een stapnummer had, past niet meer op het gesprek: die wordt gewist en het welkomstscherm toont “Het gesprek is bijgewerkt, we beginnen opnieuw.”
+Sluiten en later terugkomen op dezelfde link herstelt de antwoorden op de vraag waar iemand was. De sessie bewaart het vraag-id (schemaversie 3). Een oudere sessie past niet meer op het gesprek: die wordt gewist en het welkomstscherm toont “Het gesprek is bijgewerkt, we beginnen opnieuw.”
 
 *Opnieuw beginnen* staat in de balk van het welkomstscherm, het gesprek en het overzicht. Na bevestiging wist de app alle `dis-workshop`-sleutels in `localStorage` en de `sessionStorage`, en laadt het welkomstscherm opnieuw. `?reset=1` doet hetzelfde zonder de vraag.
 

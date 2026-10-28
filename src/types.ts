@@ -122,7 +122,7 @@ export type AnswerValue = string | string[] | number | null
 export type Phase = 'welcome' | 'flow' | 'summary'
 
 export interface Session {
-  version: 2
+  version: 3
   questionnaireId: string
   klant: string
   phase: Phase
