@@ -1,16 +1,16 @@
 # Workshopvoorbereiding · DIS Group
 
-Interactieve vragenlijst waarmee klanten van DIS Group zich voorbereiden op een workshop. Het gesprek loopt als een chat: DIS stelt een vraag, de klant antwoordt met een snelle keuze, een schaal of een tekstveld. Antwoorden blijven in de browser staan tot iemand ze exporteert.
+Interactieve vragenlijst waarmee klanten van DIS Group zich voorbereiden op een workshop. Het gesprek loopt als een chat: DIS stelt een vraag, de klant antwoordt met een snelle keuze, een schaal of een tekstveld. Antwoorden blijven in de browser staan. Op de kansenkaart gaan ze ook naar Supabase, zodat je ze voor de workshop kunt teruglezen.
 
 Live: [https://mastero83.github.io/dis-workshop-interview/](https://mastero83.github.io/dis-workshop-interview/)
 
 Een klantlink ziet er zo uit:
 
 ```text
-https://mastero83.github.io/dis-workshop-interview/?klant=Van%20Gelder
+https://mastero83.github.io/dis-workshop-interview/?k=van-gelder
 ```
 
-De naam achter `klant` verschijnt op het welkomstscherm en wordt de sleutel waaronder de antwoorden op dat apparaat worden bewaard.
+De slug achter `k` is de klant in Supabase. `?klant=Van%20Gelder` blijft de naam op het welkomstscherm en de sleutel in de browser. Zonder `k` gebruikt de app die slug, en anders `onbekend`. De app vraagt niet om een bedrijfsnaam.
 
 ## Lokaal draaien
 
@@ -130,35 +130,46 @@ Handige parameters:
 
 | Parameter | Effect |
 | --- | --- |
-| `?klant=Naam` | Naam op het welkomstscherm en in de export |
+| `?k=van-gelder` | Klant-slug in Supabase. Wint van de rest |
+| `?klant=Naam` | Naam op het welkomstscherm, in de export, en (zonder `k`) de slug |
 | `?vragenlijst=id` | Andere lijst uit de JSON |
 | `?naar=workshop@bedrijf.nl` | Vooringevuld adres voor de mailknop |
-| `?beheer=1` | Scherm om geëxporteerde JSON te vergelijken |
+| `?beheer=1` | Op het eindscherm een debugregel met de laatste opslag. Op de andere schermen het vergelijkscherm |
+| `?vergelijk=1` | Altijd het scherm om geëxporteerde JSON te vergelijken |
 | `?reset=1` | Wist de opgeslagen antwoorden zonder bevestiging en opent het welkomstscherm |
 
 Het logo linksboven, de kleuren en Poppins volgen de huisstijl (navy `#001A3F`, DIS-blauw `#319FDA`, geel, oranje, groen, pastelkaarten). Het placeholder-klantlogo staat in `public/logos/placeholder-klantlogo.png`. Vervang dat bestand als je een echt logo in de app wilt zetten; de vragenlijst toont standaard de klantnaam in plaats van die placeholder.
 
 ## Opslag
 
-Er is geen backend. Bij elke wijziging schrijft de app de sessie naar `localStorage`, onder een sleutel als:
+Bij elke wijziging schrijft de app de sessie naar `localStorage`, onder een sleutel als:
 
 ```text
 dis-workshop-v1:workshop-voorbereiding:van-gelder
 ```
 
-Sluiten en later terugkomen op dezelfde link herstelt de antwoorden op de vraag waar iemand was. De sessie bewaart het vraag-id (schemaversie 4). Een oudere sessie past niet meer op het gesprek: die wordt gewist en het welkomstscherm toont “Het gesprek is bijgewerkt, we beginnen opnieuw.”
+Sluiten en later terugkomen op dezelfde link herstelt de antwoorden op de vraag waar iemand was. De sessie bewaart het vraag-id (schemaversie 6). Een oudere sessie past niet meer op het gesprek: die wordt gewist en het welkomstscherm toont “Het gesprek is bijgewerkt, we beginnen opnieuw.”
 
 *Opnieuw beginnen* staat in de balk van het welkomstscherm, het gesprek en het overzicht. Na bevestiging wist de app alle `dis-workshop`-sleutels in `localStorage` en de `sessionStorage`, en laadt het welkomstscherm opnieuw. `?reset=1` doet hetzelfde zonder de vraag.
 
-### Optionele remote opslag (uit)
+### Supabase
 
-Standaard verlaat niets de browser. Wil je antwoorden bij het bereiken van het overzicht ook naar een endpoint POST'en, zet dan bij de build:
+Op de kansenkaart stuurt de app de antwoorden één keer naar Supabase. Wijzigt iemand daarna nog eigen invoer of een keuze bij ‘graag bespreken’, dan volgt na ongeveer twee seconden een nieuwe rij met dezelfde `sessie_id`. Een mislukte netwerkpoging wordt één keer herhaald. Op het eindscherm staat de status. Zonder een geslaagde response toont de app nooit dat het opgeslagen is. Mail en download blijven als uitweg, plus de knop *Opnieuw proberen*.
 
-```bash
-VITE_REMOTE_STORE_URL=https://example.com/api/workshop-antwoorden npm run build
-```
+De rij komt in `public.workshop_antwoorden`:
 
-Zie `.env.example`. Het endpoint ontvangt dezelfde JSON als de download, zonder authenticatie. Laat de variabele leeg om de functie uit te laten. Mislukt het versturen, dan blijft de lokale kopie staan en kan iemand alsnog exporteren.
+| Kolom | Inhoud |
+| --- | --- |
+| `klant` | slug uit `?k=`, anders uit de localStorage-sleutel, anders `onbekend` |
+| `sessie_id` | vast uuid voor die browsersessie |
+| `schema_versie` | de sessie-schemaversie (nu 6) |
+| `payload` | dezelfde JSON als *Download JSON* |
+
+De publishable key en de project-URL staan in `.env.production` en als default in de code (`VITE_SUPABASE_URL`, `VITE_SUPABASE_KEY`). Het zijn publieke waarden. De app gebruikt een gewone `POST` met `Prefer: return=minimal`. De rol anon mag alleen inserten, niet lezen.
+
+Bekijk de binnengekomen antwoorden in het Supabase-dashboard → Table Editor → `workshop_antwoorden`.
+
+Op het welkomstscherm staat: “Je antwoorden worden opgeslagen voor de workshop van DIS Group.”
 
 ## Export
 

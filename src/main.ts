@@ -30,8 +30,20 @@ import {
   toPlainText,
   validationMessage,
 } from './format'
-import { pushRemote, remoteStoreUrl } from './remote'
-import { clearSession, createSession, hasProgress, loadSession, saveSession, wipeAppStorage } from './session'
+import { insertAntwoorden } from './remote'
+import {
+  clearSession,
+  createSession,
+  customerSlug,
+  hasProgress,
+  loadSession,
+  readSaveFlag,
+  readSaveLog,
+  saveSession,
+  wipeAppStorage,
+  writeSaveFlag,
+  writeSaveLog,
+} from './session'
 import type {
   AnswerValue,
   ClipSource,
@@ -85,6 +97,7 @@ if (resetOnLoad) {
   const url = new URL(location.href)
   url.searchParams.delete('reset')
   url.searchParams.delete('beheer')
+  url.searchParams.delete('vergelijk')
   location.replace(url.pathname + url.search + url.hash)
 } else if (questionnaire) {
   const loaded = loadSession(questionnaire.id, klantParam, new Set(questionIds(questionnaire)))
@@ -112,10 +125,18 @@ if (resetOnLoad) {
 
 let atWelcome = !session || session.phase === 'welcome'
 let beheer = params.get('beheer') === '1'
+const vergelijk = params.get('vergelijk') === '1'
 let errorText = ''
 let modal: 'reset' | 'email' | null = null
 let memoryOnly = false
-let remoteNote = ''
+type SaveState = 'idle' | 'saving' | 'saved' | 'error'
+let saveState: SaveState = 'idle'
+let saveTimer = 0
+let retryTimer = 0
+let saveInFlight = false
+let saveGeneration = 0
+let networkRetried = false
+let dirtyWhileFlight = false
 let imports: { name: string; doc: ExportDoc }[] = []
 let picked = new Set<number>()
 let adminError = ''
@@ -175,6 +196,7 @@ function persist(): void {
   if (!session || suppressSave) return
   stampSession()
   memoryOnly = !saveSession(session)
+  if (session.afgerond) scheduleRemoteSave(2000)
 }
 
 function resetButton(): string {
@@ -187,6 +209,7 @@ function reloadWelcome(): void {
   const url = new URL(location.href)
   url.searchParams.delete('reset')
   url.searchParams.delete('beheer')
+  url.searchParams.delete('vergelijk')
   location.replace(url.pathname + url.search + url.hash)
 }
 
@@ -262,7 +285,7 @@ function announcement(): string {
 
 function view(): string {
   if (catalogError || !questionnaire || !session) return missingView()
-  if (beheer) return adminView()
+  if (vergelijk || (beheer && session.phase !== 'summary')) return adminView()
   if (atWelcome || session.phase === 'welcome') return welcomeView()
   if (session.phase === 'summary') return summaryView()
   return chatView()
@@ -282,21 +305,20 @@ function blobs(): string {
 }
 
 function privacyLine(): string {
-  if (remoteStoreUrl()) {
-    return 'Je antwoorden blijven op dit apparaat staan en worden bij het overzicht ook naar de ingestelde opslag gestuurd.'
-  }
-  return 'Je antwoorden blijven op dit apparaat staan. Er gaat niets naar DIS tot je zelf exporteert of mailt.'
+  return 'Je antwoorden worden opgeslagen voor de workshop van DIS Group.'
 }
 
 function beheerHref(): string {
   const url = new URL(location.href)
   url.searchParams.set('beheer', '1')
+  url.searchParams.set('vergelijk', '1')
   return escapeHtml(url.pathname + url.search)
 }
 
 function homeHref(): string {
   const url = new URL(location.href)
   url.searchParams.delete('beheer')
+  url.searchParams.delete('vergelijk')
   return escapeHtml(url.pathname + url.search)
 }
 
@@ -962,11 +984,11 @@ function summaryView(): string {
           <span>${escapeHtml(when.date)}</span>
           ${when.time ? `<span>${escapeHtml(when.time)}</span>` : ''}
         </p>
+        ${saveBox()}
       </header>
       <div class="sum-rule" aria-hidden="true"></div>
       ${kaartHtml()}
       <div class="sum-body">
-        <p class="note" id="remote-note">${escapeHtml(remoteNote || privacyLine())}</p>
         ${blocks}
         <div class="sum-links no-print">
           <button class="linkish" type="button" data-action="back">Terug naar het gesprek</button>
@@ -1018,6 +1040,7 @@ function adminView(): string {
       <p class="kicker">Voor consultants</p>
       <h1 id="screen-title" tabindex="-1">Antwoorden naast elkaar</h1>
       <p class="help">Sleep geëxporteerde JSON-bestanden hierheen. Vink er twee aan om ze te vergelijken. Niets wordt geüpload.</p>
+      <p class="save-debug" id="save-debug">${escapeHtml(saveDebugLine())}</p>
       <div class="drop" data-drop>
         <p><strong>Zet de bestanden hier neer</strong></p>
         <p>of kies een bestand op dit apparaat.</p>
@@ -1254,14 +1277,17 @@ function goResume(): void {
 function finish(): void {
   if (!session) return
   syncText()
+  session.afgerond = true
   session.phase = 'summary'
   celebrate = true
   editingId = ''
   rolesOpen = false
   freshId = ''
+  ensureIdentity()
+  primeSaveState()
   persist()
   render()
-  void maybePush()
+  void runSave()
 }
 
 function advance(): void {
@@ -1357,18 +1383,222 @@ function editQuestion(id: string): void {
   }, 30)
 }
 
-async function maybePush(): Promise<void> {
-  if (!session || !questionnaire || session.remotePushedAt || !remoteStoreUrl()) return
-  const result = await pushRemote(toExportDoc(questionnaire, session))
-  if (result === 'ok') {
-    session.remotePushedAt = new Date().toISOString()
-    persist()
-    remoteNote = 'Ook doorgestuurd naar de ingestelde opslag.'
-  } else if (result === 'error') {
-    remoteNote = 'Lokaal opgeslagen. Doorsturen naar de externe opslag lukte niet. Exporteer de JSON om niets kwijt te raken.'
+function resolveKlantSlug(existing?: string): string {
+  const fromK = customerSlug(params.get('k') || '')
+  if (fromK) return fromK
+  const stored = existing ? customerSlug(existing) : ''
+  if (stored && stored !== 'algemeen' && stored !== 'onbekend') return stored
+  if (klantParam) {
+    const fromName = customerSlug(klantParam)
+    if (fromName) return fromName
   }
+  return 'onbekend'
+}
+
+function ensureIdentity(): boolean {
+  if (!session) return false
+  let changed = false
+  if (!session.sessieId) {
+    session.sessieId = crypto.randomUUID()
+    changed = true
+  }
+  const slug = resolveKlantSlug(session.klantSlug)
+  if (session.klantSlug !== slug) {
+    session.klantSlug = slug
+    changed = true
+  }
+  if (session.phase === 'summary' && !session.afgerond) {
+    session.afgerond = true
+    changed = true
+  }
+  return changed
+}
+
+function currentFingerprint(): string {
+  if (!session || !questionnaire) return ''
+  const doc = toExportDoc(questionnaire, session)
+  return JSON.stringify({
+    klant: session.klantSlug || 'onbekend',
+    questionnaireId: doc.questionnaireId,
+    answers: doc.answers,
+    kansen: doc.kansen,
+    eigen: doc.eigen,
+  })
+}
+
+function alreadyStored(fingerprint: string): boolean {
+  if (!session) return false
+  const flag = readSaveFlag(session.sessieId)
+  return flag?.fingerprint === fingerprint
+}
+
+function saveMessage(): string {
+  if (saveState === 'saved') return 'Je antwoorden zijn opgeslagen. Dank je!'
+  if (saveState === 'error') return 'Opslaan lukte niet. Probeer het opnieuw'
+  return 'Je antwoorden worden opgeslagen…'
+}
+
+function saveDebugLine(): string {
+  const log = readSaveLog()
+  if (!log) return 'Opslag: nog niets verstuurd.'
+  const code = log.network ? 'netwerkfout' : String(log.status)
+  const result = log.ok ? 'gelukt' : 'mislukt'
+  return `Opslag: ${result} · ${code} · ${formatWhen(log.at)} · ${log.klant} · ${log.sessieId}`
+}
+
+function saveBox(): string {
+  const retry =
+    saveState === 'error'
+      ? `<button class="btn btn-line no-print" type="button" id="retry-save" data-action="retry-save">Opnieuw proberen</button>`
+      : ''
+  const debug = beheer ? `<p class="save-debug no-print" id="save-debug">${escapeHtml(saveDebugLine())}</p>` : ''
+  return `<div class="save-box" id="save-box">
+    <p class="note" id="remote-note" role="status">${escapeHtml(saveMessage())}</p>
+    ${retry}
+    ${debug}
+  </div>`
+}
+
+function primeSaveState(): void {
+  if (!session || !questionnaire) return
+  if (!session.afgerond && session.phase !== 'summary') return
+  saveState = alreadyStored(currentFingerprint()) ? 'saved' : 'saving'
+}
+
+function paintSaveStatus(): void {
   const note = document.getElementById('remote-note')
-  if (note && remoteNote) note.textContent = remoteNote
+  if (note) note.textContent = saveMessage()
+  const box = document.getElementById('save-box')
+  const retry = document.getElementById('retry-save')
+  if (saveState === 'error') {
+    if (!retry && box) {
+      const button = document.createElement('button')
+      button.className = 'btn btn-line no-print'
+      button.type = 'button'
+      button.id = 'retry-save'
+      button.dataset.action = 'retry-save'
+      button.textContent = 'Opnieuw proberen'
+      box.appendChild(button)
+    }
+  } else retry?.remove()
+  const debug = document.getElementById('save-debug')
+  if (debug) debug.textContent = saveDebugLine()
+}
+
+function scheduleRemoteSave(delay: number): void {
+  if (!session?.afgerond || !questionnaire || suppressSave) return
+  const fingerprint = currentFingerprint()
+  if (alreadyStored(fingerprint)) {
+    window.clearTimeout(saveTimer)
+    saveTimer = 0
+    if (!saveInFlight) {
+      saveState = 'saved'
+      paintSaveStatus()
+    }
+    return
+  }
+  if (saveInFlight) {
+    dirtyWhileFlight = true
+    if (saveState !== 'saving') saveState = 'saving'
+    return
+  }
+  window.clearTimeout(saveTimer)
+  if (delay > 0) {
+    window.clearTimeout(retryTimer)
+    retryTimer = 0
+    networkRetried = false
+  }
+  saveState = 'saving'
+  saveTimer = window.setTimeout(() => {
+    saveTimer = 0
+    void runSave()
+  }, delay)
+}
+
+async function runSave(): Promise<void> {
+  if (!session || !questionnaire || suppressSave) return
+  if (!session.afgerond && session.phase !== 'summary') return
+  window.clearTimeout(saveTimer)
+  saveTimer = 0
+  session.afgerond = true
+  ensureIdentity()
+  const fingerprint = currentFingerprint()
+  if (alreadyStored(fingerprint)) {
+    saveState = 'saved'
+    networkRetried = false
+    paintSaveStatus()
+    return
+  }
+  if (saveInFlight) {
+    dirtyWhileFlight = true
+    return
+  }
+  const generation = ++saveGeneration
+  saveInFlight = true
+  saveState = 'saving'
+  paintSaveStatus()
+  const klant = session.klantSlug || 'onbekend'
+  const result = await insertAntwoorden({
+    klant,
+    sessie_id: session.sessieId,
+    schema_versie: session.version,
+    payload: toExportDoc(questionnaire, session),
+  })
+  saveInFlight = false
+  if (generation !== saveGeneration) return
+  writeSaveLog({
+    ok: result.ok,
+    status: result.status,
+    at: new Date().toISOString(),
+    sessieId: session.sessieId,
+    klant,
+    network: result.ok ? false : result.network,
+  })
+  if (result.ok) {
+    const latest = currentFingerprint()
+    if (latest === fingerprint) {
+      writeSaveFlag(session.sessieId, {
+        fingerprint,
+        savedAt: new Date().toISOString(),
+        status: result.status,
+      })
+      saveState = 'saved'
+      networkRetried = false
+      dirtyWhileFlight = false
+      paintSaveStatus()
+      return
+    }
+    dirtyWhileFlight = false
+    saveState = 'saving'
+    paintSaveStatus()
+    scheduleRemoteSave(2000)
+    return
+  }
+  if (!result.ok && result.network && !networkRetried) {
+    networkRetried = true
+    saveState = 'saving'
+    paintSaveStatus()
+    retryTimer = window.setTimeout(() => {
+      retryTimer = 0
+      void runSave()
+    }, 3000)
+    return
+  }
+  saveState = 'error'
+  paintSaveStatus()
+  if (dirtyWhileFlight) {
+    dirtyWhileFlight = false
+    scheduleRemoteSave(2000)
+  }
+}
+
+function retrySave(): void {
+  networkRetried = false
+  window.clearTimeout(retryTimer)
+  retryTimer = 0
+  saveState = 'saving'
+  paintSaveStatus()
+  void runSave()
 }
 
 function download(): void {
@@ -1873,6 +2103,7 @@ document.addEventListener('click', (event) => {
   }   else if (action === 'play-clip') playClip(el)
   else if (action === 'unmute') unmuteClip(el)
   else if (action === 'fullscreen') fullscreenClip(el)
+  else if (action === 'retry-save') retrySave()
   else if (action === 'download') download()
   else if (action === 'print') window.print()
   else if (action === 'copy') void copySummary()
@@ -2006,6 +2237,17 @@ window.addEventListener('pagehide', () => {
   syncText()
   stampSession()
   saveSession(session)
+  if (session.afgerond) void runSave()
 })
 
+if (session && questionnaire && !resetOnLoad) {
+  const changed = ensureIdentity()
+  primeSaveState()
+  if (changed) persist()
+}
+
 if (!resetOnLoad) render()
+
+if (!resetOnLoad && session && (session.phase === 'summary' || session.afgerond)) {
+  void runSave()
+}

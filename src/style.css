@@ -1135,6 +1135,16 @@ button { -webkit-tap-highlight-color: transparent; }
   font-size: 14px;
   margin: 0 0 16px;
 }
+.save-box { display: grid; gap: 10px; margin: 12px 0 0; }
+.save-box .note { margin: 0; }
+.save-box .btn { justify-self: start; min-height: 48px; }
+.save-debug {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--das-text);
+  overflow-wrap: anywhere;
+}
 .confetti { position: fixed; inset: 0; pointer-events: none; z-index: 5; overflow: hidden; }
 .confetti i {
   position: absolute;

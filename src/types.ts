@@ -201,6 +201,12 @@ export interface Session {
   answers: Record<string, AnswerValue>
   startedAt: string
   updatedAt: string
+  /** Stabiel per browsersessie, zodat een tweede opslag dezelfde deelnemer blijft. */
+  sessieId: string
+  /** Slug uit ?k=, anders uit de localStorage-sleutel, anders onbekend. */
+  klantSlug?: string
+  /** Het eindscherm is een keer bereikt. Daarna telt een wijziging als nieuwe opslag. */
+  afgerond?: boolean
   remotePushedAt?: string
 }
 
