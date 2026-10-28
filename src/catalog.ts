@@ -57,6 +57,10 @@ export function questionCount(questionnaire: Questionnaire): number {
   return questionnaire.sections.reduce((sum, section) => sum + section.questions.length, 0)
 }
 
+export function questionIds(questionnaire: Questionnaire): string[] {
+  return questionnaire.sections.flatMap((section) => section.questions.map((question) => question.id))
+}
+
 export function buildSteps(questionnaire: Questionnaire): Step[] {
   const steps: Step[] = []
   let number = 0

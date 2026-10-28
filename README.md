@@ -134,6 +134,7 @@ Handige parameters:
 | `?vragenlijst=id` | Andere lijst uit de JSON |
 | `?naar=workshop@bedrijf.nl` | Vooringevuld adres voor de mailknop |
 | `?beheer=1` | Scherm om geëxporteerde JSON te vergelijken |
+| `?reset=1` | Wist de opgeslagen antwoorden zonder bevestiging en opent het welkomstscherm |
 
 Het logo linksboven, de kleuren en Poppins volgen de huisstijl (navy `#001A3F`, DIS-blauw `#319FDA`, geel, oranje, groen, pastelkaarten). Het placeholder-klantlogo staat in `public/logos/placeholder-klantlogo.png`. Vervang dat bestand als je een echt logo in de app wilt zetten; de vragenlijst toont standaard de klantnaam in plaats van die placeholder.
 
@@ -145,7 +146,9 @@ Er is geen backend. Bij elke wijziging schrijft de app de sessie naar `localStor
 dis-workshop-v1:workshop-voorbereiding:van-gelder
 ```
 
-Sluiten en later terugkomen op dezelfde link herstelt de antwoorden en het scherm waar iemand was. *Opnieuw beginnen* wist alleen die sleutel op dit apparaat.
+Sluiten en later terugkomen op dezelfde link herstelt de antwoorden op de vraag waar iemand was. De sessie bewaart het vraag-id (schemaversie 2). Een oudere sessie, die alleen een stapnummer had, past niet meer op het gesprek: die wordt gewist en het welkomstscherm toont “Het gesprek is bijgewerkt, we beginnen opnieuw.”
+
+*Opnieuw beginnen* staat in de balk van het welkomstscherm, het gesprek en het overzicht. Na bevestiging wist de app alle `dis-workshop`-sleutels in `localStorage` en de `sessionStorage`, en laadt het welkomstscherm opnieuw. `?reset=1` doet hetzelfde zonder de vraag.
 
 ### Optionele remote opslag (uit)
 

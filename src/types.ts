@@ -122,11 +122,14 @@ export type AnswerValue = string | string[] | number | null
 export type Phase = 'welcome' | 'flow' | 'summary'
 
 export interface Session {
-  version: 1
+  version: 2
   questionnaireId: string
   klant: string
   phase: Phase
+  /** Positie in de opgebouwde stappen. Bij hervatten telt `questionId`. */
   stepIndex: number
+  /** Vraag die nu aan de beurt is. Ontbreekt die, dan is een oude sessie niet meer te hervatten. */
+  questionId: string | null
   answers: Record<string, AnswerValue>
   startedAt: string
   updatedAt: string
