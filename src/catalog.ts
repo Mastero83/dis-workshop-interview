@@ -1,5 +1,5 @@
 import raw from './vragenlijst.json' with { type: 'json' }
-import { kansenQuestion, signalQuestions } from './kansen.ts'
+import { closingQuestion, kansenQuestion, signalQuestions } from './kansen.ts'
 import type { AnswerValue, Catalog, Question, Questionnaire, Section, Step } from './types'
 
 export interface RolePhrase {
@@ -101,7 +101,10 @@ function expandBranching(questionnaire: Questionnaire): void {
       }
     }
     const rolesIndex = section.questions.findIndex((question) => question.type === 'roles')
-    if (rolesIndex >= 0 && extra.length) section.questions.splice(rolesIndex + 1, 0, ...extra)
+    if (rolesIndex >= 0 && extra.length) {
+      section.questions.splice(rolesIndex + 1, 0, ...extra)
+      section.questions.push(closingQuestion())
+    }
   }
   if (closing.length) {
     const last = questionnaire.sections[questionnaire.sections.length - 1]

@@ -1,6 +1,18 @@
 import './style.css'
 import { buildSteps, findQuestionnaire, findStepIndex, isQuestionActive, loadCatalog, presentQuestion, questionAt, questionIds, rolePhrase } from './catalog'
-import { collectResult, intensityScale, kaartPunten, roleLabel, signalsForRole } from './kansen'
+import {
+  EIGEN_PREFIX,
+  QUADRANT_ORDER,
+  collectResult,
+  customSignalQuestion,
+  isEigenRole,
+  kaartPunten,
+  placeBubbles,
+  quadrantSubtitle,
+  quickScale,
+  roleLabel,
+  signalsForRole,
+} from './kansen'
 import {
   answerHtml,
   asset,
@@ -78,6 +90,7 @@ if (resetOnLoad) {
   const loaded = loadSession(questionnaire.id, klantParam, new Set(questionIds(questionnaire)))
   session = loaded.session
   restarted = loaded.restarted
+  ensureCustomQuestions()
   steps = buildSteps(questionnaire, session.answers)
   if (session.phase === 'flow' && session.questionId) {
     const index = findStepIndex(steps, session.questionId, questionnaire)
@@ -89,6 +102,7 @@ if (resetOnLoad) {
       clearSession(session)
       session = createSession(questionnaire.id, klantParam)
       restarted = true
+      ensureCustomQuestions()
       steps = buildSteps(questionnaire, session.answers)
     }
   }
@@ -112,15 +126,33 @@ let rolesOpen = false
 let rolesScroll = 0
 let celebrate = false
 let lastLive = ''
-let signalFor = ''
-let signalIndex = 0
 let kaartId = ''
+let eigenOpen = false
+let roleDraft = ''
+let ideaDraft = ''
+const moreIds = new Set<string>()
 
 const app = document.getElementById('app')!
+
+function ensureCustomQuestions(): void {
+  if (!questionnaire || !session) return
+  for (const section of questionnaire.sections) {
+    section.questions = section.questions.filter((question) => !question.signalRole || !isEigenRole(question.signalRole))
+    const rolesQuestion = section.questions.find((question) => question.type === 'roles')
+    if (!rolesQuestion) continue
+    const extras = asList(session.answers[rolesQuestion.id])
+      .filter(isEigenRole)
+      .map((value) => customSignalQuestion(value, rolesQuestion.focus))
+    const index = section.questions.findIndex((question) => question.id === 'kansen')
+    if (index >= 0) section.questions.splice(index, 0, ...extras)
+    else if (extras.length) section.questions.push(...extras)
+  }
+}
 
 function syncSteps(): void {
   if (!questionnaire || !session) return
   const currentId = currentQuestion()?.id || null
+  ensureCustomQuestions()
   steps = buildSteps(questionnaire, session.answers)
   totalQuestions = steps.filter((step) => step.kind === 'question').length
   if (session.phase !== 'flow') return
@@ -172,6 +204,7 @@ function normalizeStep(): void {
 }
 
 function render(): void {
+  captureDrafts()
   const media = captureMedia()
   const thread = document.getElementById('thread')
   const keepScroll = !freshId && thread ? thread.scrollTop : null
@@ -557,8 +590,21 @@ function userBubble(question: Question, value: AnswerValue | undefined): string 
 function roleChips(question: Question, values: string[]): string {
   const chips = values
     .map((item) => {
-      const label = question.options?.find((option) => option.value === item)?.label || item
+      const label = question.options?.find((option) => option.value === item)?.label || roleLabel(item)
       return `<span class="role-chip">${escapeHtml(label)}</span>`
+    })
+    .join('')
+  return `<span class="role-chips">${chips}</span>`
+}
+
+function rolePreview(question: Question, values: string[]): string {
+  const chips = values
+    .map((item) => {
+      const label = question.options?.find((option) => option.value === item)?.label || roleLabel(item)
+      const remove = isEigenRole(item)
+        ? `<button type="button" data-action="remove-role" data-qid="${escapeHtml(question.id)}" data-value="${escapeHtml(item)}" aria-label="Verwijder ${escapeHtml(label)}">×</button>`
+        : ''
+      return `<span class="role-chip">${escapeHtml(label)}${remove}</span>`
     })
     .join('')
   return `<span class="role-chips">${chips}</span>`
@@ -603,80 +649,90 @@ function signalState(question: Question): Record<string, number> {
   return isSignalAnswer(value) ? { ...value.values } : {}
 }
 
+function signalNoteOf(question: Question): string {
+  const value = session?.answers[question.id]
+  return isSignalAnswer(value) ? value.note : ''
+}
+
 function signalsComposer(question: Question): string {
   const signals = signalsForRole(question.signalRole || '')
-  if (signalFor !== question.id) {
-    signalFor = question.id
-    const values = signalState(question)
-    const gap = signals.findIndex((signal) => values[signal.id] == null)
-    signalIndex = gap < 0 ? 0 : gap
-  }
-  if (signalIndex >= signals.length) signalIndex = Math.max(0, signals.length - 1)
-  const current = signals[signalIndex]
   const values = signalState(question)
-  const done = signals.every((signal) => values[signal.id] != null)
-  if (!current) return ''
-  const chips = intensityScale
-    .map((item) => {
-      const on = values[current.id] === item.waarde
-      return `<button class="signal-choice${on ? ' is-on' : ''}" type="button" data-action="signal-score" data-qid="${escapeHtml(question.id)}" data-signal="${escapeHtml(current.id)}" data-value="${item.waarde}">${escapeHtml(item.label)}</button>`
+  const rows = signals
+    .map((signal) => {
+      const chips = quickScale
+        .map((item) => {
+          const on = values[signal.id] === item.waarde
+          return `<button class="signal-choice${on ? ' is-on' : ''}" type="button" data-action="signal-score" data-qid="${escapeHtml(question.id)}" data-signal="${escapeHtml(signal.id)}" data-value="${item.waarde}">${escapeHtml(item.label)}</button>`
+        })
+        .join('')
+      return `<div class="signal-row">
+        <p class="signal-text">${escapeHtml(signal.tekst)}</p>
+        <div class="signal-scale" role="radiogroup" aria-label="${escapeHtml(signal.tekst)}">${chips}</div>
+      </div>`
     })
     .join('')
-  return `<div class="signal-card">
-    <p class="signal-count">Uitspraak ${signalIndex + 1} van ${signals.length}</p>
-    <p class="signal-text">${escapeHtml(current.tekst)}</p>
-    <div class="signal-scale">${chips}</div>
-    <div class="signal-nav">
-      <button class="btn btn-line" type="button" data-action="signal-prev" ${signalIndex === 0 ? 'disabled' : ''}>Vorige</button>
-      <button class="btn btn-line" type="button" data-action="signal-next" ${signalIndex >= signals.length - 1 ? 'disabled' : ''}>Volgende</button>
-    </div>
-  </div>
-  <button class="btn btn-primary send-wide" type="submit" data-action="send" ${done ? '' : 'disabled'}>Verder</button>`
+  const note = `<label class="signal-note">Nog een andere tijdvreter? <span>Optioneel</span>
+    <input class="field" type="text" data-kind="signal-note" data-qid="${escapeHtml(question.id)}" maxlength="120" placeholder="${escapeHtml(question.placeholder || 'bijv. uren invoeren op vrijdag')}" value="${escapeHtml(signalNoteOf(question))}" />
+  </label>`
+  return `${rows ? `<div class="signal-list">${rows}</div>` : ''}${note}
+    <button class="btn btn-primary send-wide" type="submit" data-action="send">Verder</button>`
 }
 
 function kansenComposer(question: Question): string {
   if (!session) return ''
   const result = collectResult(session.answers)
   const stored = kansFieldsFromSession(question.id)
-  if (result.ranked.length === 0) {
-    return `<p class="kans-empty">Op basis van de uitspraken komt er nog geen kans boven de drempel.</p>
-      <textarea class="field" data-kind="kans-note" data-qid="${escapeHtml(question.id)}" rows="3" placeholder="Wat zou het grootste verschil maken?">${escapeHtml(stored.note)}</textarea>
-      <button class="btn btn-primary send-wide" type="submit" data-action="send">Verder</button>`
-  }
-  const cards = result.ranked
-    .map((item) => {
-      const choice = stored.interest[item.id] || ''
-      const buttons = [
-        ['graag', 'Graag in de workshop'],
-        ['misschien', 'Misschien'],
-        ['niet', 'Niet nu'],
-      ]
-        .map(
-          ([value, label]) =>
-            `<button class="signal-choice${choice === value ? ' is-on' : ''}" type="button" data-action="kans-interest" data-qid="${escapeHtml(question.id)}" data-uc="${escapeHtml(item.id)}" data-value="${value}">${label}</button>`,
-        )
-        .join('')
-      return `<article class="kans-card">
-        <h3>${escapeHtml(item.naam)}</h3>
-        <p>${escapeHtml(item.omschrijving)}</p>
-        <p class="kans-example">${escapeHtml(item.voorbeeld)}</p>
-        <p class="mens">Laatste akkoord ligt altijd bij een mens.</p>
-        <div class="signal-scale">${buttons}</div>
-      </article>`
-    })
+  const cards =
+    result.ranked.length === 0
+      ? `<p class="kans-empty">Nog geen kans boven de drempel. Een eigen idee mag wel.</p>`
+      : result.ranked
+          .map((item) => {
+            const choice = stored.interest[item.id] || ''
+            const buttons = [
+              ['graag', 'Graag'],
+              ['misschien', 'Misschien'],
+              ['niet', 'Niet nu'],
+            ]
+              .map(
+                ([value, label]) =>
+                  `<button class="signal-choice${choice === value ? ' is-on' : ''}" type="button" data-action="kans-interest" data-qid="${escapeHtml(question.id)}" data-uc="${escapeHtml(item.id)}" data-value="${value}">${label}</button>`,
+              )
+              .join('')
+            const open = moreIds.has(item.id)
+            const extra = open ? `<p class="kans-example">${escapeHtml(item.voorbeeld)}</p>` : ''
+            return `<article class="kans-card">
+              <h3>${escapeHtml(item.naam)}</h3>
+              <p>${escapeHtml(item.regel)}</p>
+              <button class="meer-btn" type="button" data-action="kans-more" data-uc="${escapeHtml(item.id)}" aria-expanded="${open}">${open ? 'Minder' : 'Meer'}</button>
+              ${extra}
+              <div class="signal-scale">${buttons}</div>
+            </article>`
+          })
+          .join('')
+  const ideas = stored.ideas
+    .map(
+      (idea, index) =>
+        `<li><span>${escapeHtml(idea)}</span><button type="button" data-action="idea-remove" data-qid="${escapeHtml(question.id)}" data-index="${index}" aria-label="Verwijder ${escapeHtml(idea)}">×</button></li>`,
+    )
     .join('')
   const ready = isValid(question, session.answers[question.id], session.answers)
   return `${cards}
-    <label class="kans-note">Wat zou het grootste verschil maken? <span>Optioneel</span>
-      <textarea class="field" data-kind="kans-note" data-qid="${escapeHtml(question.id)}" rows="3" placeholder="Bijv. minder zoeken tussen documenten en de bouwplaats">${escapeHtml(stored.note)}</textarea>
-    </label>
+    <div class="idea-box">
+      <p>Eigen idee <span>Optioneel</span></p>
+      ${ideas ? `<ul class="idea-list">${ideas}</ul>` : ''}
+      <div class="idea-add">
+        <input class="field" type="text" data-kind="kans-idea" data-qid="${escapeHtml(question.id)}" maxlength="120" placeholder="+ Eigen idee toevoegen" value="${escapeHtml(ideaDraft)}" />
+        <button class="btn btn-line" type="button" data-action="idea-add" data-qid="${escapeHtml(question.id)}">Voeg toe</button>
+      </div>
+    </div>
+    <p class="mens">Laatste akkoord ligt altijd bij een mens.</p>
     <button class="btn btn-primary send-wide" type="submit" data-action="send" ${ready ? '' : 'disabled'}>Verder</button>`
 }
 
-function kansFieldsFromSession(id: string): { interest: Record<string, string>; note: string } {
+function kansFieldsFromSession(id: string): { interest: Record<string, string>; ideas: string[] } {
   const value = session?.answers[id]
-  if (!isKansAnswer(value)) return { interest: {}, note: '' }
-  return { interest: value.interest, note: value.note }
+  if (!isKansAnswer(value)) return { interest: {}, ideas: [] }
+  return { interest: value.interest, ideas: value.ideas || [] }
 }
 
 function textComposer(question: Question): string {
@@ -693,6 +749,11 @@ function textComposer(question: Question): string {
 function chipComposer(question: Question, value: AnswerValue | undefined): string {
   const allowed = question.optionsFrom && session ? new Set(asList(session.answers[question.optionsFrom])) : null
   const options = (question.options || []).filter((option) => !allowed || allowed.has(option.value))
+  if (allowed) {
+    for (const value of allowed) {
+      if (!options.some((option) => option.value === value)) options.push({ value, label: roleLabel(value) })
+    }
+  }
   const selected = question.type === 'multiple' ? asList(value) : typeof value === 'string' ? [value] : []
   const role = question.type === 'single' ? 'radiogroup' : 'group'
   const itemRole = question.type === 'single' ? 'radio' : 'checkbox'
@@ -745,24 +806,32 @@ function rolesComposer(question: Question, value: AnswerValue | undefined): stri
       </button>`
     })
     .join('')
-  const preview = count ? roleChips(question, selected) : '<p class="role-empty">Nog geen rol gekozen</p>'
+  const preview = count ? rolePreview(question, selected) : '<p class="role-empty">Nog geen rol gekozen</p>'
   const error = errorText ? `<p class="form-error" role="alert">${escapeHtml(errorText)}</p>` : ''
+  const eigen = eigenOpen
+    ? `<div class="eigen-add">
+        <input class="field" type="text" data-kind="eigen-role" maxlength="40" placeholder="Bijv. monteur" value="${escapeHtml(roleDraft)}" />
+        <button class="btn btn-line" type="button" data-action="add-role" data-qid="${escapeHtml(question.id)}">Voeg toe</button>
+      </div>`
+    : `<button class="meer-btn" type="button" data-action="toggle-eigen">+ Andere rol</button>`
   return `<div class="role-picker">
     <div class="role-launch">
       <button class="btn btn-yellow" type="button" data-action="open-roles">Bekijk de tien rollen</button>
+      <button class="meer-btn" type="button" data-action="toggle-eigen">+ Andere rol</button>
       ${preview}
       ${confirm}
     </div>
     <div class="role-sheet${rolesOpen ? ' is-open' : ''}" ${rolesOpen ? 'role="dialog" aria-modal="true"' : ''} aria-labelledby="role-sheet-title">
       <header class="role-sheet-bar">
         <div>
-          <p class="kicker">Rollen en tijdvreters</p>
-          <h2 id="role-sheet-title">Waar gaat de tijd naartoe?</h2>
+          <p class="kicker">Rollen</p>
+          <h2 id="role-sheet-title">Welke herken je?</h2>
         </div>
         <button class="icon-btn role-close" type="button" data-action="close-roles" aria-label="Sluit de kaarten">×</button>
       </header>
       <div class="role-grid" role="group" aria-label="${escapeHtml(question.title)}">${cards}</div>
-      <p class="role-note">Schatting is een indicatieve bandbreedte. Die toetsen we in de workshop.</p>
+      <div class="eigen-role">${eigen}</div>
+      <p class="role-note">Tik wat je herkent. Een eigen rol mag ook.</p>
       ${error}
       <div class="role-sheet-foot">${confirm}</div>
     </div>
@@ -1017,13 +1086,28 @@ function syncText(): void {
     if (!id) return
     session!.answers[id] = field.value
   })
-  document.querySelectorAll<HTMLTextAreaElement>('[data-kind="kans-note"]').forEach((field) => {
+  document.querySelectorAll<HTMLInputElement>('[data-kind="signal-note"]').forEach((field) => {
     const id = field.dataset.qid
     if (!id) return
     const current = session!.answers[id]
-    const interest = isKansAnswer(current) ? current.interest : {}
-    session!.answers[id] = { kind: 'kansen', interest, note: field.value }
+    const values = isSignalAnswer(current) ? current.values : {}
+    session!.answers[id] = { kind: 'signals', values, note: field.value }
   })
+}
+
+function captureDrafts(): void {
+  const role = document.querySelector<HTMLInputElement>('[data-kind="eigen-role"]')
+  if (role) roleDraft = role.value
+  const idea = document.querySelector<HTMLInputElement>('[data-kind="kans-idea"]')
+  if (idea) ideaDraft = idea.value
+  syncText()
+}
+
+const QUAD_TITLE: Record<string, string> = {
+  'strategische-projecten': 'Strategisch',
+  'quick-wins': 'Quick wins',
+  'later-niet': 'Heroverwegen',
+  opvullers: 'Later',
 }
 
 function kaartHtml(): string {
@@ -1037,41 +1121,85 @@ function kaartHtml(): string {
     result.interest,
     scores,
   )
-  const dots = points
-    .map((point) => {
-      const left = ((point.x - 1) / 4) * 100
-      const bottom = ((point.y - 1) / 4) * 100
-      const cls = `kaart-dot${point.relevant ? '' : ' is-dim'}${point.top ? ' is-top' : ''}${kaartId === point.id ? ' is-on' : ''}`
-      return `<button class="${cls}" type="button" data-action="kaart" data-id="${escapeHtml(point.id)}" style="left:${left.toFixed(2)}%;bottom:${bottom.toFixed(2)}%;--size:${point.size}px;--kleur:${point.kleur}" aria-label="${escapeHtml(point.naam)}"><i></i></button>`
+  const placed = placeBubbles(points, result.ranked.map((item) => item.id))
+  const quads = QUADRANT_ORDER.map((id) => {
+    const title = QUAD_TITLE[id] || id
+    return `<div class="kaart-quad quad-${id}">
+      <p class="quad-title">${escapeHtml(title)}</p>
+      <p class="quad-sub">${escapeHtml(quadrantSubtitle(id))}</p>
+    </div>`
+  }).join('')
+  const dots = placed
+    .map((dot) => {
+      const accent = dot.top || dot.graag ? ' is-accent' : ''
+      const on = kaartId === dot.id ? ' is-on' : ''
+      const side = dot.left > 58 ? ' tip-left' : ''
+      const mark = dot.nummer != null ? String(dot.nummer) : ''
+      const label = dot.top || dot.graag ? `<span class="bubble-label">${escapeHtml(dot.naam)}</span>` : ''
+      return `<button class="bubble-dot${accent}${on}${side}" type="button" data-action="kaart" data-id="${escapeHtml(dot.id)}" style="left:${dot.left.toFixed(2)}%;bottom:${dot.bottom.toFixed(2)}%;--size:${dot.size}px;--kleur:${dot.kleur};--ink:${dot.ink}" aria-label="${escapeHtml(dot.naam)}, ${escapeHtml(dot.kwadrantNaam)}">
+        <span class="bubble-face">${mark}</span>
+        ${label}
+        <span class="kaart-tip"><strong>${escapeHtml(dot.naam)}</strong><span>${escapeHtml(dot.toelichting)}</span><span>${escapeHtml(dot.kwadrantNaam)}</span></span>
+      </button>`
     })
     .join('')
-  const selected = points.find((point) => point.id === kaartId)
-  const detail = selected
-    ? `<div class="kaart-detail"><strong>${escapeHtml(selected.naam)}</strong><p>${escapeHtml(selected.kwadrantNaam)} · impact ${escapeHtml(selected.impact)} · haalbaarheid ${escapeHtml(selected.haalbaarheid)}</p></div>`
-    : `<p class="kaart-hint">Tik een stip voor de naam.</p>`
-  const list = result.ranked
+  const legendItems = new Map<string, string>()
+  for (const dot of placed) {
+    if (dot.rolLabel && !legendItems.has(dot.rolLabel)) legendItems.set(dot.rolLabel, dot.kleur)
+  }
+  const legend = [...legendItems]
     .map(
-      (item) => `<li>
-        <strong>${escapeHtml(item.naam)}</strong>
-        <span>${escapeHtml(item.id)} · score ${item.score.toFixed(1).replace('.', ',')} · ${escapeHtml(interestText(result.interest[item.id] || ''))}</span>
-        <p>${escapeHtml(item.voorbeeld)}</p>
-        <p class="mens">Laatste akkoord ligt altijd bij een mens.</p>
-      </li>`,
+      ([label, kleur]) =>
+        `<li><i style="background:${escapeHtml(kleur)}"></i><span>${escapeHtml(label)}</span></li>`,
     )
     .join('')
+  const selected = placed.find((dot) => dot.id === kaartId)
+  const sheet = selected
+    ? `<div class="kaart-sheet" role="dialog" aria-label="${escapeHtml(selected.naam)}">
+        <button class="kaart-sheet-close" type="button" data-action="kaart" data-id="${escapeHtml(selected.id)}" aria-label="Sluit">×</button>
+        <strong>${escapeHtml(selected.naam)}</strong>
+        <p>${escapeHtml(selected.toelichting)}</p>
+        <p>${escapeHtml(selected.kwadrantNaam)}</p>
+      </div>`
+    : ''
+  const extras = [
+    ...result.eigen.rollen.map((item) => `Eigen rol: ${item.label}`),
+    ...result.eigen.tijdvreters.map((item) => `${item.label}: ${item.tekst}`),
+    ...result.eigen.ideeen.map((item) => `Eigen idee: ${item}`),
+    ...(result.eigen.nogWeten ? [`Nog weten: ${result.eigen.nogWeten}`] : []),
+  ]
+  const zone = extras.length
+    ? `<ul>${extras.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
+    : '<p>Eigen ideeën zonder plek op de kaart komen hier.</p>'
+  const list = result.ranked
+    .map((item, index) => {
+      const choice = interestText(result.interest[item.id] || '')
+      return `<li>
+        <strong>${index + 1}. ${escapeHtml(item.naam)}</strong>
+        <span>Score ${item.score.toFixed(1).replace('.', ',')} · ${escapeHtml(choice)}</span>
+        <p>${escapeHtml(item.regel)}</p>
+      </li>`
+    })
+    .join('')
   return `<section class="kaart-wrap">
-    <div class="kaart">
-      <span class="kaart-q q-tl">Strategisch</span>
-      <span class="kaart-q q-tr">Quick wins</span>
-      <span class="kaart-q q-bl">Niet doen</span>
-      <span class="kaart-q q-br">Later</span>
-      <span class="kaart-threshold x" aria-hidden="true"></span>
-      <span class="kaart-threshold y" aria-hidden="true"></span>
-      ${dots}
+    <div class="kaart-layout">
+      <div class="kaart-stage">
+        <div class="kaart-y" aria-hidden="true"><span>hoog</span><span class="axis-up">Impact →</span><span>laag</span></div>
+        <div class="kaart-plot">
+          <div class="kaart">${quads}</div>
+          <div class="kaart-bubbles">${dots}</div>
+        </div>
+        <div class="kaart-x" aria-hidden="true"><span>laag</span><span>Haalbaarheid →</span><span>hoog</span></div>
+        ${legend ? `<ul class="kaart-legend">${legend}</ul>` : ''}
+      </div>
+      <aside class="nog">
+        <h3>Nog te plaatsen</h3>
+        ${zone}
+      </aside>
     </div>
-    <p class="kaart-axes"><span>Haalbaarheid</span><span>Impact</span></p>
-    ${detail}
+    ${sheet}
     ${list ? `<ol class="kaart-list">${list}</ol>` : '<p class="muted kaart-none">Er kwam geen kans boven de drempel.</p>'}
+    <p class="mens">Laatste akkoord ligt altijd bij een mens.</p>
   </section>`
 }
 
@@ -1165,7 +1293,9 @@ function commitComposer(): void {
     return
   }
   const value = session.answers[question.id]
-  if (!isValid(question, value, session.answers)) {
+  if (question.type === 'signals') normalizeSignals(question)
+  if (question.type === 'kansen') flushIdea(question.id)
+  if (!isValid(question, session.answers[question.id] ?? value, session.answers)) {
     errorText = validationMessage(question)
     freshId = ''
     render()
@@ -1362,38 +1492,97 @@ function resetSession(): void {
   reloadWelcome()
 }
 
+function normalizeSignals(question: Question): void {
+  if (!session) return
+  const signals = signalsForRole(question.signalRole || '')
+  const current = session.answers[question.id]
+  const values = isSignalAnswer(current) ? { ...current.values } : {}
+  const note = isSignalAnswer(current) ? current.note.trim() : ''
+  for (const signal of signals) {
+    if (values[signal.id] == null) values[signal.id] = 0
+  }
+  session.answers[question.id] = { kind: 'signals', values, note }
+}
+
+function flushIdea(id: string): void {
+  if (!session) return
+  const field = document.querySelector<HTMLInputElement>('[data-kind="kans-idea"]')
+  const text = (field?.value || ideaDraft).trim()
+  if (!text) return
+  const current = kansFieldsFromSession(id)
+  if (!current.ideas.includes(text)) {
+    session.answers[id] = { kind: 'kansen', interest: current.interest, ideas: [...current.ideas, text] }
+  }
+  ideaDraft = ''
+  if (field) field.value = ''
+}
+
 function setSignalScore(id: string, signalId: string, score: number): void {
   if (!session || Number.isNaN(score)) return
   const question = questionById(id)
   if (!question) return
-  const signals = signalsForRole(question.signalRole || '')
-  const values = { ...signalState(question), [signalId]: score }
-  const index = signals.findIndex((signal) => signal.id === signalId)
-  const nextGap = signals.findIndex((signal, itemIndex) => itemIndex > index && values[signal.id] == null)
-  signalFor = id
-  signalIndex = nextGap >= 0 ? nextGap : Math.min(signals.length - 1, Math.max(0, index + 1))
-  setAnswer(id, { kind: 'signals', values })
-}
-
-function nudgeSignal(delta: number): void {
-  const question = composerQuestion()
-  if (!question || question.type !== 'signals') return
-  const signals = signalsForRole(question.signalRole || '')
-  if (!signals.length) return
-  signalFor = question.id
-  signalIndex = Math.max(0, Math.min(signals.length - 1, signalIndex + delta))
-  freshId = ''
-  render()
+  const field = document.querySelector<HTMLInputElement>(`[data-kind="signal-note"][data-qid="${CSS.escape(id)}"]`)
+  const current = session.answers[id]
+  const values = isSignalAnswer(current) ? { ...current.values } : {}
+  const note = field ? field.value : isSignalAnswer(current) ? current.note : ''
+  values[signalId] = score
+  setAnswer(id, { kind: 'signals', values, note })
 }
 
 function setKansInterest(id: string, useCaseId: string, choice: string): void {
   if (!session) return
-  const field = document.querySelector<HTMLTextAreaElement>('[data-kind="kans-note"]')
   const current = kansFieldsFromSession(id)
   setAnswer(id, {
     kind: 'kansen',
     interest: { ...current.interest, [useCaseId]: choice },
-    note: field?.value ?? current.note,
+    ideas: current.ideas,
+  })
+}
+
+function toggleMore(id: string): void {
+  if (moreIds.has(id)) moreIds.delete(id)
+  else moreIds.add(id)
+  freshId = ''
+  render()
+}
+
+function addEigenRole(id: string): void {
+  if (!session) return
+  const field = document.querySelector<HTMLInputElement>('[data-kind="eigen-role"]')
+  const label = (field?.value || roleDraft).trim()
+  if (!label) return
+  const value = `${EIGEN_PREFIX}${label}`
+  const current = asList(session.answers[id])
+  if (!current.includes(value)) current.push(value)
+  roleDraft = ''
+  if (field) field.value = ''
+  eigenOpen = true
+  setAnswer(id, current)
+}
+
+function addIdea(id: string): void {
+  if (!session) return
+  const field = document.querySelector<HTMLInputElement>('[data-kind="kans-idea"]')
+  const text = (field?.value || ideaDraft).trim()
+  if (!text) return
+  const current = kansFieldsFromSession(id)
+  ideaDraft = ''
+  if (field) field.value = ''
+  if (current.ideas.includes(text)) {
+    freshId = ''
+    render()
+    return
+  }
+  setAnswer(id, { kind: 'kansen', interest: current.interest, ideas: [...current.ideas, text] })
+}
+
+function removeIdea(id: string, index: number): void {
+  if (!session) return
+  const current = kansFieldsFromSession(id)
+  setAnswer(id, {
+    kind: 'kansen',
+    interest: current.interest,
+    ideas: current.ideas.filter((_, itemIndex) => itemIndex !== index),
   })
 }
 
@@ -1654,14 +1843,22 @@ document.addEventListener('click', (event) => {
     else rolesOpen = false
     commitComposer()
   }
-  else if (action === 'scale' && el.dataset.qid) chooseScale(el.dataset.qid, Number(el.dataset.value), false)
+  else if (action === 'scale' && el.dataset.qid) chooseScale(el.dataset.qid, Number(el.dataset.value), true)
   else if (action === 'rank-toggle' && el.dataset.qid && el.dataset.value) toggleList(el.dataset.qid, el.dataset.value)
   else if (action === 'rank-up' && el.dataset.qid && el.dataset.value) moveRank(el.dataset.qid, el.dataset.value, -1)
   else if (action === 'rank-down' && el.dataset.qid && el.dataset.value) moveRank(el.dataset.qid, el.dataset.value, 1)
   else if (action === 'signal-score' && el.dataset.qid && el.dataset.signal) {
     setSignalScore(el.dataset.qid, el.dataset.signal, Number(el.dataset.value))
-  } else if (action === 'signal-prev') nudgeSignal(-1)
-  else if (action === 'signal-next') nudgeSignal(1)
+  } else if (action === 'toggle-eigen') {
+    eigenOpen = true
+    rolesOpen = true
+    freshId = ''
+    render()
+  } else if (action === 'add-role' && el.dataset.qid) addEigenRole(el.dataset.qid)
+  else if (action === 'remove-role' && el.dataset.qid && el.dataset.value) toggleList(el.dataset.qid, el.dataset.value)
+  else if (action === 'kans-more' && el.dataset.uc) toggleMore(el.dataset.uc)
+  else if (action === 'idea-add' && el.dataset.qid) addIdea(el.dataset.qid)
+  else if (action === 'idea-remove' && el.dataset.qid) removeIdea(el.dataset.qid, Number(el.dataset.index))
   else if (action === 'kans-interest' && el.dataset.qid && el.dataset.uc && el.dataset.value) {
     setKansInterest(el.dataset.qid, el.dataset.uc, el.dataset.value)
   } else if (action === 'kaart' && el.dataset.id) selectKaart(el.dataset.id)
@@ -1710,6 +1907,22 @@ document.addEventListener('submit', (event) => {
 document.addEventListener('input', (event) => {
   const field = event.target
   if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) || !session) return
+  if (field.dataset.kind === 'signal-note' && field.dataset.qid) {
+    const current = session.answers[field.dataset.qid]
+    const values = isSignalAnswer(current) ? current.values : {}
+    session.answers[field.dataset.qid] = { kind: 'signals', values, note: field.value }
+    persist()
+    flashSaved()
+    return
+  }
+  if (field.dataset.kind === 'eigen-role') {
+    roleDraft = field.value
+    return
+  }
+  if (field.dataset.kind === 'kans-idea') {
+    ideaDraft = field.value
+    return
+  }
   if (field.dataset.kind === 'text' && field.dataset.qid) {
     session.answers[field.dataset.qid] = field.value
     persist()
@@ -1740,6 +1953,20 @@ document.addEventListener('change', (event) => {
 })
 
 document.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter' && event.target instanceof HTMLInputElement) {
+    const kind = event.target.dataset.kind
+    if (kind === 'kans-idea' && event.target.dataset.qid) {
+      event.preventDefault()
+      addIdea(event.target.dataset.qid)
+      return
+    }
+    if (kind === 'eigen-role') {
+      event.preventDefault()
+      const question = composerQuestion()
+      if (question) addEigenRole(question.id)
+      return
+    }
+  }
   if (event.key === 'Escape' && rolesOpen) {
     rolesOpen = false
     render()

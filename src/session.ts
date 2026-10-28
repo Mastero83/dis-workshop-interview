@@ -30,7 +30,7 @@ export function storageKey(questionnaireId: string, klant: string): string {
 export function createSession(questionnaireId: string, klant: string): Session {
   const now = new Date().toISOString()
   return {
-    version: 5,
+    version: 6,
     questionnaireId,
     klant,
     phase: 'welcome',
@@ -52,8 +52,8 @@ function isPhase(value: unknown): value is Phase {
 
 /**
  * Beslist of een opgeslagen sessie nog bij deze vragenlijst hoort.
- * Versie 1 bewaarde alleen een stapnummer. Versie 2 tot en met 4 hervatten op vraag-id,
- * maar zonder de uitspraken en de kansenkaart. Versie 5 is dat gesprek.
+ * Versie 1 bewaarde alleen een stapnummer. Versie 2 tot en met 5 hervatten op vraag-id,
+ * maar zonder de korte uitspraken en de eigen invoer. Versie 6 is dat gesprek.
  * Alles daaronder begint opnieuw.
  */
 export function interpretStored(
@@ -76,12 +76,13 @@ export function interpretStored(
   const data = parsed as Record<string, unknown>
   const reset = (): StoredDecision => ({ session: fresh(), restarted: true, discard: true })
   if (data.questionnaireId !== questionnaireId || !isAnswerRecord(data.answers)) return reset()
-  if (data.version !== 5 || !isPhase(data.phase)) return reset()
+  if (data.version !== 6 || !isPhase(data.phase)) return reset()
   const questionId = typeof data.questionId === 'string' && data.questionId ? data.questionId : null
-  if (data.phase === 'flow' && (!questionId || !knownQuestionIds.has(questionId))) return reset()
+  const knownQuestion = questionId != null && (knownQuestionIds.has(questionId) || questionId.startsWith('sig-eigen:'))
+  if (data.phase === 'flow' && !knownQuestion) return reset()
   return {
     session: {
-      version: 5,
+      version: 6,
       questionnaireId,
       klant,
       phase: data.phase,
@@ -156,7 +157,7 @@ export function hasProgress(session: Session): boolean {
     if (typeof value === 'number') return true
     if (typeof value === 'string') return value.trim().length > 0
     if (Array.isArray(value)) return value.length > 0
-    if (value.kind === 'signals') return Object.keys(value.values).length > 0
-    return value.note.trim().length > 0 || Object.keys(value.interest).length > 0
+    if (value.kind === 'signals') return Object.keys(value.values).length > 0 || value.note.trim().length > 0
+    return value.ideas.some((item) => item.trim().length > 0) || Object.keys(value.interest).length > 0
   })
 }

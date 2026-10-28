@@ -1,5 +1,5 @@
 import { isQuestionActive, presentQuestion, rolePhrase } from './catalog'
-import { collectResult, intensityLabel, interestLabel, signalsForRole, useCaseName } from './kansen.ts'
+import { collectResult, eigenLabel, intensityLabel, interestLabel, isEigenRole, roleLabel, signalsForRole, useCaseName } from './kansen.ts'
 import type { AnswerValue, ExportDoc, KansAnswer, Question, Questionnaire, Session, SignalAnswer } from './types'
 
 export function escapeHtml(value: string): string {
@@ -31,7 +31,7 @@ export function isEmpty(value: AnswerValue | undefined): boolean {
   if (value == null) return true
   if (typeof value === 'number') return false
   if (Array.isArray(value)) return value.length === 0
-  if (isSignalAnswer(value)) return Object.keys(value.values).length === 0
+  if (isSignalAnswer(value)) return Object.keys(value.values).length === 0 && value.note.trim() === ''
   if (isKansAnswer(value)) return false
   if (typeof value === 'string') return value.trim() === ''
   return true
@@ -59,11 +59,12 @@ export function isValid(
   }
   if (question.type === 'scale') return typeof value === 'number'
   if (question.type === 'signals') {
+    if (value == null) return true
     if (!isSignalAnswer(value)) return false
     const signals = signalsForRole(question.signalRole || '')
     return signals.every((signal) => {
       const score = value.values[signal.id]
-      return score === 0 || score === 1 || score === 2 || score === 3
+      return score == null || score === 0 || score === 1.5 || score === 3
     })
   }
   if (question.type === 'kansen') {
@@ -95,7 +96,7 @@ export function validationMessage(question: Question): string {
   if (question.type === 'roles') return 'Kies minimaal één rol.'
   if (question.type === 'scale') return 'Tik een cijfer om verder te gaan.'
   if (question.type === 'single') return 'Kies één antwoord om verder te gaan.'
-  if (question.type === 'signals') return 'Geef elke uitspraak een score.'
+  if (question.type === 'signals') return 'Tik soms of vaak, of ga verder.'
   if (question.type === 'kansen') return 'Geef per kans aan hoe interessant die is.'
   return 'Vul een antwoord in om verder te gaan.'
 }
@@ -110,17 +111,18 @@ export function displayAnswer(question: Question, value: AnswerValue | undefined
     const lines = signalsForRole(question.signalRole || '')
       .map((signal) => {
         const score = value.values[signal.id]
-        if (score == null) return ''
+        if (score == null || score <= 0) return ''
         return `${intensityLabel(score)}: ${signal.tekst}`
       })
       .filter(Boolean)
-    return lines.join('\n') || 'Nog niet ingevuld'
+    if (value.note.trim()) lines.push(value.note.trim())
+    return lines.join('\n') || 'Niets herkend'
   }
   if (isKansAnswer(value)) {
     const lines = Object.entries(value.interest).map(
       ([id, choice]) => `${useCaseName(id)} (${id}) — ${interestLabel(choice)}`,
     )
-    if (value.note.trim()) lines.push(value.note.trim())
+    for (const idea of value.ideas) lines.push(`Eigen idee: ${idea}`)
     return lines.join('\n') || 'Nog geen keuze'
   }
   if (Array.isArray(value)) {
@@ -128,7 +130,7 @@ export function displayAnswer(question: Question, value: AnswerValue | undefined
       return value
         .map((item) => {
           const option = question.options?.find((entry) => entry.value === item)
-          if (!option) return item
+          if (!option) return isEigenRole(item) ? eigenLabel(item) : roleLabel(item)
           return option.figure ? `${option.label} (${option.figure})` : option.label
         })
         .join(', ')
@@ -152,7 +154,7 @@ export function answerHtml(question: Question, value: AnswerValue | undefined): 
       .map((item) => {
         const option = question.options?.find((entry) => entry.value === item)
         const figure = question.type === 'roles' && option?.figure ? ` <small>${escapeHtml(option.figure)}</small>` : ''
-        return `<li>${escapeHtml(option?.label || item)}${figure}</li>`
+        return `<li>${escapeHtml(option?.label || (isEigenRole(item) ? eigenLabel(item) : item))}${figure}</li>`
       })
       .join('')
     return `<ul class="answer-chips">${items}</ul>`
@@ -196,6 +198,12 @@ export function toExportDoc(questionnaire: Questionnaire, session: Session): Exp
       interest: result.interest[item.id] || '',
       signalen: item.signalen,
     })),
+    eigen: {
+      rollen: result.eigen.rollen.map((item) => item.label),
+      tijdvreters: result.eigen.tijdvreters.map((item) => ({ rol: item.label, tekst: item.tekst })),
+      ideeen: result.eigen.ideeen,
+      nogWeten: result.eigen.nogWeten,
+    },
   }
 }
 
@@ -229,6 +237,16 @@ export function toPlainText(doc: ExportDoc): string {
       const choice = kans.interest ? interestLabel(kans.interest) : 'geen keuze'
       lines.push(`${kans.naam} (${kans.id}) — score ${String(kans.score).replace('.', ',')} — ${choice}`)
     }
+    lines.push('')
+  }
+  const eigen = doc.eigen
+  if (eigen && (eigen.rollen.length || eigen.tijdvreters.length || eigen.ideeen.length || eigen.nogWeten)) {
+    lines.push('Eigen invoer')
+    lines.push('------------')
+    for (const rol of eigen.rollen) lines.push(`Eigen rol: ${rol}`)
+    for (const item of eigen.tijdvreters) lines.push(`${item.rol}: ${item.tekst}`)
+    for (const idee of eigen.ideeen) lines.push(`Eigen idee: ${idee}`)
+    if (eigen.nogWeten) lines.push(eigen.nogWeten)
     lines.push('')
   }
   lines.push('Antwoorden zijn door de klant zelf ingevuld ter voorbereiding op de workshop.')

@@ -4,10 +4,10 @@
       "id": "workshop-voorbereiding",
       "title": "Workshopvoorbereiding",
       "kicker": "Workshopvoorbereiding",
-      "intro": "Eerst een korte film. Daarna de rollen en de tijd- en kwaliteitsvreters. ±4–5 minuten.",
+      "intro": "Rollen, tijdvreters en kansen. ±2–3 minuten.",
       "heroImage": "fotos/bouwplaats-zonsondergang-titel.jpeg",
       "heroPosition": "center 40%",
-      "estimatedMinutes": 5,
+      "estimatedMinutes": 3,
       "consultantEmail": "",
       "video": {
         "type": "video",
@@ -75,7 +75,7 @@
           "id": "rollen",
           "title": "Tijd- en kwaliteitsvreters",
           "kicker": "Waar tijd en kwaliteit weglekken",
-          "intro": "Kies de rollen die je herkent. Daarna zoomen we in op wat daar speelt.",
+          "intro": "Kies de rollen die je herkent.",
           "image": "fotos/overleg-kantoor.jpeg",
           "imagePosition": "center 40%",
           "accent": "blue",
@@ -83,22 +83,22 @@
             {
               "id": "rollen",
               "type": "roles",
-              "title": "Welke tijd- en kwaliteitsvreters herken je?",
-              "help": "Kies elke rol die je herkent. Schatting is een indicatieve bandbreedte.",
+              "title": "Welke rollen herken je?",
+              "help": "Tik alles wat je herkent.",
               "required": true,
               "context": {
                 "type": "video",
                 "src": "media/ctx-rollen-tijdvreters.mp4",
                 "poster": "media/ctx-rollen-tijdvreters-poster.jpg",
                 "title": "Tijd en kwaliteit lekken weg",
-                "body": "Per rol, bij bouw- en installatiebedrijven. Daarna kies je wat je herkent."
+                "body": "Kies daarna wat je herkent."
               },
               "focus": {
                 "id": "rollen-focus",
                 "whenSelectedMoreThan": 3,
                 "pick": 3,
-                "title": "Welke drie tijd- en kwaliteitsvreters doen de meeste pijn?",
-                "help": "Tik eerst de grootste. Alleen over deze drie volgen de uitspraken."
+                "title": "Welke drie doen de meeste pijn?",
+                "help": "Alleen deze drie gaan verder."
               },
               "options": [
                 {
@@ -206,8 +206,8 @@
             {
               "id": "urgentie",
               "type": "scale",
-              "title": "Hoe urgent is dit voor de workshop?",
-              "help": "Een cijfer is genoeg. 1 kan wachten, 5 speelt nu.",
+              "title": "Hoe urgent is dit?",
+              "help": "Eén tik. 1 wacht, 5 speelt nu.",
               "required": true,
               "min": 1,
               "max": 5,
