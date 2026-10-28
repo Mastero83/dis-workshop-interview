@@ -12,15 +12,19 @@ export interface StoredDecision {
   discard: boolean
 }
 
-export function slugify(value: string): string {
-  const slug = value
+/** Lege invoer blijft leeg. `slugify` maakt daar `algemeen` van voor de localStorage-sleutel. */
+export function customerSlug(value: string): string {
+  return value
     .trim()
     .toLocaleLowerCase('nl')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
-  return slug || 'algemeen'
+}
+
+export function slugify(value: string): string {
+  return customerSlug(value) || 'algemeen'
 }
 
 export function storageKey(questionnaireId: string, klant: string): string {
@@ -39,6 +43,7 @@ export function createSession(questionnaireId: string, klant: string): Session {
     answers: {},
     startedAt: now,
     updatedAt: now,
+    sessieId: crypto.randomUUID(),
   }
 }
 
@@ -91,6 +96,9 @@ export function interpretStored(
       answers: data.answers,
       startedAt: typeof data.startedAt === 'string' ? data.startedAt : new Date().toISOString(),
       updatedAt: typeof data.updatedAt === 'string' ? data.updatedAt : new Date().toISOString(),
+      sessieId: typeof data.sessieId === 'string' && data.sessieId.trim() ? data.sessieId.trim() : crypto.randomUUID(),
+      klantSlug: typeof data.klantSlug === 'string' && customerSlug(data.klantSlug) ? customerSlug(data.klantSlug) : undefined,
+      afgerond: data.afgerond === true,
       remotePushedAt: typeof data.remotePushedAt === 'string' ? data.remotePushedAt : undefined,
     },
     restarted: false,
@@ -147,6 +155,73 @@ export function wipeAppStorage(): void {
     sessionStorage.clear()
   } catch {
     /* privémodus kan sessionStorage blokkeren */
+  }
+}
+
+const SAVE_FLAG_PREFIX = 'dis-workshop-opgeslagen:'
+const SAVE_LOG_KEY = 'dis-workshop-opslag-status'
+
+export interface SaveFlag {
+  fingerprint: string
+  savedAt: string
+  status: number
+}
+
+export interface SaveLog {
+  ok: boolean
+  status: number
+  at: string
+  sessieId: string
+  klant: string
+  network: boolean
+}
+
+export function readSaveFlag(sessieId: string): SaveFlag | null {
+  if (!sessieId) return null
+  try {
+    const raw = localStorage.getItem(SAVE_FLAG_PREFIX + sessieId)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as Partial<SaveFlag>
+    if (typeof parsed.fingerprint !== 'string' || typeof parsed.savedAt !== 'string') return null
+    if (typeof parsed.status !== 'number' || parsed.status < 200 || parsed.status >= 300) return null
+    return { fingerprint: parsed.fingerprint, savedAt: parsed.savedAt, status: parsed.status }
+  } catch {
+    return null
+  }
+}
+
+export function writeSaveFlag(sessieId: string, flag: SaveFlag): void {
+  try {
+    localStorage.setItem(SAVE_FLAG_PREFIX + sessieId, JSON.stringify(flag))
+  } catch {
+    /* privémodus kan localStorage blokkeren */
+  }
+}
+
+export function readSaveLog(): SaveLog | null {
+  try {
+    const raw = localStorage.getItem(SAVE_LOG_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as Partial<SaveLog>
+    if (typeof parsed.at !== 'string' || typeof parsed.sessieId !== 'string') return null
+    return {
+      ok: parsed.ok === true,
+      status: typeof parsed.status === 'number' ? parsed.status : 0,
+      at: parsed.at,
+      sessieId: parsed.sessieId,
+      klant: typeof parsed.klant === 'string' ? parsed.klant : '',
+      network: parsed.network === true,
+    }
+  } catch {
+    return null
+  }
+}
+
+export function writeSaveLog(log: SaveLog): void {
+  try {
+    localStorage.setItem(SAVE_LOG_KEY, JSON.stringify(log))
+  } catch {
+    /* privémodus kan localStorage blokkeren */
   }
 }
 

@@ -222,6 +222,31 @@ assert.equal(resumed.session.version, 6)
 assert.equal(resumed.session.questionId, 'rollen')
 assert.equal(resumed.session.phase, 'flow')
 assert.deepEqual(resumed.session.answers.rollen, ['planner'])
+assert.match(resumed.session.sessieId, /^[0-9a-f-]{36}$/i)
+
+const keptId = interpretStored(
+  JSON.stringify({
+    version: 6,
+    questionnaireId: qid,
+    phase: 'summary',
+    stepIndex: 2,
+    questionId: null,
+    sessieId: '11111111-1111-4111-8111-111111111111',
+    klantSlug: 'Van Gelder',
+    afgerond: true,
+    answers: { rollen: ['planner'] },
+    startedAt: '2020-01-01T00:00:00.000Z',
+    updatedAt: '2020-01-01T00:00:00.000Z',
+  }),
+  qid,
+  '',
+  known,
+)
+assert.equal(keptId.restarted, false)
+assert.equal(keptId.session.sessieId, '11111111-1111-4111-8111-111111111111')
+assert.equal(keptId.session.klantSlug, 'van-gelder')
+assert.equal(keptId.session.afgerond, true)
+assert.equal(keptId.session.phase, 'summary')
 
 const droppedQuestion = interpretStored(
   JSON.stringify({
