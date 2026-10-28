@@ -24,8 +24,13 @@ export function loadCatalog(): Catalog {
         assert(question && typeof question.id === 'string', `${section.id} heeft een vraag zonder id`)
         assert(!ids.has(question.id), `Dubbele vraag-id: ${question.id}`)
         ids.add(question.id)
-        if (question.type === 'single' || question.type === 'multiple' || question.type === 'rank') {
+        if (question.type === 'single' || question.type === 'multiple' || question.type === 'rank' || question.type === 'roles') {
           assert(Array.isArray(question.options) && question.options.length > 0, `${question.id} mist options`)
+        }
+        if (question.type === 'roles') {
+          for (const option of question.options || []) {
+            assert(option.figure && option.icon && option.source && option.hint, `${question.id} / ${option.value} mist kaartgegevens`)
+          }
         }
         if (question.context) {
           assert(

@@ -62,6 +62,7 @@ Vraagtypes:
 | `multiple` | meerdere keuzes |
 | `scale` | cijfer van `min` tot `max` (standaard 1–5) |
 | `rank` | volgorde kiezen; `minRanked` is het minimum |
+| `roles` | tien rollenkaarten, meerdere keuzes. Elke optie heeft `figure`, `icon`, `hint`, `source` en `sourceKind` (`bron` of `schatting`) |
 
 `id`'s moeten uniek zijn binnen één vragenlijst. `options` hebben een `value` (stabiel, voor de export) en een `label` (wat de klant leest). `required: false` maakt een vraag overslaanbaar.
 
@@ -86,7 +87,7 @@ Het welkomstscherm toont `introVideo`: `media/intro.mp4` (16:9) en op een smal s
 }
 ```
 
-Het gesprek telt tien vragen, ongeveer vijf minuten. Clips hangen als `context` aan de bijpassende vraag: systemen, projectverloop, pijnpunten, rollen en AI Services. `ctx-werksessie-dagdelen.mp4` staat in `disabledMedia` en wordt niet getoond; het workshopformat is nog niet bevestigd. Zet `enabled` niet op `true` tot dat wel zo is.
+Het gesprek telt acht vragen, ongeveer vijf minuten. We vragen niet welk systeem iemand gebruikt: klanten werken al met Business Central met 4PS. Clips hangen als `context` aan de bijpassende vraag: pijnpunten, projectverloop, rollen, doelen en AI Services. De rollenkaart (vraag 5) gebruikt `media/ctx-rollen-tijdvreters.mp4`. `ctx-herkenbaar.mp4` staat bij de pijnpunten, met het projectfilmpje ertussen, omdat de eerste seconden overlappen met de rollenclip. `ctx-werksessie-dagdelen.mp4` en `ctx-systemen-bc-4ps.mp4` staan in `disabledMedia` en worden niet getoond. Zet `enabled` niet op `true` tot dat wel zo is.
 
 Op een telefoon vullen contextfilmpjes de breedte van de ballon. *Volledig scherm* vergroot ze, zodat de ingebrande ondertitel leesbaar is.
 

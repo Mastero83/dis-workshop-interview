@@ -77,6 +77,8 @@ let adminError = ''
 let savedTimer = 0
 let freshId = ''
 let editingId = ''
+let rolesOpen = false
+let rolesScroll = 0
 let celebrate = false
 let lastLive = ''
 
@@ -104,6 +106,9 @@ function render(): void {
   const media = captureMedia()
   const thread = document.getElementById('thread')
   const keepScroll = !freshId && thread ? thread.scrollTop : null
+  const sheet = document.querySelector('.role-sheet')
+  if (sheet) rolesScroll = sheet.scrollTop
+  document.querySelectorAll('body > .role-sheet').forEach((node) => node.remove())
   const arriving = freshId
   app.innerHTML = view()
   restoreMedia(media)
@@ -113,6 +118,9 @@ function render(): void {
     if (arriving) nextThread.scrollTop = nextThread.scrollHeight
     else if (keepScroll != null) nextThread.scrollTop = keepScroll
   }
+  const nextSheet = document.querySelector('.role-sheet.is-open')
+  if (nextSheet && window.matchMedia('(max-width: 799px)').matches) document.body.appendChild(nextSheet)
+  if (nextSheet && rolesScroll) nextSheet.scrollTop = rolesScroll
   const live = document.getElementById('live')
   const message = announcement()
   if (live && message !== lastLive) {
@@ -447,12 +455,26 @@ function imageHtml(media: Media): string {
 function userBubble(question: Question, value: AnswerValue | undefined): string {
   const text = isEmpty(value) ? 'Overgeslagen' : displayAnswer(question, value)
   const editing = editingId === question.id ? ' is-editing' : ''
+  const body =
+    question.type === 'roles' && !isEmpty(value)
+      ? roleChips(question, asList(value))
+      : `<span class="bubble-text">${escapeHtml(text)}</span>`
   return `<div class="msg user">
     <button class="bubble user${editing}" type="button" data-action="edit" data-qid="${escapeHtml(question.id)}" aria-label="Wijzig antwoord: ${escapeHtml(text)}">
-      <span class="bubble-text">${escapeHtml(text)}</span>
+      ${body}
       <span class="edit-hint">Wijzigen</span>
     </button>
   </div>`
+}
+
+function roleChips(question: Question, values: string[]): string {
+  const chips = values
+    .map((item) => {
+      const label = question.options?.find((option) => option.value === item)?.label || item
+      return `<span class="role-chip">${escapeHtml(label)}</span>`
+    })
+    .join('')
+  return `<span class="role-chips">${chips}</span>`
 }
 
 function composerHtml(question: Question | null): string {
@@ -481,6 +503,7 @@ function controlHtml(question: Question): string {
   const value = session.answers[question.id]
   if (question.type === 'text' || question.type === 'longtext') return textComposer(question)
   if (question.type === 'single' || question.type === 'multiple') return chipComposer(question, value)
+  if (question.type === 'roles') return rolesComposer(question, value)
   if (question.type === 'scale') return scaleComposer(question, value)
   return rankComposer(question, value)
 }
@@ -515,6 +538,58 @@ function chipComposer(question: Question, value: AnswerValue | undefined): strin
       ? `<button class="btn btn-primary send-wide" type="submit" data-action="send" ${selected.length === 0 && question.required !== false ? 'disabled' : ''}>Verstuur${selected.length ? ` · ${selected.length}` : ''}</button>`
       : ''
   return `<div class="chips-reply" role="${role}" aria-label="${escapeHtml(question.title)}">${chips}</div>${send}`
+}
+
+const CHECK =
+  '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 12.5 9.2 17 19 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+
+function rolesComposer(question: Question, value: AnswerValue | undefined): string {
+  const selected = asList(value)
+  const count = selected.length
+  const ready = count > 0 || question.required === false
+  const confirm = `<button class="btn btn-primary send-wide" type="button" data-action="confirm-roles" ${ready ? '' : 'disabled'}>Bevestig selectie${count ? ` · ${count}` : ''}</button>`
+  const cards = (question.options || [])
+    .map((option) => {
+      const on = selected.includes(option.value)
+      const source =
+        option.sourceKind === 'bron'
+          ? `<span class="role-source is-bron">Bron: ${escapeHtml(option.source || '')}</span>`
+          : `<span class="role-source">Schatting</span>`
+      const icon = option.icon
+        ? `<img src="${escapeHtml(asset(option.icon))}" alt="" width="22" height="22" />`
+        : ''
+      return `<button class="role-card wash-${option.tint || 'blue'}${on ? ' is-on' : ''}" type="button" role="checkbox" aria-checked="${on}" data-action="role-toggle" data-qid="${escapeHtml(question.id)}" data-value="${escapeHtml(option.value)}">
+        <span class="role-check">${CHECK}</span>
+        <span class="role-icon">${icon}</span>
+        <span class="role-name">${escapeHtml(option.label)}</span>
+        <span class="role-figure">${escapeHtml(option.figure || '')}</span>
+        <span class="role-hint">${escapeHtml(option.hint || '')}</span>
+        ${source}
+      </button>`
+    })
+    .join('')
+  const preview = count ? roleChips(question, selected) : '<p class="role-empty">Nog geen rol gekozen</p>'
+  const error = errorText ? `<p class="form-error" role="alert">${escapeHtml(errorText)}</p>` : ''
+  return `<div class="role-picker">
+    <div class="role-launch">
+      <button class="btn btn-yellow" type="button" data-action="open-roles">Bekijk de tien rollen</button>
+      ${preview}
+      ${confirm}
+    </div>
+    <div class="role-sheet${rolesOpen ? ' is-open' : ''}" ${rolesOpen ? 'role="dialog" aria-modal="true"' : ''} aria-labelledby="role-sheet-title">
+      <header class="role-sheet-bar">
+        <div>
+          <p class="kicker">Rollen en tijdvreters</p>
+          <h2 id="role-sheet-title">Waar gaat de tijd naartoe?</h2>
+        </div>
+        <button class="icon-btn role-close" type="button" data-action="close-roles" aria-label="Sluit de kaarten">×</button>
+      </header>
+      <div class="role-grid" role="group" aria-label="${escapeHtml(question.title)}">${cards}</div>
+      <p class="role-note">Schatting is een indicatieve bandbreedte. Die toetsen we in de workshop.</p>
+      ${error}
+      <div class="role-sheet-foot">${confirm}</div>
+    </div>
+  </div>`
 }
 
 function scaleComposer(question: Question, value: AnswerValue | undefined): string {
@@ -715,8 +790,9 @@ function compareTable(): string {
 function sectionIcon(id: string): string {
   const svg = (path: string) =>
     `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`
-  if (id === 'systemen') return svg('<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>')
+  if (id === 'verloop') return svg('<path d="M4 7h16M4 12h10M4 17h13"/><path d="M15 10l3 2-3 2"/>')
   if (id === 'pijn') return svg('<path d="M12 4 3 19h18L12 4Z"/><path d="M12 10v4M12 16.5v.5"/>')
+  if (id === 'rollen') return svg('<circle cx="9" cy="9" r="3"/><circle cx="16" cy="10" r="2.2"/><path d="M3.5 19c.8-2.6 2.8-4 5.5-4s4.7 1.4 5.5 4M14 15c1.6 0 3 .7 3.8 2.2"/>')
   if (id === 'doelen') return svg('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3"/>')
   if (id === 'wie') return svg('<circle cx="9" cy="9" r="3"/><circle cx="16" cy="10" r="2.2"/><path d="M3.5 19c.8-2.6 2.8-4 5.5-4s4.7 1.4 5.5 4M14 15c1.6 0 3 .7 3.8 2.2"/>')
   if (id === 'ai') return svg('<path d="M12 3l1.4 4.2L18 8.5l-3.4 2.6L16 16l-4-2.4L8 16l1.4-4.9L6 8.5l4.6-1.3L12 3Z"/>')
@@ -750,6 +826,7 @@ function goStart(): void {
   if (!session) return
   errorText = ''
   editingId = ''
+  rolesOpen = false
   atWelcome = false
   session.phase = 'flow'
   const index = steps.findIndex((step) => step.kind === 'question')
@@ -782,6 +859,7 @@ function finish(): void {
   session.phase = 'summary'
   celebrate = true
   editingId = ''
+  rolesOpen = false
   freshId = ''
   persist()
   render()
@@ -801,6 +879,7 @@ function advance(): void {
   const question = currentQuestion()
   freshId = question?.id || ''
   editingId = ''
+  rolesOpen = false
   errorText = ''
   persist()
   render()
@@ -853,6 +932,7 @@ function goHome(): void {
   syncText()
   errorText = ''
   editingId = ''
+  rolesOpen = false
   atWelcome = true
   persist()
   render()
@@ -866,6 +946,7 @@ function editQuestion(id: string): void {
   if (session.phase === 'summary' || session.stepIndex < index) session.stepIndex = index
   session.phase = 'flow'
   editingId = id
+  rolesOpen = questionById(id)?.type === 'roles'
   errorText = ''
   freshId = ''
   persist()
@@ -1012,6 +1093,7 @@ function resetSession(): void {
   remoteNote = ''
   errorText = ''
   editingId = ''
+  rolesOpen = false
   freshId = ''
   atWelcome = true
   closeModal()
@@ -1245,6 +1327,20 @@ document.addEventListener('click', (event) => {
   } else if (action === 'edit' && el.dataset.qid) editQuestion(el.dataset.qid)
   else if (action === 'single' && el.dataset.qid && el.dataset.value) chooseSingle(el.dataset.qid, el.dataset.value)
   else if (action === 'multiple' && el.dataset.qid && el.dataset.value) toggleList(el.dataset.qid, el.dataset.value)
+  else if (action === 'role-toggle' && el.dataset.qid && el.dataset.value) toggleList(el.dataset.qid, el.dataset.value)
+  else if (action === 'open-roles') {
+    rolesOpen = true
+    render()
+  } else if (action === 'close-roles') {
+    rolesOpen = false
+    render()
+  } else if (action === 'confirm-roles') {
+    const question = composerQuestion()
+    const value = session?.answers[question?.id || '']
+    if (question && !isValid(question, value)) rolesOpen = true
+    else rolesOpen = false
+    commitComposer()
+  }
   else if (action === 'scale' && el.dataset.qid) chooseScale(el.dataset.qid, Number(el.dataset.value), false)
   else if (action === 'rank-toggle' && el.dataset.qid && el.dataset.value) toggleList(el.dataset.qid, el.dataset.value)
   else if (action === 'rank-up' && el.dataset.qid && el.dataset.value) moveRank(el.dataset.qid, el.dataset.value, -1)
@@ -1324,6 +1420,11 @@ document.addEventListener('change', (event) => {
 })
 
 document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && rolesOpen) {
+    rolesOpen = false
+    render()
+    return
+  }
   if (event.key === 'Escape' && modal) {
     closeModal()
     return

@@ -34,7 +34,7 @@ export function isValid(question: Question, value: AnswerValue | undefined): boo
     const count = Array.isArray(value) ? value.length : 0
     return count >= (question.minRanked ?? 1)
   }
-  if (question.type === 'multiple') return Array.isArray(value) && value.length > 0
+  if (question.type === 'multiple' || question.type === 'roles') return Array.isArray(value) && value.length > 0
   if (question.type === 'scale') return typeof value === 'number'
   if (question.type === 'single' || question.type === 'text' || question.type === 'longtext') {
     return typeof value === 'string' && value.trim().length > 0
@@ -48,6 +48,7 @@ export function validationMessage(question: Question): string {
     return min === 1 ? 'Zet minimaal één punt op volgorde.' : `Zet minimaal ${min} punten op volgorde.`
   }
   if (question.type === 'multiple') return 'Kies minimaal één optie.'
+  if (question.type === 'roles') return 'Kies minimaal één rol.'
   if (question.type === 'scale') return 'Tik een cijfer om verder te gaan.'
   if (question.type === 'single') return 'Kies één antwoord om verder te gaan.'
   return 'Vul een antwoord in om verder te gaan.'
@@ -60,6 +61,15 @@ export function displayAnswer(question: Question, value: AnswerValue | undefined
     return `${value} van ${max}`
   }
   if (Array.isArray(value)) {
+    if (question.type === 'roles') {
+      return value
+        .map((item) => {
+          const option = question.options?.find((entry) => entry.value === item)
+          if (!option) return item
+          return option.figure ? `${option.label} (${option.figure})` : option.label
+        })
+        .join(', ')
+    }
     const labels = value.map((item) => optionLabel(question, item))
     if (question.type === 'rank') return labels.map((label, index) => `${index + 1}. ${label}`).join('\n')
     return labels.join(', ')
@@ -74,8 +84,14 @@ export function answerHtml(question: Question, value: AnswerValue | undefined): 
     const items = value.map((item) => `<li>${escapeHtml(optionLabel(question, item))}</li>`).join('')
     return `<ol class="answer-list">${items}</ol>`
   }
-  if (question.type === 'multiple' && Array.isArray(value)) {
-    const items = value.map((item) => `<li>${escapeHtml(optionLabel(question, item))}</li>`).join('')
+  if ((question.type === 'multiple' || question.type === 'roles') && Array.isArray(value)) {
+    const items = value
+      .map((item) => {
+        const option = question.options?.find((entry) => entry.value === item)
+        const figure = question.type === 'roles' && option?.figure ? ` <small>${escapeHtml(option.figure)}</small>` : ''
+        return `<li>${escapeHtml(option?.label || item)}${figure}</li>`
+      })
+      .join('')
     return `<ul class="answer-chips">${items}</ul>`
   }
   return `<p class="answer-text">${escapeHtml(displayAnswer(question, value))}</p>`
