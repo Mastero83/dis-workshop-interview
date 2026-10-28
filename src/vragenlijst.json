@@ -35,6 +35,17 @@
             "poster": "media/ctx-werksessie-dagdelen-poster.jpg",
             "title": "De werksessie"
           }
+        },
+        {
+          "id": "systemen-bc-4ps",
+          "reason": "Niet tonen. Klanten werken al met Business Central met 4PS; we vragen niet welk systeem ze gebruiken.",
+          "context": {
+            "type": "video",
+            "enabled": false,
+            "src": "media/ctx-systemen-bc-4ps.mp4",
+            "poster": "media/ctx-systemen-bc-4ps-poster.jpg",
+            "title": "Business Central met 4PS"
+          }
         }
       ],
       "sections": [
@@ -82,65 +93,6 @@
           ]
         },
         {
-          "id": "systemen",
-          "title": "Processen en systemen",
-          "kicker": "Hoe jullie nu werken",
-          "intro": "We sluiten aan op wat er vandaag staat. Business Central met 4PS is één geheel.",
-          "image": "fotos/collegas-beeldscherm.jpeg",
-          "imagePosition": "center 40%",
-          "accent": "green",
-          "questions": [
-            {
-              "id": "systemen",
-              "type": "multiple",
-              "title": "Waar leggen jullie het werk nu vooral in vast?",
-              "help": "Meerdere antwoorden mogen. Noem ook Excel of papier als dat de dagelijkse praktijk is.",
-              "required": true,
-              "context": {
-                "type": "video",
-                "src": "media/ctx-systemen-bc-4ps.mp4",
-                "poster": "media/ctx-systemen-bc-4ps-poster.jpg",
-                "title": "Business Central met 4PS",
-                "body": "Eén aanbod voor projectadministratie en ERP, voor bouw, infra en installatie."
-              },
-              "options": [
-                { "value": "bc-4ps", "label": "Business Central met 4PS" },
-                { "value": "excel", "label": "Excel en gedeelde mappen" },
-                { "value": "ander-erp", "label": "Een ander ERP-pakket" },
-                { "value": "calculatiepakket", "label": "Een los calculatiepakket" },
-                { "value": "mail", "label": "Mail en papier" }
-              ]
-            },
-            {
-              "id": "business-central",
-              "type": "single",
-              "title": "Werken jullie al met Business Central met 4PS?",
-              "required": true,
-              "options": [
-                { "value": "hoofd", "label": "Ja, dat is ons systeem voor project en administratie" },
-                { "value": "deels", "label": "Deels, naast andere systemen" },
-                { "value": "orientatie", "label": "Nog niet, we oriënteren ons" },
-                { "value": "nee", "label": "Nee" }
-              ]
-            },
-            {
-              "id": "projectverloop",
-              "type": "longtext",
-              "title": "Schets hoe een project nu loopt, van calculatie tot eindfactuur.",
-              "help": "Een paar zinnen is genoeg. Noem waar gegevens opnieuw worden ingevoerd.",
-              "required": true,
-              "placeholder": "Bijv. calculatie in Excel, daarna project, uren en materiaal in Business Central met 4PS, factuur als het werk is opgeleverd.",
-              "context": {
-                "type": "video",
-                "src": "media/ctx-kettingreactie.mp4",
-                "poster": "media/ctx-kettingreactie-poster.jpg",
-                "title": "Van kantoor naar de bouwplaats",
-                "body": "Een onvolledig werkpakket schuift door naar de monteur en de planning."
-              }
-            }
-          ]
-        },
-        {
           "id": "pijn",
           "title": "Waar het schuurt",
           "kicker": "Pijnpunten",
@@ -171,7 +123,81 @@
                 { "value": "samenwerking", "label": "Kantoor en bouwplaats werken met verschillende informatie" },
                 { "value": "inzicht", "label": "Weinig actueel inzicht in lopende projecten" }
               ]
-            },
+            }
+          ]
+        },
+        {
+          "id": "verloop",
+          "title": "Hoe een project loopt",
+          "kicker": "Van kantoor naar de bouwplaats",
+          "intro": "Een onvolledig werkpakket schuift door. We willen horen waar dat bij jullie gebeurt.",
+          "image": "fotos/collegas-beeldscherm.jpeg",
+          "imagePosition": "center 40%",
+          "accent": "green",
+          "questions": [
+            {
+              "id": "projectverloop",
+              "type": "longtext",
+              "title": "Schets hoe een project nu loopt, van calculatie tot eindfactuur.",
+              "help": "Een paar zinnen is genoeg. Noem waar gegevens opnieuw worden ingevoerd.",
+              "required": true,
+              "placeholder": "Bijv. calculatie, dan planning en uitvoering, uren en materiaal, factuur als het werk is opgeleverd.",
+              "context": {
+                "type": "video",
+                "src": "media/ctx-kettingreactie.mp4",
+                "poster": "media/ctx-kettingreactie-poster.jpg",
+                "title": "Van kantoor naar de bouwplaats",
+                "body": "Een onvolledig werkpakket schuift door naar de monteur en de planning."
+              }
+            }
+          ]
+        },
+        {
+          "id": "rollen",
+          "title": "Rollen en tijdvreters",
+          "kicker": "Waar de tijd naartoe gaat",
+          "intro": "Eén kerncijfer per rol. Kies wat je bij jullie herkent.",
+          "image": "fotos/overleg-kantoor.jpeg",
+          "imagePosition": "center 40%",
+          "accent": "blue",
+          "questions": [
+            {
+              "id": "rollen",
+              "type": "roles",
+              "title": "Welke rollen herken je bij jullie, en waar gaat de meeste tijd naartoe?",
+              "help": "Kies elke rol die je herkent. Schatting is een indicatieve bandbreedte.",
+              "required": true,
+              "context": {
+                "type": "video",
+                "src": "media/ctx-rollen-tijdvreters.mp4",
+                "poster": "media/ctx-rollen-tijdvreters-poster.jpg",
+                "title": "Tijd en kwaliteit lekken weg",
+                "body": "Per rol, bij bouw-, GWW- en installatiebedrijven. Daarna kies je wat je herkent."
+              },
+              "options": [
+                { "value": "functioneel-beheerder", "label": "Functioneel beheerder", "icon": "icons/roles/n-server-cog.svg", "figure": "30–50%", "hint": "van tickets zijn herhaalvragen", "source": "Schatting", "sourceKind": "schatting", "tint": "sand" },
+                { "value": "key-user", "label": "Key-user", "icon": "icons/roles/n-life-buoy.svg", "figure": "10–25%", "hint": "werktijd aan support naast eigen functie", "source": "Schatting", "sourceKind": "schatting", "tint": "blue" },
+                { "value": "calculator", "label": "Calculator", "icon": "icons/roles/n-calculator.svg", "figure": "49%", "hint": "projecten verliesgevend door onjuiste inschatting", "source": "Exact 2025", "sourceKind": "bron", "tint": "green" },
+                { "value": "werkvoorbereider", "label": "Werkvoorbereider", "icon": "icons/roles/n-clipboard-list.svg", "figure": "60–70%", "hint": "werktijd op kantoor: documenten en afstemming", "source": "werkvoorbereider.nl", "sourceKind": "bron", "tint": "lilac" },
+                { "value": "projectleider", "label": "Projectleider", "icon": "icons/roles/n-folder-kanban.svg", "figure": "35%", "hint": "non-productief: zoeken, conflicten, herstelwerk", "source": "Autodesk/FMI", "sourceKind": "bron", "tint": "sand" },
+                { "value": "uitvoerder", "label": "Uitvoerder", "icon": "icons/roles/n-hard-hat.svg", "figure": "50%", "hint": "bouwplaatsen niet volledig digitaal", "source": "Exact 2025", "sourceKind": "bron", "tint": "sand" },
+                { "value": "planner", "label": "Planner", "icon": "icons/roles/n-calendar-clock.svg", "figure": "89%", "hint": "mist volledig zicht op projecten en capaciteit", "source": "Exact 2025", "sourceKind": "bron", "tint": "blue" },
+                { "value": "servicecoordinator", "label": "Servicecoördinator", "icon": "icons/roles/n-headset.svg", "figure": "40–60%", "hint": "tijd aan intake en werkbonadministratie", "source": "Schatting", "sourceKind": "schatting", "tint": "green" },
+                { "value": "inkoper", "label": "Inkoper", "icon": "icons/roles/n-shopping-cart.svg", "figure": "40%", "hint": "materiaalbeheer niet geautomatiseerd", "source": "Exact 2025", "sourceKind": "bron", "tint": "lilac" },
+                { "value": "finance", "label": "Finance/controller", "icon": "icons/roles/n-chart-line.svg", "figure": "34%", "hint": "administratie (deels) op papier of in Excel", "source": "Exact 2025", "sourceKind": "bron", "tint": "sand" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "doelen",
+          "title": "Doelen voor de workshop",
+          "kicker": "Resultaat",
+          "intro": "Wat moet er na afloop anders zijn? BI Services maakt rapportages uit gegevens die al in de administratie staan.",
+          "image": "fotos/overleg-kantoor.jpeg",
+          "imagePosition": "center 40%",
+          "accent": "yellow",
+          "questions": [
             {
               "id": "urgentie",
               "type": "scale",
@@ -181,18 +207,7 @@
               "max": 5,
               "minLabel": "Kan wachten",
               "maxLabel": "Speelt nu"
-            }
-          ]
-        },
-        {
-          "id": "doelen",
-          "title": "Doelen voor de workshop",
-          "kicker": "Resultaat",
-          "intro": "Wat moet er na afloop anders zijn? Daar richten we de sessie op.",
-          "image": "fotos/overleg-kantoor.jpeg",
-          "imagePosition": "center 40%",
-          "accent": "yellow",
-          "questions": [
+            },
             {
               "id": "doelen",
               "type": "rank",
@@ -201,26 +216,6 @@
               "required": true,
               "minRanked": 2,
               "context": {
-                "type": "explainer",
-                "title": "Wat bedoelen we met BI Services?",
-                "body": "BI Services maakt rapportages uit gegevens die al in de administratie staan. Bijvoorbeeld uren, materiaal en meerwerk op een project, zodat projectleiding en administratie hetzelfde beeld zien."
-              },
-              "options": [
-                { "value": "beeld", "label": "Een scherp beeld van hoe projecten nu lopen" },
-                { "value": "kansen", "label": "Concrete verbeterpunten in de processen" },
-                { "value": "advies", "label": "Advies over Business Central met 4PS" },
-                { "value": "bi", "label": "Rapportages en sturing via BI Services" },
-                { "value": "ai", "label": "Waar AI Services kan ondersteunen, met akkoord van een collega" },
-                { "value": "plan", "label": "Een plan voor de komende 90 dagen" }
-              ]
-            },
-            {
-              "id": "rollen",
-              "type": "multiple",
-              "title": "Welke rollen zijn erbij?",
-              "help": "We vragen naar rollen, niet naar namen of contactgegevens.",
-              "required": true,
-              "context": {
                 "type": "video",
                 "src": "media/ctx-open-en-eerlijk.mp4",
                 "poster": "media/ctx-open-en-eerlijk-poster.jpg",
@@ -228,12 +223,12 @@
                 "body": "Open en eerlijk, zonder poespas. De workshop gaat over jullie werk."
               },
               "options": [
-                { "value": "directie", "label": "Directie" },
-                { "value": "finance", "label": "Finance en administratie" },
-                { "value": "projectleiding", "label": "Projectleiding" },
-                { "value": "calculatie", "label": "Calculatie" },
-                { "value": "werkvoorbereiding", "label": "Werkvoorbereiding" },
-                { "value": "uitvoering", "label": "Uitvoering op de bouwplaats of in de montage" }
+                { "value": "beeld", "label": "Een scherp beeld van hoe projecten nu lopen" },
+                { "value": "kansen", "label": "Concrete verbeterpunten in de processen" },
+                { "value": "dubbelwerk", "label": "Minder dubbel werk tussen kantoor en de bouwplaats" },
+                { "value": "bi", "label": "Rapportages en sturing via BI Services" },
+                { "value": "ai", "label": "Waar AI Services kan ondersteunen, met akkoord van een collega" },
+                { "value": "plan", "label": "Een plan voor de komende 90 dagen" }
               ]
             }
           ]

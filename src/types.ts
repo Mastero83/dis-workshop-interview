@@ -1,6 +1,8 @@
 export type Accent = 'blue' | 'green' | 'orange' | 'yellow'
 
-export type QuestionType = 'text' | 'longtext' | 'single' | 'multiple' | 'scale' | 'rank'
+export type QuestionType = 'text' | 'longtext' | 'single' | 'multiple' | 'scale' | 'rank' | 'roles'
+
+export type RoleTint = 'blue' | 'green' | 'lilac' | 'sand'
 
 export interface Media {
   type: 'video' | 'image'
@@ -47,6 +49,15 @@ export interface Option {
   value: string
   label: string
   hint?: string
+  /** Kerncijfer op een rollenkaart, bijvoorbeeld 60–70%. */
+  figure?: string
+  /** Pad naar een Lucide-outline, relatief aan public/. */
+  icon?: string
+  /** Bronnaam, of het woord Schatting. */
+  source?: string
+  /** schatting = grijs label, bron = blauw “Bron: …”. */
+  sourceKind?: 'schatting' | 'bron'
+  tint?: RoleTint
 }
 
 export interface Question {
