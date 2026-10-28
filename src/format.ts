@@ -1,5 +1,6 @@
 import { isQuestionActive, presentQuestion, rolePhrase } from './catalog'
-import type { AnswerValue, ExportDoc, Question, Questionnaire, Session } from './types'
+import { collectResult, intensityLabel, interestLabel, signalsForRole, useCaseName } from './kansen.ts'
+import type { AnswerValue, ExportDoc, KansAnswer, Question, Questionnaire, Session, SignalAnswer } from './types'
 
 export function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (char) => {
@@ -18,18 +19,33 @@ export function escapeHtml(value: string): string {
   })
 }
 
+export function isSignalAnswer(value: unknown): value is SignalAnswer {
+  return typeof value === 'object' && value !== null && (value as SignalAnswer).kind === 'signals'
+}
+
+export function isKansAnswer(value: unknown): value is KansAnswer {
+  return typeof value === 'object' && value !== null && (value as KansAnswer).kind === 'kansen'
+}
+
 export function isEmpty(value: AnswerValue | undefined): boolean {
   if (value == null) return true
   if (typeof value === 'number') return false
   if (Array.isArray(value)) return value.length === 0
-  return value.trim() === ''
+  if (isSignalAnswer(value)) return Object.keys(value.values).length === 0
+  if (isKansAnswer(value)) return false
+  if (typeof value === 'string') return value.trim() === ''
+  return true
 }
 
 export function optionLabel(question: Question, value: string): string {
   return question.options?.find((option) => option.value === value)?.label ?? value
 }
 
-export function isValid(question: Question, value: AnswerValue | undefined): boolean {
+export function isValid(
+  question: Question,
+  value: AnswerValue | undefined,
+  answers: Record<string, AnswerValue> = {},
+): boolean {
   if (!question.required && isEmpty(value)) return true
   if (question.type === 'rank') {
     const count = Array.isArray(value) ? value.length : 0
@@ -42,6 +58,23 @@ export function isValid(question: Question, value: AnswerValue | undefined): boo
     return value.length > 0
   }
   if (question.type === 'scale') return typeof value === 'number'
+  if (question.type === 'signals') {
+    if (!isSignalAnswer(value)) return false
+    const signals = signalsForRole(question.signalRole || '')
+    return signals.every((signal) => {
+      const score = value.values[signal.id]
+      return score === 0 || score === 1 || score === 2 || score === 3
+    })
+  }
+  if (question.type === 'kansen') {
+    const ranked = collectResult(answers).ranked
+    if (ranked.length === 0) return true
+    if (!isKansAnswer(value)) return false
+    return ranked.every((item) => {
+      const choice = value.interest[item.id]
+      return choice === 'graag' || choice === 'misschien' || choice === 'niet'
+    })
+  }
   if (question.type === 'single' || question.type === 'text' || question.type === 'longtext') {
     return typeof value === 'string' && value.trim().length > 0
   }
@@ -62,6 +95,8 @@ export function validationMessage(question: Question): string {
   if (question.type === 'roles') return 'Kies minimaal één rol.'
   if (question.type === 'scale') return 'Tik een cijfer om verder te gaan.'
   if (question.type === 'single') return 'Kies één antwoord om verder te gaan.'
+  if (question.type === 'signals') return 'Geef elke uitspraak een score.'
+  if (question.type === 'kansen') return 'Geef per kans aan hoe interessant die is.'
   return 'Vul een antwoord in om verder te gaan.'
 }
 
@@ -70,6 +105,23 @@ export function displayAnswer(question: Question, value: AnswerValue | undefined
   if (question.type === 'scale' && typeof value === 'number') {
     const max = question.max ?? 5
     return `${value} van ${max}`
+  }
+  if (isSignalAnswer(value)) {
+    const lines = signalsForRole(question.signalRole || '')
+      .map((signal) => {
+        const score = value.values[signal.id]
+        if (score == null) return ''
+        return `${intensityLabel(score)}: ${signal.tekst}`
+      })
+      .filter(Boolean)
+    return lines.join('\n') || 'Nog niet ingevuld'
+  }
+  if (isKansAnswer(value)) {
+    const lines = Object.entries(value.interest).map(
+      ([id, choice]) => `${useCaseName(id)} (${id}) — ${interestLabel(choice)}`,
+    )
+    if (value.note.trim()) lines.push(value.note.trim())
+    return lines.join('\n') || 'Nog geen keuze'
   }
   if (Array.isArray(value)) {
     if (question.type === 'roles') {
@@ -127,6 +179,7 @@ export function toExportDoc(questionnaire: Questionnaire, session: Session): Exp
       ]
     }),
   )
+  const result = collectResult(session.answers)
   return {
     version: 1,
     questionnaireId: questionnaire.id,
@@ -136,6 +189,13 @@ export function toExportDoc(questionnaire: Questionnaire, session: Session): Exp
     startedAt: session.startedAt,
     updatedAt: session.updatedAt,
     answers,
+    kansen: result.ranked.map((item) => ({
+      id: item.id,
+      naam: item.naam,
+      score: Math.round(item.score * 10) / 10,
+      interest: result.interest[item.id] || '',
+      signalen: item.signalen,
+    })),
   }
 }
 
@@ -160,6 +220,15 @@ export function toPlainText(doc: ExportDoc): string {
     }
     lines.push(answer.question)
     lines.push(answer.display)
+    lines.push('')
+  }
+  if (doc.kansen.length) {
+    lines.push('Kansen')
+    lines.push('------')
+    for (const kans of doc.kansen) {
+      const choice = kans.interest ? interestLabel(kans.interest) : 'geen keuze'
+      lines.push(`${kans.naam} (${kans.id}) — score ${String(kans.score).replace('.', ',')} — ${choice}`)
+    }
     lines.push('')
   }
   lines.push('Antwoorden zijn door de klant zelf ingevuld ter voorbereiding op de workshop.')

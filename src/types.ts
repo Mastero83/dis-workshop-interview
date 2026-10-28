@@ -1,6 +1,6 @@
 export type Accent = 'blue' | 'green' | 'orange' | 'yellow'
 
-export type QuestionType = 'text' | 'longtext' | 'single' | 'multiple' | 'scale' | 'rank' | 'roles'
+export type QuestionType = 'text' | 'longtext' | 'single' | 'multiple' | 'scale' | 'rank' | 'roles' | 'signals' | 'kansen'
 
 export type RoleTint = 'blue' | 'green' | 'lilac' | 'sand'
 
@@ -129,6 +129,8 @@ export interface Question {
   focus?: FocusDef
   /** Slotvraag, achteraan het gesprek. */
   closing?: ClosingDef
+  /** Rol waarvan de ik-uitspraken uit de library komen. */
+  signalRole?: string
   media?: Media | null
   /** Bericht van de host vóór de vraag: filmpje of korte uitleg. */
   context?: ContextBlock | null
@@ -160,6 +162,8 @@ export interface Questionnaire {
   video?: Media | null
   /** Kort introfilmpje op het welkomstscherm. */
   introVideo?: ClipSource | null
+  /** Eerste film op het welkomstscherm. Eén plek, zodat de bron te wisselen is. */
+  openingVideo?: ClipSource | null
   /** Clips die in de map staan maar nog niet in het gesprek horen. */
   disabledMedia?: ParkedClip[]
   sections: Section[]
@@ -169,12 +173,23 @@ export interface Catalog {
   questionnaires: Questionnaire[]
 }
 
-export type AnswerValue = string | string[] | number | null
+export interface SignalAnswer {
+  kind: 'signals'
+  values: Record<string, number>
+}
+
+export interface KansAnswer {
+  kind: 'kansen'
+  interest: Record<string, string>
+  note: string
+}
+
+export type AnswerValue = string | string[] | number | null | SignalAnswer | KansAnswer
 
 export type Phase = 'welcome' | 'flow' | 'summary'
 
 export interface Session {
-  version: 4
+  version: 5
   questionnaireId: string
   klant: string
   phase: Phase
@@ -207,6 +222,7 @@ export interface ExportDoc {
   startedAt: string
   updatedAt: string
   answers: ExportAnswer[]
+  kansen: { id: string; naam: string; score: number; interest: string; signalen: string[] }[]
 }
 
 export type Step =

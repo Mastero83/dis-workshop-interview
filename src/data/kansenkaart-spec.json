@@ -1,0 +1,910 @@
+{
+  "versie": "1.0",
+  "taal": "nl",
+  "titel": "AI-kansenkaart",
+  "bestaande_visual": {
+    "aanwezig": true,
+    "beschrijving": "Er bestaan al twee kansenkaartvisuals: een voorbeeldkaart op de website (impact verticaal, haalbaarheid horizontaal; kwadranten Strategisch, Quick wins, Niet doen, Later) en de kansenkaart in de klantdossier-webapp (scores 1-5, drempel 4, kwadranten quick wins / strategisch / later / heroverwegen, stipgrootte = datavolwassenheid). Deze spec volgt dezelfde assen, schaal en drempel.",
+    "paden": [
+      "/workspace/disgroup-site/diensten/agentic-ai/index.html",
+      "/workspace/dki-installatie/docs/teams-mockups/webapp-kansenkaart.png",
+      "/workspace/dki-installatie/docs/teams-mockups/webapp-kansenkaart.html",
+      "/workspace/dki-installatie/docs/screenshots/28-kansenkaart.png",
+      "/workspace/dki-installatie/web/src/KansenKaart.tsx",
+      "/workspace/dki-installatie/api/src/lib/kansenkaart.ts",
+      "/workspace/dki-installatie/docs/AI-KANSEN-EN-SESSIES.md"
+    ]
+  },
+  "assen": {
+    "x": {
+      "naam": "haalbaarheid",
+      "min": 1,
+      "max": 5
+    },
+    "y": {
+      "naam": "impact",
+      "min": 1,
+      "max": 5
+    },
+    "drempel": 4,
+    "niveau_banden": {
+      "laag": [
+        1.0,
+        2.4
+      ],
+      "middel": [
+        2.6,
+        3.8
+      ],
+      "hoog": [
+        4.1,
+        5.0
+      ]
+    }
+  },
+  "kwadranten": [
+    {
+      "id": "quick-wins",
+      "naam": "Quick wins",
+      "regel": "impact >= 4 en haalbaarheid >= 4",
+      "positie": "rechtsboven",
+      "bestaande_naam": "Quick wins"
+    },
+    {
+      "id": "strategische-projecten",
+      "naam": "Strategische projecten",
+      "regel": "impact >= 4 en haalbaarheid < 4",
+      "positie": "linksboven",
+      "bestaande_naam": "Strategisch"
+    },
+    {
+      "id": "opvullers",
+      "naam": "Opvullers",
+      "regel": "impact < 4 en haalbaarheid >= 4",
+      "positie": "rechtsonder",
+      "bestaande_naam": "Later"
+    },
+    {
+      "id": "later-niet",
+      "naam": "Later / niet",
+      "regel": "impact < 4 en haalbaarheid < 4",
+      "positie": "linksonder",
+      "bestaande_naam": "Niet doen / heroverwegen"
+    }
+  ],
+  "kleur_per_rol": {
+    "functioneel-beheerder": {
+      "label": "Functioneel beheerder",
+      "kleur": "#1f77b4"
+    },
+    "key-user": {
+      "label": "Key-user",
+      "kleur": "#17becf"
+    },
+    "calculator": {
+      "label": "Calculator",
+      "kleur": "#9467bd"
+    },
+    "werkvoorbereider": {
+      "label": "Werkvoorbereider",
+      "kleur": "#2ca02c"
+    },
+    "projectleider": {
+      "label": "Projectleider",
+      "kleur": "#d62728"
+    },
+    "uitvoerder": {
+      "label": "Uitvoerder",
+      "kleur": "#ff7f0e"
+    },
+    "planner": {
+      "label": "Planner",
+      "kleur": "#8c564b"
+    },
+    "servicecoordinator": {
+      "label": "Servicecoördinator",
+      "kleur": "#e377c2"
+    },
+    "inkoper": {
+      "label": "Inkoper",
+      "kleur": "#bcbd22"
+    },
+    "finance-controller": {
+      "label": "Finance / controller",
+      "kleur": "#7f7f7f"
+    }
+  },
+  "kleurregel": "kleur van de eerste rol in rollen[] van de use case",
+  "grootte_regel": "min(28, 8 + 4 x aantal gekozen signalen dat naar de use case leidt); zonder quizantwoorden basisgrootte 8",
+  "positieregel": "niveau laag/middel/hoog wordt vertaald naar de band op de 1-5 schaal; binnen een cel worden punten deterministisch gespreid. Posities zijn een inschatting, geen meting; de deelnemer kan in de workshop zijn eigen inschatting geven.",
+  "punten": [
+    {
+      "id": "UC-FB-01",
+      "naam": "Ticket-triage en conceptantwoord op herhaalvragen",
+      "rol": "functioneel-beheerder",
+      "rollen": [
+        "functioneel-beheerder",
+        "key-user"
+      ],
+      "kleur": "#1f77b4",
+      "x": 4.19,
+      "y": 4.19,
+      "haalbaarheid": "hoog",
+      "impact": "hoog",
+      "kwadrant": "quick-wins",
+      "aantal_gekoppelde_signalen": 3,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-FB-02",
+      "naam": "Meldingen naspelen in een testomgeving",
+      "rol": "functioneel-beheerder",
+      "rollen": [
+        "functioneel-beheerder",
+        "key-user"
+      ],
+      "kleur": "#1f77b4",
+      "x": 3.0,
+      "y": 4.36,
+      "haalbaarheid": "middel",
+      "impact": "hoog",
+      "kwadrant": "strategische-projecten",
+      "aantal_gekoppelde_signalen": 3,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-FB-03",
+      "naam": "Autorisatie- en gebruikersaanvragen voorbereiden",
+      "rol": "functioneel-beheerder",
+      "rollen": [
+        "functioneel-beheerder"
+      ],
+      "kleur": "#1f77b4",
+      "x": 2.9,
+      "y": 3.31,
+      "haalbaarheid": "middel",
+      "impact": "middel",
+      "kwadrant": "later-niet",
+      "aantal_gekoppelde_signalen": 2,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-FB-04",
+      "naam": "Kwaliteitspoort voor datamigratie na een overname",
+      "rol": "functioneel-beheerder",
+      "rollen": [
+        "functioneel-beheerder",
+        "finance-controller"
+      ],
+      "kleur": "#1f77b4",
+      "x": 1.47,
+      "y": 4.19,
+      "haalbaarheid": "laag",
+      "impact": "hoog",
+      "kwadrant": "strategische-projecten",
+      "aantal_gekoppelde_signalen": 2,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-KU-01",
+      "naam": "'Hoe doe ik dit in 4PS?'-assistent in Teams",
+      "rol": "key-user",
+      "rollen": [
+        "key-user",
+        "functioneel-beheerder"
+      ],
+      "kleur": "#17becf",
+      "x": 4.37,
+      "y": 4.36,
+      "haalbaarheid": "hoog",
+      "impact": "hoog",
+      "kwadrant": "quick-wins",
+      "aantal_gekoppelde_signalen": 4,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-KU-02",
+      "naam": "Testscripts en acceptatietest voorbereiden bij een release",
+      "rol": "key-user",
+      "rollen": [
+        "key-user",
+        "functioneel-beheerder"
+      ],
+      "kleur": "#17becf",
+      "x": 3.2,
+      "y": 3.54,
+      "haalbaarheid": "middel",
+      "impact": "middel",
+      "kwadrant": "later-niet",
+      "aantal_gekoppelde_signalen": 2,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-KU-03",
+      "naam": "Werkinstructies actueel houden",
+      "rol": "key-user",
+      "rollen": [
+        "key-user"
+      ],
+      "kleur": "#17becf",
+      "x": 4.61,
+      "y": 3.54,
+      "haalbaarheid": "hoog",
+      "impact": "middel",
+      "kwadrant": "opvullers",
+      "aantal_gekoppelde_signalen": 2,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-CAL-01",
+      "naam": "Prijsactualisatie en afwijkende prijzen in de calculatie signaleren",
+      "rol": "calculator",
+      "rollen": [
+        "calculator",
+        "inkoper"
+      ],
+      "kleur": "#9467bd",
+      "x": 4.23,
+      "y": 2.72,
+      "haalbaarheid": "hoog",
+      "impact": "middel",
+      "kwadrant": "opvullers",
+      "aantal_gekoppelde_signalen": 2,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-CAL-02",
+      "naam": "Nacalculatie terugkoppelen bij een nieuwe calculatie",
+      "rol": "calculator",
+      "rollen": [
+        "calculator",
+        "projectleider"
+      ],
+      "kleur": "#9467bd",
+      "x": 2.73,
+      "y": 4.19,
+      "haalbaarheid": "middel",
+      "impact": "hoog",
+      "kwadrant": "strategische-projecten",
+      "aantal_gekoppelde_signalen": 2,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-CAL-03",
+      "naam": "Overdracht calculatie naar werkbegroting controleren",
+      "rol": "calculator",
+      "rollen": [
+        "calculator",
+        "werkvoorbereider",
+        "projectleider"
+      ],
+      "kleur": "#9467bd",
+      "x": 2.87,
+      "y": 4.63,
+      "haalbaarheid": "middel",
+      "impact": "hoog",
+      "kwadrant": "strategische-projecten",
+      "aantal_gekoppelde_signalen": 2,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-CAL-04",
+      "naam": "Bestek en tekeningen samenvatten tot calculatie-uitgangspunten",
+      "rol": "calculator",
+      "rollen": [
+        "calculator",
+        "werkvoorbereider"
+      ],
+      "kleur": "#9467bd",
+      "x": 2.75,
+      "y": 2.72,
+      "haalbaarheid": "middel",
+      "impact": "middel",
+      "kwadrant": "later-niet",
+      "aantal_gekoppelde_signalen": 1,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-WVB-01",
+      "naam": "Laatste tekeningversie en revisiewijzigingen vinden",
+      "rol": "werkvoorbereider",
+      "rollen": [
+        "werkvoorbereider",
+        "uitvoerder",
+        "projectleider"
+      ],
+      "kleur": "#2ca02c",
+      "x": 4.82,
+      "y": 4.42,
+      "haalbaarheid": "hoog",
+      "impact": "hoog",
+      "kwadrant": "quick-wins",
+      "aantal_gekoppelde_signalen": 5,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-WVB-02",
+      "naam": "Werkpakket controleren op uitvoeringsgereedheid",
+      "rol": "werkvoorbereider",
+      "rollen": [
+        "werkvoorbereider",
+        "uitvoerder",
+        "planner"
+      ],
+      "kleur": "#2ca02c",
+      "x": 3.67,
+      "y": 4.42,
+      "haalbaarheid": "middel",
+      "impact": "hoog",
+      "kwadrant": "strategische-projecten",
+      "aantal_gekoppelde_signalen": 2,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-WVB-03",
+      "naam": "Leveringen najagen",
+      "rol": "werkvoorbereider",
+      "rollen": [
+        "werkvoorbereider",
+        "inkoper",
+        "planner"
+      ],
+      "kleur": "#2ca02c",
+      "x": 4.91,
+      "y": 4.87,
+      "haalbaarheid": "hoog",
+      "impact": "hoog",
+      "kwadrant": "quick-wins",
+      "aantal_gekoppelde_signalen": 4,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-WVB-04",
+      "naam": "Materiaalstaat omzetten naar inkoopaanvraag",
+      "rol": "werkvoorbereider",
+      "rollen": [
+        "werkvoorbereider",
+        "inkoper"
+      ],
+      "kleur": "#2ca02c",
+      "x": 1.7,
+      "y": 2.72,
+      "haalbaarheid": "laag",
+      "impact": "middel",
+      "kwadrant": "later-niet",
+      "aantal_gekoppelde_signalen": 1,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-PL-01",
+      "naam": "Wekelijkse projectstatus: budget versus werkelijk",
+      "rol": "projectleider",
+      "rollen": [
+        "projectleider",
+        "finance-controller"
+      ],
+      "kleur": "#d62728",
+      "x": 4.46,
+      "y": 4.8,
+      "haalbaarheid": "hoog",
+      "impact": "hoog",
+      "kwadrant": "quick-wins",
+      "aantal_gekoppelde_signalen": 4,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-PL-02",
+      "naam": "Meerwerk herkennen in mail en bouwverslagen",
+      "rol": "projectleider",
+      "rollen": [
+        "projectleider",
+        "uitvoerder",
+        "finance-controller"
+      ],
+      "kleur": "#d62728",
+      "x": 3.4,
+      "y": 4.25,
+      "haalbaarheid": "middel",
+      "impact": "hoog",
+      "kwadrant": "strategische-projecten",
+      "aantal_gekoppelde_signalen": 3,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-PL-03",
+      "naam": "Besluiten en actiepunten uit overleggen vastleggen",
+      "rol": "projectleider",
+      "rollen": [
+        "projectleider",
+        "werkvoorbereider"
+      ],
+      "kleur": "#d62728",
+      "x": 4.74,
+      "y": 3.17,
+      "haalbaarheid": "hoog",
+      "impact": "middel",
+      "kwadrant": "opvullers",
+      "aantal_gekoppelde_signalen": 2,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-UITV-01",
+      "naam": "Dagrapport uit spraak en foto's",
+      "rol": "uitvoerder",
+      "rollen": [
+        "uitvoerder",
+        "projectleider"
+      ],
+      "kleur": "#ff7f0e",
+      "x": 3.5,
+      "y": 2.81,
+      "haalbaarheid": "middel",
+      "impact": "middel",
+      "kwadrant": "later-niet",
+      "aantal_gekoppelde_signalen": 1,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-UITV-02",
+      "naam": "Juiste tekening en informatie opvragen vanaf de bouwplaats",
+      "rol": "uitvoerder",
+      "rollen": [
+        "uitvoerder",
+        "werkvoorbereider"
+      ],
+      "kleur": "#ff7f0e",
+      "x": 4.73,
+      "y": 4.7,
+      "haalbaarheid": "hoog",
+      "impact": "hoog",
+      "kwadrant": "quick-wins",
+      "aantal_gekoppelde_signalen": 4,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-UITV-03",
+      "naam": "Opleverpunten uit foto's registreren",
+      "rol": "uitvoerder",
+      "rollen": [
+        "uitvoerder",
+        "projectleider",
+        "servicecoordinator"
+      ],
+      "kleur": "#ff7f0e",
+      "x": 3.65,
+      "y": 3.4,
+      "haalbaarheid": "middel",
+      "impact": "middel",
+      "kwadrant": "later-niet",
+      "aantal_gekoppelde_signalen": 2,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-PLAN-01",
+      "naam": "Planningsconflicten signaleren en herplanvoorstel doen",
+      "rol": "planner",
+      "rollen": [
+        "planner",
+        "servicecoordinator",
+        "werkvoorbereider"
+      ],
+      "kleur": "#8c564b",
+      "x": 3.53,
+      "y": 4.7,
+      "haalbaarheid": "middel",
+      "impact": "hoog",
+      "kwadrant": "strategische-projecten",
+      "aantal_gekoppelde_signalen": 3,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-PLAN-02",
+      "naam": "Werkorders controleren op volledigheid vóór inplannen",
+      "rol": "planner",
+      "rollen": [
+        "planner",
+        "servicecoordinator"
+      ],
+      "kleur": "#8c564b",
+      "x": 4.87,
+      "y": 2.81,
+      "haalbaarheid": "hoog",
+      "impact": "middel",
+      "kwadrant": "opvullers",
+      "aantal_gekoppelde_signalen": 2,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-PLAN-03",
+      "naam": "Afspraakwijzigingen communiceren",
+      "rol": "planner",
+      "rollen": [
+        "planner",
+        "servicecoordinator"
+      ],
+      "kleur": "#8c564b",
+      "x": 4.55,
+      "y": 1.14,
+      "haalbaarheid": "hoog",
+      "impact": "laag",
+      "kwadrant": "opvullers",
+      "aantal_gekoppelde_signalen": 1,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-SC-01",
+      "naam": "Storingsmelding omzetten naar serviceorder",
+      "rol": "servicecoordinator",
+      "rollen": [
+        "servicecoordinator",
+        "planner"
+      ],
+      "kleur": "#e377c2",
+      "x": 4.55,
+      "y": 4.53,
+      "haalbaarheid": "hoog",
+      "impact": "hoog",
+      "kwadrant": "quick-wins",
+      "aantal_gekoppelde_signalen": 4,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-SC-02",
+      "naam": "Werkbon controleren op volledigheid vóór facturatie",
+      "rol": "servicecoordinator",
+      "rollen": [
+        "servicecoordinator",
+        "finance-controller"
+      ],
+      "kleur": "#e377c2",
+      "x": 4.64,
+      "y": 4.25,
+      "haalbaarheid": "hoog",
+      "impact": "hoog",
+      "kwadrant": "quick-wins",
+      "aantal_gekoppelde_signalen": 2,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-SC-03",
+      "naam": "Contractdekking en jaarlijkse indexatie controleren",
+      "rol": "servicecoordinator",
+      "rollen": [
+        "servicecoordinator",
+        "finance-controller"
+      ],
+      "kleur": "#e377c2",
+      "x": 3.35,
+      "y": 3.17,
+      "haalbaarheid": "middel",
+      "impact": "middel",
+      "kwadrant": "later-niet",
+      "aantal_gekoppelde_signalen": 2,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-INK-01",
+      "naam": "Inkoopfacturen matchen aan inkooporder en ontvangst",
+      "rol": "inkoper",
+      "rollen": [
+        "inkoper",
+        "werkvoorbereider",
+        "finance-controller"
+      ],
+      "kleur": "#bcbd22",
+      "x": 3.27,
+      "y": 4.53,
+      "haalbaarheid": "middel",
+      "impact": "hoog",
+      "kwadrant": "strategische-projecten",
+      "aantal_gekoppelde_signalen": 4,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-INK-02",
+      "naam": "Leveranciersoffertes vergelijken",
+      "rol": "inkoper",
+      "rollen": [
+        "inkoper",
+        "werkvoorbereider"
+      ],
+      "kleur": "#bcbd22",
+      "x": 3.05,
+      "y": 2.95,
+      "haalbaarheid": "middel",
+      "impact": "middel",
+      "kwadrant": "later-niet",
+      "aantal_gekoppelde_signalen": 2,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-INK-03",
+      "naam": "Bestellingen toetsen aan werkbegroting",
+      "rol": "inkoper",
+      "rollen": [
+        "inkoper",
+        "projectleider"
+      ],
+      "kleur": "#bcbd22",
+      "x": 4.49,
+      "y": 2.95,
+      "haalbaarheid": "hoog",
+      "impact": "middel",
+      "kwadrant": "opvullers",
+      "aantal_gekoppelde_signalen": 3,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-FIN-01",
+      "naam": "Projectresultaat en onderhanden werk controleren bij de periodeafsluiting",
+      "rol": "finance-controller",
+      "rollen": [
+        "finance-controller",
+        "projectleider"
+      ],
+      "kleur": "#7f7f7f",
+      "x": 3.13,
+      "y": 4.8,
+      "haalbaarheid": "middel",
+      "impact": "hoog",
+      "kwadrant": "strategische-projecten",
+      "aantal_gekoppelde_signalen": 3,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-FIN-02",
+      "naam": "Klaar-voor-factuur: termijnen en meerwerk",
+      "rol": "finance-controller",
+      "rollen": [
+        "finance-controller",
+        "projectleider",
+        "servicecoordinator"
+      ],
+      "kleur": "#7f7f7f",
+      "x": 4.28,
+      "y": 4.63,
+      "haalbaarheid": "hoog",
+      "impact": "hoog",
+      "kwadrant": "quick-wins",
+      "aantal_gekoppelde_signalen": 3,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-FIN-03",
+      "naam": "Debiteurenopvolging voorbereiden",
+      "rol": "finance-controller",
+      "rollen": [
+        "finance-controller"
+      ],
+      "kleur": "#7f7f7f",
+      "x": 4.36,
+      "y": 3.31,
+      "haalbaarheid": "hoog",
+      "impact": "middel",
+      "kwadrant": "opvullers",
+      "aantal_gekoppelde_signalen": 1,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    },
+    {
+      "id": "UC-FIN-04",
+      "naam": "Rapportageverschillen tussen administraties verklaren na een overname",
+      "rol": "finance-controller",
+      "rollen": [
+        "finance-controller",
+        "functioneel-beheerder"
+      ],
+      "kleur": "#7f7f7f",
+      "x": 1.93,
+      "y": 4.63,
+      "haalbaarheid": "laag",
+      "impact": "hoog",
+      "kwadrant": "strategische-projecten",
+      "aantal_gekoppelde_signalen": 2,
+      "grootte": {
+        "basis": 8,
+        "per_gekozen_signaal": 4,
+        "max": 28,
+        "formule": "min(28, 8 + 4 x aantal door de deelnemer gekozen signalen dat naar deze use case leidt)"
+      },
+      "label": "inschatting"
+    }
+  ]
+}

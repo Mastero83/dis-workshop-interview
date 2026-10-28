@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { buildSteps, isQuestionActive, loadCatalog } from '../src/catalog.ts'
+import { collectResult } from '../src/kansen.ts'
 import { interpretStored } from '../src/session.ts'
 
 interface FollowFile {
@@ -33,6 +34,7 @@ interface QuestionnaireFile {
   id: string
   estimatedMinutes: number
   intro: string
+  openingVideo?: { src?: string; poster?: string }
   disabledMedia?: DisabledClip[]
   sections: SectionFile[]
 }
@@ -46,17 +48,13 @@ const questions = questionnaire.sections.flatMap((section) =>
 )
 const known = new Set(questions.map((question) => question.id))
 
-assert.deepEqual(
-  questions.map((question) => question.id),
-  ['organisatie', 'rollen', 'urgentie', 'doelen', 'ai-houding'],
-  'de rollen moeten de tweede vraag zijn',
-)
-assert.deepEqual(
-  questionnaire.sections.map((section) => section.title),
-  ['Over je bedrijf', 'Rollen en tijdvreters', 'Doelen voor de workshop', 'AI Services'],
-)
-assert.equal(questionnaire.estimatedMinutes, 4)
-assert.match(questionnaire.intro, /±3–5 minuten/)
+assert.deepEqual(questions.map((question) => question.id), ['rollen', 'urgentie'])
+assert.equal(questions.some((question) => question.id === 'organisatie'), false)
+assert.deepEqual(questionnaire.sections.map((section) => section.title), ['Tijd- en kwaliteitsvreters'])
+assert.equal(questionnaire.estimatedMinutes, 5)
+assert.match(questionnaire.intro, /±4–5 minuten/)
+assert.equal(questionnaire.openingVideo?.src, 'media/dis-group-ai-v13.mp4')
+assert.equal(questionnaire.openingVideo?.poster, 'media/dis-group-ai-v13-poster.jpg')
 assert.equal(
   questions.some((question) => question.context?.src?.includes('ctx-kettingreactie')),
   false,
@@ -68,19 +66,16 @@ assert.equal(parked?.context?.enabled, false)
 const rollen = questions.find((question) => question.id === 'rollen')
 assert.ok(rollen)
 assert.equal(rollen.type, 'roles')
-assert.equal(rollen.title, 'Welke rollen herken je bij jullie, en waar gaat de meeste tijd naartoe?')
+assert.equal(rollen.title, 'Welke tijd- en kwaliteitsvreters herken je?')
 assert.equal(rollen.options?.length, 10)
 assert.equal(rollen.context?.type, 'video')
 assert.equal(rollen.context?.src, 'media/ctx-rollen-tijdvreters.mp4')
 assert.equal(rollen.focus?.id, 'rollen-focus')
 assert.equal(rollen.focus?.whenSelectedMoreThan, 3)
 assert.equal(rollen.focus?.pick, 3)
-assert.equal(rollen.closing?.id, 'slot')
-assert.match(rollen.closing?.title || '', /\{top\}/)
+assert.equal(rollen.closing, undefined)
 for (const option of rollen.options || []) {
-  assert.ok(option.followUp, `${option.value} mist een vervolgvraag`)
-  assert.equal(option.followUp?.id, `fu-${option.value}`)
-  assert.ok((option.followUp?.options?.length || 0) >= 3, `${option.value} mist chips`)
+  assert.equal(option.followUp, undefined, `${option.value} hoort geen vervolgvraag meer te hebben`)
 }
 assert.equal(questions.some((question) => question.id === 'sector' || question.id === 'pijnpunten'), false)
 
@@ -104,7 +99,7 @@ for (const step of [0, 6, 8, 11, 13]) {
   assert.equal(decision.restarted, true, `versie 1 op stap ${step} moet opnieuw beginnen`)
   assert.equal(decision.discard, true)
   assert.equal(decision.session.phase, 'welcome')
-  assert.equal(decision.session.version, 4)
+  assert.equal(decision.session.version, 5)
   assert.equal(decision.session.questionId, null)
   assert.deepEqual(decision.session.answers, {})
 }
@@ -165,7 +160,7 @@ const schema3 = interpretStored(
 )
 assert.equal(schema3.restarted, true, 'schemaversie 3 hoort bij het gesprek zonder vervolgvragen')
 
-const resumed = interpretStored(
+const schema4 = interpretStored(
   JSON.stringify({
     version: 4,
     questionnaireId: qid,
@@ -180,8 +175,28 @@ const resumed = interpretStored(
   '',
   known,
 )
+assert.equal(schema4.restarted, true, 'schemaversie 4 hoort bij het gesprek met vervolgvragen')
+assert.equal(schema4.session.phase, 'welcome')
+assert.deepEqual(schema4.session.answers, {})
+
+const resumed = interpretStored(
+  JSON.stringify({
+    version: 5,
+    questionnaireId: qid,
+    phase: 'flow',
+    stepIndex: 2,
+    questionId: 'rollen',
+    answers: { rollen: ['planner'] },
+    startedAt: '2020-01-01T00:00:00.000Z',
+    updatedAt: '2020-01-01T00:00:00.000Z',
+  }),
+  qid,
+  '',
+  known,
+)
 assert.equal(resumed.restarted, false)
 assert.equal(resumed.discard, false)
+assert.equal(resumed.session.version, 5)
 assert.equal(resumed.session.questionId, 'rollen')
 assert.equal(resumed.session.phase, 'flow')
 assert.deepEqual(resumed.session.answers.rollen, ['planner'])
@@ -240,6 +255,7 @@ const fresh = interpretStored(null, qid, 'Van Gelder', known)
 assert.equal(fresh.restarted, false)
 assert.equal(fresh.discard, false)
 assert.equal(fresh.session.phase, 'welcome')
+assert.equal(fresh.session.version, 5)
 assert.equal(fresh.session.klant, 'Van Gelder')
 
 const broken = interpretStored('{', qid, '', known)
@@ -249,15 +265,17 @@ assert.equal(broken.discard, true)
 const expanded = loadCatalog().questionnaires[0]
 const expandedIds = expanded.sections.flatMap((section) => section.questions.map((question) => question.id))
 assert.ok(expandedIds.includes('rollen-focus'))
-assert.ok(expandedIds.includes('slot'))
-assert.equal(expandedIds.filter((id) => id.startsWith('fu-')).length, 10)
+assert.ok(expandedIds.includes('kansen'))
+assert.equal(expandedIds.includes('slot'), false)
+assert.equal(expandedIds.filter((id) => id.startsWith('fu-')).length, 0)
+assert.equal(expandedIds.filter((id) => id.startsWith('sig-')).length, 10)
 
 const twoRoles = { rollen: ['inkoper', 'planner'] }
 const twoActive = expanded.sections
   .flatMap((section) => section.questions)
   .filter((question) => isQuestionActive(question, twoRoles))
   .map((question) => question.id)
-assert.deepEqual(twoActive, ['organisatie', 'rollen', 'fu-planner', 'fu-inkoper', 'urgentie', 'doelen', 'ai-houding', 'slot'])
+assert.deepEqual(twoActive, ['rollen', 'sig-planner', 'sig-inkoper', 'kansen', 'urgentie'])
 
 const manyRoles = { rollen: ['planner', 'inkoper', 'finance', 'uitvoerder'] }
 const beforeFocus = expanded.sections
@@ -265,7 +283,7 @@ const beforeFocus = expanded.sections
   .filter((question) => isQuestionActive(question, manyRoles))
   .map((question) => question.id)
 assert.ok(beforeFocus.includes('rollen-focus'))
-assert.equal(beforeFocus.some((id) => id.startsWith('fu-')), false)
+assert.equal(beforeFocus.some((id) => id.startsWith('sig-')), false)
 
 const focused = { ...manyRoles, 'rollen-focus': ['uitvoerder', 'planner', 'finance'] }
 const afterFocus = expanded.sections
@@ -273,9 +291,35 @@ const afterFocus = expanded.sections
   .filter((question) => isQuestionActive(question, focused))
   .map((question) => question.id)
 assert.deepEqual(
-  afterFocus.filter((id) => id.startsWith('fu-')),
-  ['fu-uitvoerder', 'fu-planner', 'fu-finance'],
+  afterFocus.filter((id) => id.startsWith('sig-')),
+  ['sig-uitvoerder', 'sig-planner', 'sig-finance'],
 )
-assert.equal(buildSteps(expanded, focused).filter((step) => step.kind === 'question').length, 10)
+assert.equal(buildSteps(expanded, focused).filter((step) => step.kind === 'question').length, 7)
 
-console.log(`resume-check ok (${questions.map((question) => question.id).join(' → ')} + vervolgvragen)`)
+const scored = collectResult({
+  rollen: ['functioneel-beheerder'],
+  'sig-functioneel-beheerder': {
+    kind: 'signals',
+    values: { 'FB-S1': 3, 'FB-S2': 3, 'FB-S3': 0, 'FB-S4': 0, 'FB-S5': 0, 'FB-S6': 0 },
+  },
+})
+assert.ok(scored.ranked.length >= 2)
+assert.equal(scored.ranked[0]?.id, 'UC-FB-01')
+assert.equal(scored.ranked[0]?.score, 3)
+assert.equal(scored.ranked.find((item) => item.id === 'UC-FB-02')?.score, 3)
+assert.equal(Math.round((scored.ranked.find((item) => item.id === 'UC-KU-01')?.score || 0) * 10) / 10, 1.8)
+assert.ok(
+  scored.ranked.findIndex((item) => item.id === 'UC-FB-01') <
+    scored.ranked.findIndex((item) => item.id === 'UC-FB-02'),
+)
+
+const zeros = collectResult({
+  rollen: ['functioneel-beheerder'],
+  'sig-functioneel-beheerder': {
+    kind: 'signals',
+    values: { 'FB-S1': 0, 'FB-S2': 0, 'FB-S3': 0, 'FB-S4': 0, 'FB-S5': 0, 'FB-S6': 0 },
+  },
+})
+assert.equal(zeros.ranked.length, 0)
+
+console.log(`resume-check ok (${questions.map((question) => question.id).join(' → ')} + uitspraken)`)

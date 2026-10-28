@@ -1,5 +1,6 @@
 import './style.css'
 import { buildSteps, findQuestionnaire, findStepIndex, isQuestionActive, loadCatalog, presentQuestion, questionAt, questionIds, rolePhrase } from './catalog'
+import { collectResult, intensityScale, kaartPunten, roleLabel, signalsForRole } from './kansen'
 import {
   answerHtml,
   asset,
@@ -10,6 +11,8 @@ import {
   formatWhen,
   isEmpty,
   isExportDoc,
+  isKansAnswer,
+  isSignalAnswer,
   isValid,
   toExportDoc,
   toPlainText,
@@ -109,6 +112,9 @@ let rolesOpen = false
 let rolesScroll = 0
 let celebrate = false
 let lastLive = ''
+let signalFor = ''
+let signalIndex = 0
+let kaartId = ''
 
 const app = document.getElementById('app')!
 
@@ -169,6 +175,7 @@ function render(): void {
   const media = captureMedia()
   const thread = document.getElementById('thread')
   const keepScroll = !freshId && thread ? thread.scrollTop : null
+  const pageScroll = thread ? null : window.scrollY
   const sheet = document.querySelector('.role-sheet')
   if (sheet) rolesScroll = sheet.scrollTop
   document.querySelectorAll('body > .role-sheet').forEach((node) => node.remove())
@@ -180,7 +187,7 @@ function render(): void {
   if (nextThread) {
     if (arriving) nextThread.scrollTop = nextThread.scrollHeight
     else if (keepScroll != null) nextThread.scrollTop = keepScroll
-  }
+  } else if (pageScroll) window.scrollTo(0, pageScroll)
   const nextSheet = document.querySelector('.role-sheet.is-open')
   if (nextSheet && window.matchMedia('(max-width: 799px)').matches) document.body.appendChild(nextSheet)
   if (nextSheet && rolesScroll) nextSheet.scrollTop = rolesScroll
@@ -253,6 +260,7 @@ function homeHref(): string {
 }
 
 function introClip(source: Questionnaire): ClipSource | null {
+  if (source.openingVideo?.src) return source.openingVideo
   if (source.introVideo?.src) return source.introVideo
   if (source.video?.type === 'video' && source.video.src) return { src: source.video.src, poster: source.video.poster }
   return null
@@ -301,7 +309,7 @@ function progressState(): { pct: number; minutes: string; label: string; answere
   for (const section of questionnaire.sections) {
     for (const question of section.questions) {
       const value = session.answers[question.id]
-      if (!isEmpty(value) && isValid(question, value)) answered += 1
+      if (!isEmpty(value) && isValid(question, value, session.answers)) answered += 1
     }
   }
   const pct = totalQuestions === 0 ? 0 : Math.round((answered / totalQuestions) * 100)
@@ -574,10 +582,93 @@ function controlHtml(question: Question): string {
   const value = session.answers[question.id]
   question = shown(question)
   if (question.type === 'text' || question.type === 'longtext') return textComposer(question)
+  if (question.type === 'signals') return signalsComposer(question)
+  if (question.type === 'kansen') return kansenComposer(question)
   if (question.type === 'single' || question.type === 'multiple') return chipComposer(question, value)
   if (question.type === 'roles') return rolesComposer(question, value)
   if (question.type === 'scale') return scaleComposer(question, value)
   return rankComposer(question, value)
+}
+
+function signalState(question: Question): Record<string, number> {
+  const value = session?.answers[question.id]
+  return isSignalAnswer(value) ? { ...value.values } : {}
+}
+
+function signalsComposer(question: Question): string {
+  const signals = signalsForRole(question.signalRole || '')
+  if (signalFor !== question.id) {
+    signalFor = question.id
+    const values = signalState(question)
+    const gap = signals.findIndex((signal) => values[signal.id] == null)
+    signalIndex = gap < 0 ? 0 : gap
+  }
+  if (signalIndex >= signals.length) signalIndex = Math.max(0, signals.length - 1)
+  const current = signals[signalIndex]
+  const values = signalState(question)
+  const done = signals.every((signal) => values[signal.id] != null)
+  if (!current) return ''
+  const chips = intensityScale
+    .map((item) => {
+      const on = values[current.id] === item.waarde
+      return `<button class="signal-choice${on ? ' is-on' : ''}" type="button" data-action="signal-score" data-qid="${escapeHtml(question.id)}" data-signal="${escapeHtml(current.id)}" data-value="${item.waarde}">${escapeHtml(item.label)}</button>`
+    })
+    .join('')
+  return `<div class="signal-card">
+    <p class="signal-count">Uitspraak ${signalIndex + 1} van ${signals.length}</p>
+    <p class="signal-text">${escapeHtml(current.tekst)}</p>
+    <div class="signal-scale">${chips}</div>
+    <div class="signal-nav">
+      <button class="btn btn-line" type="button" data-action="signal-prev" ${signalIndex === 0 ? 'disabled' : ''}>Vorige</button>
+      <button class="btn btn-line" type="button" data-action="signal-next" ${signalIndex >= signals.length - 1 ? 'disabled' : ''}>Volgende</button>
+    </div>
+  </div>
+  <button class="btn btn-primary send-wide" type="submit" data-action="send" ${done ? '' : 'disabled'}>Verder</button>`
+}
+
+function kansenComposer(question: Question): string {
+  if (!session) return ''
+  const result = collectResult(session.answers)
+  const stored = kansFieldsFromSession(question.id)
+  if (result.ranked.length === 0) {
+    return `<p class="kans-empty">Op basis van de uitspraken komt er nog geen kans boven de drempel.</p>
+      <textarea class="field" data-kind="kans-note" data-qid="${escapeHtml(question.id)}" rows="3" placeholder="Wat zou het grootste verschil maken?">${escapeHtml(stored.note)}</textarea>
+      <button class="btn btn-primary send-wide" type="submit" data-action="send">Verder</button>`
+  }
+  const cards = result.ranked
+    .map((item) => {
+      const choice = stored.interest[item.id] || ''
+      const buttons = [
+        ['graag', 'Graag in de workshop'],
+        ['misschien', 'Misschien'],
+        ['niet', 'Niet nu'],
+      ]
+        .map(
+          ([value, label]) =>
+            `<button class="signal-choice${choice === value ? ' is-on' : ''}" type="button" data-action="kans-interest" data-qid="${escapeHtml(question.id)}" data-uc="${escapeHtml(item.id)}" data-value="${value}">${label}</button>`,
+        )
+        .join('')
+      return `<article class="kans-card">
+        <h3>${escapeHtml(item.naam)}</h3>
+        <p>${escapeHtml(item.omschrijving)}</p>
+        <p class="kans-example">${escapeHtml(item.voorbeeld)}</p>
+        <p class="mens">Laatste akkoord ligt altijd bij een mens.</p>
+        <div class="signal-scale">${buttons}</div>
+      </article>`
+    })
+    .join('')
+  const ready = isValid(question, session.answers[question.id], session.answers)
+  return `${cards}
+    <label class="kans-note">Wat zou het grootste verschil maken? <span>Optioneel</span>
+      <textarea class="field" data-kind="kans-note" data-qid="${escapeHtml(question.id)}" rows="3" placeholder="Bijv. minder zoeken tussen documenten en de bouwplaats">${escapeHtml(stored.note)}</textarea>
+    </label>
+    <button class="btn btn-primary send-wide" type="submit" data-action="send" ${ready ? '' : 'disabled'}>Verder</button>`
+}
+
+function kansFieldsFromSession(id: string): { interest: Record<string, string>; note: string } {
+  const value = session?.answers[id]
+  if (!isKansAnswer(value)) return { interest: {}, note: '' }
+  return { interest: value.interest, note: value.note }
 }
 
 function textComposer(question: Question): string {
@@ -735,11 +826,8 @@ function asList(value: AnswerValue | undefined): string[] {
 }
 
 function chosenRoleLabels(): string[] {
-  if (!questionnaire || !session) return []
-  const question = questionnaire.sections.flatMap((section) => section.questions).find((item) => item.type === 'roles')
-  if (!question) return []
-  const selected = new Set(asList(session.answers[question.id]))
-  return (question.options || []).filter((option) => selected.has(option.value)).map((option) => option.label)
+  if (!session) return []
+  return collectResult(session.answers).roles.map((role) => roleLabel(role))
 }
 
 function summaryView(): string {
@@ -799,6 +887,7 @@ function summaryView(): string {
         </p>
       </header>
       <div class="sum-rule" aria-hidden="true"></div>
+      ${kaartHtml()}
       <div class="sum-body">
         <p class="note" id="remote-note">${escapeHtml(remoteNote || privacyLine())}</p>
         ${blocks}
@@ -920,6 +1009,69 @@ function syncText(): void {
     if (!id) return
     session!.answers[id] = field.value
   })
+  document.querySelectorAll<HTMLTextAreaElement>('[data-kind="kans-note"]').forEach((field) => {
+    const id = field.dataset.qid
+    if (!id) return
+    const current = session!.answers[id]
+    const interest = isKansAnswer(current) ? current.interest : {}
+    session!.answers[id] = { kind: 'kansen', interest, note: field.value }
+  })
+}
+
+function kaartHtml(): string {
+  if (!session) return ''
+  const result = collectResult(session.answers)
+  const scores: Record<string, number> = {}
+  for (const item of result.ranked) scores[item.id] = item.score
+  const points = kaartPunten(
+    result.intensities,
+    result.ranked.map((item) => item.id),
+    result.interest,
+    scores,
+  )
+  const dots = points
+    .map((point) => {
+      const left = ((point.x - 1) / 4) * 100
+      const bottom = ((point.y - 1) / 4) * 100
+      const cls = `kaart-dot${point.relevant ? '' : ' is-dim'}${point.top ? ' is-top' : ''}${kaartId === point.id ? ' is-on' : ''}`
+      return `<button class="${cls}" type="button" data-action="kaart" data-id="${escapeHtml(point.id)}" style="left:${left.toFixed(2)}%;bottom:${bottom.toFixed(2)}%;--size:${point.size}px;--kleur:${point.kleur}" aria-label="${escapeHtml(point.naam)}"><i></i></button>`
+    })
+    .join('')
+  const selected = points.find((point) => point.id === kaartId)
+  const detail = selected
+    ? `<div class="kaart-detail"><strong>${escapeHtml(selected.naam)}</strong><p>${escapeHtml(selected.kwadrantNaam)} · impact ${escapeHtml(selected.impact)} · haalbaarheid ${escapeHtml(selected.haalbaarheid)}</p></div>`
+    : `<p class="kaart-hint">Tik een stip voor de naam.</p>`
+  const list = result.ranked
+    .map(
+      (item) => `<li>
+        <strong>${escapeHtml(item.naam)}</strong>
+        <span>${escapeHtml(item.id)} · score ${item.score.toFixed(1).replace('.', ',')} · ${escapeHtml(interestText(result.interest[item.id] || ''))}</span>
+        <p>${escapeHtml(item.voorbeeld)}</p>
+        <p class="mens">Laatste akkoord ligt altijd bij een mens.</p>
+      </li>`,
+    )
+    .join('')
+  return `<section class="kaart-wrap">
+    <div class="kaart">
+      <span class="kaart-q q-tl">Strategisch</span>
+      <span class="kaart-q q-tr">Quick wins</span>
+      <span class="kaart-q q-bl">Niet doen</span>
+      <span class="kaart-q q-br">Later</span>
+      <span class="kaart-threshold x" aria-hidden="true"></span>
+      <span class="kaart-threshold y" aria-hidden="true"></span>
+      ${dots}
+    </div>
+    <p class="kaart-axes"><span>Haalbaarheid</span><span>Impact</span></p>
+    ${detail}
+    ${list ? `<ol class="kaart-list">${list}</ol>` : '<p class="muted kaart-none">Er kwam geen kans boven de drempel.</p>'}
+  </section>`
+}
+
+function interestText(value: string): string {
+  if (value === 'graag') return 'graag in de workshop'
+  if (value === 'misschien') return 'misschien'
+  if (value === 'niet') return 'niet nu'
+  return 'geen keuze'
 }
 
 function flashSaved(): void {
@@ -1005,7 +1157,7 @@ function commitComposer(): void {
     return
   }
   const value = session.answers[question.id]
-  if (!isValid(question, value)) {
+  if (!isValid(question, value, session.answers)) {
     errorText = validationMessage(question)
     freshId = ''
     render()
@@ -1200,6 +1352,47 @@ function modalHtml(): string {
 function resetSession(): void {
   closeModal()
   reloadWelcome()
+}
+
+function setSignalScore(id: string, signalId: string, score: number): void {
+  if (!session || Number.isNaN(score)) return
+  const question = questionById(id)
+  if (!question) return
+  const signals = signalsForRole(question.signalRole || '')
+  const values = { ...signalState(question), [signalId]: score }
+  const index = signals.findIndex((signal) => signal.id === signalId)
+  const nextGap = signals.findIndex((signal, itemIndex) => itemIndex > index && values[signal.id] == null)
+  signalFor = id
+  signalIndex = nextGap >= 0 ? nextGap : Math.min(signals.length - 1, Math.max(0, index + 1))
+  setAnswer(id, { kind: 'signals', values })
+}
+
+function nudgeSignal(delta: number): void {
+  const question = composerQuestion()
+  if (!question || question.type !== 'signals') return
+  const signals = signalsForRole(question.signalRole || '')
+  if (!signals.length) return
+  signalFor = question.id
+  signalIndex = Math.max(0, Math.min(signals.length - 1, signalIndex + delta))
+  freshId = ''
+  render()
+}
+
+function setKansInterest(id: string, useCaseId: string, choice: string): void {
+  if (!session) return
+  const field = document.querySelector<HTMLTextAreaElement>('[data-kind="kans-note"]')
+  const current = kansFieldsFromSession(id)
+  setAnswer(id, {
+    kind: 'kansen',
+    interest: { ...current.interest, [useCaseId]: choice },
+    note: field?.value ?? current.note,
+  })
+}
+
+function selectKaart(id: string): void {
+  kaartId = kaartId === id ? '' : id
+  freshId = ''
+  render()
 }
 
 function setAnswer(id: string, value: AnswerValue): void {
@@ -1449,7 +1642,7 @@ document.addEventListener('click', (event) => {
   } else if (action === 'confirm-roles') {
     const question = composerQuestion()
     const value = session?.answers[question?.id || '']
-    if (question && !isValid(question, value)) rolesOpen = true
+    if (question && !isValid(question, value, session?.answers || {})) rolesOpen = true
     else rolesOpen = false
     commitComposer()
   }
@@ -1457,6 +1650,13 @@ document.addEventListener('click', (event) => {
   else if (action === 'rank-toggle' && el.dataset.qid && el.dataset.value) toggleList(el.dataset.qid, el.dataset.value)
   else if (action === 'rank-up' && el.dataset.qid && el.dataset.value) moveRank(el.dataset.qid, el.dataset.value, -1)
   else if (action === 'rank-down' && el.dataset.qid && el.dataset.value) moveRank(el.dataset.qid, el.dataset.value, 1)
+  else if (action === 'signal-score' && el.dataset.qid && el.dataset.signal) {
+    setSignalScore(el.dataset.qid, el.dataset.signal, Number(el.dataset.value))
+  } else if (action === 'signal-prev') nudgeSignal(-1)
+  else if (action === 'signal-next') nudgeSignal(1)
+  else if (action === 'kans-interest' && el.dataset.qid && el.dataset.uc && el.dataset.value) {
+    setKansInterest(el.dataset.qid, el.dataset.uc, el.dataset.value)
+  } else if (action === 'kaart' && el.dataset.id) selectKaart(el.dataset.id)
   else if (action === 'skip' && el.dataset.qid) {
     if (session) session.answers[el.dataset.qid] = null
     errorText = ''
