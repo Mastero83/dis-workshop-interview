@@ -1268,9 +1268,37 @@ tr.diff td:first-child { font-weight: 600; }
   box-shadow: var(--shadow);
   margin-bottom: env(safe-area-inset-bottom);
 }
-.modal h2 { font-size: 24px; margin-bottom: 8px; }
+.modal h2 { font-size: 24px; margin-bottom: 8px; color: var(--das-navy); }
 .modal p { margin: 0 0 14px; }
 .modal .actions { margin-top: 8px; }
+.modal-back.is-thanks { place-items: center; }
+.thanks-confetti { z-index: 0; }
+.thanks-confetti i:nth-child(odd) { background: var(--das-yellow); }
+.thanks-confetti i:nth-child(even) { background: var(--das-navy); }
+.thanks-modal {
+  position: relative;
+  z-index: 1;
+  text-align: left;
+  animation: thanksIn 0.4s cubic-bezier(0.22, 0.8, 0.28, 1);
+}
+.thanks-mark {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin-bottom: 14px;
+  background: var(--das-navy);
+  color: white;
+  box-shadow: 0 0 0 8px #fff6e0;
+}
+.thanks-modal h2 { font-size: 28px; line-height: 1.15; margin-bottom: 10px; }
+.thanks-time { color: var(--das-navy); font-weight: 600; }
+.thanks-modal .btn:focus-visible { outline: 3px solid var(--das-navy); outline-offset: 3px; }
+@keyframes thanksIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
 .panel { min-height: 100dvh; background: white; padding: 20px; }
 .panel-body { width: min(640px, 100%); margin: 24px auto; }
 
@@ -1416,6 +1444,7 @@ tr.diff td:first-child { font-weight: 600; }
   .sum-actions .reset-btn { min-height: 32px; padding: 4px 8px 4px 6px; font-size: 12px; }
   .sum-body { padding: 14px max(8px, env(safe-area-inset-right)) 16px max(8px, env(safe-area-inset-left)); }
   .send-result, .send-result .btn { width: 100%; }
+  .thanks-modal .btn { width: 100%; }
   .thread {
     padding: 8px max(8px, env(safe-area-inset-right)) 8px max(8px, env(safe-area-inset-left));
     overflow-x: hidden;
@@ -1637,7 +1666,7 @@ tr.diff td:first-child { font-weight: 600; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .blob, .typing i, .typing-row, .reveal-1, .reveal-2, .chapter.is-fresh, .confetti i, .meter span, .btn, .role-card.is-on {
+  .blob, .typing i, .typing-row, .reveal-1, .reveal-2, .chapter.is-fresh, .confetti i, .thanks-modal, .meter span, .btn, .role-card.is-on {
     animation: none !important;
     transition: none !important;
   }

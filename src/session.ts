@@ -100,6 +100,10 @@ export function interpretStored(
       klantSlug: typeof data.klantSlug === 'string' && customerSlug(data.klantSlug) ? customerSlug(data.klantSlug) : undefined,
       afgerond: data.afgerond === true,
       remotePushedAt: typeof data.remotePushedAt === 'string' ? data.remotePushedAt : undefined,
+      invultijdSeconden:
+        typeof data.invultijdSeconden === 'number' && Number.isFinite(data.invultijdSeconden) && data.invultijdSeconden >= 0
+          ? Math.round(data.invultijdSeconden)
+          : undefined,
     },
     restarted: false,
     discard: false,
