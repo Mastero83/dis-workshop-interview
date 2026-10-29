@@ -27,7 +27,6 @@ import {
   isSignalAnswer,
   isValid,
   toExportDoc,
-  toPlainText,
   validationMessage,
 } from './format'
 import { insertAntwoorden } from './remote'
@@ -71,7 +70,6 @@ const REFRESH =
 const params = new URLSearchParams(location.search)
 const klantParam = (params.get('klant') || '').trim()
 const vragenlijstParam = params.get('vragenlijst')
-const naarParam = (params.get('naar') || '').trim()
 const resetOnLoad = params.get('reset') === '1'
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -127,16 +125,11 @@ let atWelcome = !session || session.phase === 'welcome'
 let beheer = params.get('beheer') === '1'
 const vergelijk = params.get('vergelijk') === '1'
 let errorText = ''
-let modal: 'reset' | 'email' | null = null
+let modal: 'reset' | null = null
 let memoryOnly = false
 type SaveState = 'idle' | 'saving' | 'saved' | 'error'
 let saveState: SaveState = 'idle'
-let saveTimer = 0
-let retryTimer = 0
 let saveInFlight = false
-let saveGeneration = 0
-let networkRetried = false
-let dirtyWhileFlight = false
 let imports: { name: string; doc: ExportDoc }[] = []
 let picked = new Set<number>()
 let adminError = ''
@@ -196,7 +189,6 @@ function persist(): void {
   if (!session || suppressSave) return
   stampSession()
   memoryOnly = !saveSession(session)
-  if (session.afgerond) scheduleRemoteSave(2000)
 }
 
 function resetButton(): string {
@@ -205,11 +197,12 @@ function resetButton(): string {
 
 function reloadWelcome(): void {
   suppressSave = true
+  session = null
   wipeAppStorage()
   const url = new URL(location.href)
-  url.searchParams.delete('reset')
   url.searchParams.delete('beheer')
   url.searchParams.delete('vergelijk')
+  url.searchParams.set('reset', '1')
   location.replace(url.pathname + url.search + url.hash)
 }
 
@@ -994,11 +987,6 @@ function summaryView(): string {
       <header class="sum-hero">
         <div class="sum-toolbar">
           ${logo('dark')}
-          <div class="sum-actions">
-            <button class="reset-btn sum-action-extra no-print" type="button" data-action="download">Download JSON</button>
-            <button class="reset-btn sum-action-extra no-print" type="button" data-action="print">Afdrukken</button>
-            ${resetButton()}
-          </div>
         </div>
         <p class="sum-eyebrow">Dit nemen we mee</p>
         <h1 id="screen-title" tabindex="-1">Jullie kansenkaart</h1>
@@ -1008,7 +996,7 @@ function summaryView(): string {
           <span>${escapeHtml(when.date)}</span>
           ${when.time ? `<span>${escapeHtml(when.time)}</span>` : ''}
         </p>
-        ${saveBox()}
+        ${sendBox()}
       </header>
       <div class="sum-rule" aria-hidden="true"></div>
       ${kaartHtml()}
@@ -1018,12 +1006,6 @@ function summaryView(): string {
           <button class="linkish" type="button" data-action="back">Terug naar het gesprek</button>
           <a class="text-link" href="${beheerHref()}">Antwoorden vergelijken</a>
         </div>
-      </div>
-      <div class="export-bar no-print">
-        <button class="btn btn-primary" type="button" data-action="download">Download JSON</button>
-        <button class="btn btn-line" type="button" data-action="print">Afdrukken / PDF</button>
-        <button class="btn btn-line" type="button" data-action="copy">Kopieer tekst</button>
-        <button class="btn btn-line" type="button" data-action="mail">Mail de samenvatting</button>
       </div>
     </div>
   </article>`
@@ -1308,10 +1290,8 @@ function finish(): void {
   rolesOpen = false
   freshId = ''
   ensureIdentity()
-  primeSaveState()
   persist()
   render()
-  void runSave()
 }
 
 function advance(): void {
@@ -1450,16 +1430,17 @@ function currentFingerprint(): string {
   })
 }
 
-function alreadyStored(fingerprint: string): boolean {
-  if (!session) return false
-  const flag = readSaveFlag(session.sessieId)
-  return flag?.fingerprint === fingerprint
+function sendLabel(): string {
+  if (saveState === 'saved') return 'Verstuurd'
+  if (saveState === 'error') return 'Opnieuw versturen'
+  return 'Versturen'
 }
 
-function saveMessage(): string {
-  if (saveState === 'saved') return 'Je antwoorden zijn opgeslagen. Dank je!'
-  if (saveState === 'error') return 'Opslaan lukte niet. Probeer het opnieuw'
-  return 'Je antwoorden worden opgeslagen…'
+function sendStatus(): string {
+  if (saveState === 'saved') return 'Verstuurd, dank je wel!'
+  if (saveState === 'error') return 'Versturen lukte niet. Probeer het nog eens.'
+  if (saveState === 'saving') return 'Een moment…'
+  return 'Je antwoorden gaan naar DIS Group voor de workshop.'
 }
 
 function saveDebugLine(): string {
@@ -1470,159 +1451,74 @@ function saveDebugLine(): string {
   return `Opslag: ${result} · ${code} · ${formatWhen(log.at)} · ${log.klant} · ${log.sessieId}`
 }
 
-function saveBox(): string {
-  const retry =
-    saveState === 'error'
-      ? `<button class="btn btn-line no-print" type="button" id="retry-save" data-action="retry-save">Opnieuw proberen</button>`
-      : ''
+function sendBox(): string {
+  const locked = saveState === 'saving' || saveState === 'saved'
   const debug = beheer ? `<p class="save-debug no-print" id="save-debug">${escapeHtml(saveDebugLine())}</p>` : ''
-  return `<div class="save-box" id="save-box">
-    <p class="note" id="remote-note" role="status">${escapeHtml(saveMessage())}</p>
-    ${retry}
+  return `<div class="send-result no-print" id="send-result">
+    <button class="btn btn-primary" type="button" id="send-result-btn" data-action="send-result"${locked ? ' disabled' : ''}>${sendLabel()}</button>
+    <p class="send-status${saveState === 'saved' ? ' is-ok' : ''}" id="send-status" role="status">${escapeHtml(sendStatus())}</p>
+    <button class="send-restart" type="button" data-action="ask-reset">Opnieuw beginnen</button>
     ${debug}
   </div>`
 }
 
-function primeSaveState(): void {
-  if (!session || !questionnaire) return
-  if (!session.afgerond && session.phase !== 'summary') return
-  saveState = alreadyStored(currentFingerprint()) ? 'saved' : 'saving'
+function restoreSentState(): void {
+  if (!session) return
+  if (readSaveFlag(session.sessieId)) saveState = 'saved'
 }
 
-function paintSaveStatus(): void {
-  const note = document.getElementById('remote-note')
-  if (note) note.textContent = saveMessage()
-  const box = document.getElementById('save-box')
-  const retry = document.getElementById('retry-save')
-  if (saveState === 'error') {
-    if (!retry && box) {
-      const button = document.createElement('button')
-      button.className = 'btn btn-line no-print'
-      button.type = 'button'
-      button.id = 'retry-save'
-      button.dataset.action = 'retry-save'
-      button.textContent = 'Opnieuw proberen'
-      box.appendChild(button)
-    }
-  } else retry?.remove()
+function paintSendStatus(): void {
+  const button = document.getElementById('send-result-btn')
+  if (button instanceof HTMLButtonElement) {
+    button.textContent = sendLabel()
+    button.disabled = saveState === 'saving' || saveState === 'saved'
+  }
+  const status = document.getElementById('send-status')
+  if (status) {
+    status.textContent = sendStatus()
+    status.classList.toggle('is-ok', saveState === 'saved')
+  }
   const debug = document.getElementById('save-debug')
   if (debug) debug.textContent = saveDebugLine()
 }
 
-function scheduleRemoteSave(delay: number): void {
-  if (!session?.afgerond || !questionnaire || suppressSave) return
-  const fingerprint = currentFingerprint()
-  if (alreadyStored(fingerprint)) {
-    window.clearTimeout(saveTimer)
-    saveTimer = 0
-    if (!saveInFlight) {
-      saveState = 'saved'
-      paintSaveStatus()
-    }
-    return
-  }
-  if (saveInFlight) {
-    dirtyWhileFlight = true
-    if (saveState !== 'saving') saveState = 'saving'
-    return
-  }
-  window.clearTimeout(saveTimer)
-  if (delay > 0) {
-    window.clearTimeout(retryTimer)
-    retryTimer = 0
-    networkRetried = false
-  }
-  saveState = 'saving'
-  saveTimer = window.setTimeout(() => {
-    saveTimer = 0
-    void runSave()
-  }, delay)
-}
-
-async function runSave(): Promise<void> {
+async function sendResult(): Promise<void> {
   if (!session || !questionnaire || suppressSave) return
-  if (!session.afgerond && session.phase !== 'summary') return
-  window.clearTimeout(saveTimer)
-  saveTimer = 0
-  session.afgerond = true
+  if (saveState === 'saving' || saveState === 'saved' || saveInFlight) return
+  syncText()
   ensureIdentity()
-  const fingerprint = currentFingerprint()
-  if (alreadyStored(fingerprint)) {
-    saveState = 'saved'
-    networkRetried = false
-    paintSaveStatus()
-    return
-  }
-  if (saveInFlight) {
-    dirtyWhileFlight = true
-    return
-  }
-  const generation = ++saveGeneration
+  session.afgerond = true
+  persist()
+  const sessieId = session.sessieId
+  const klant = session.klantSlug || 'onbekend'
   saveInFlight = true
   saveState = 'saving'
-  paintSaveStatus()
-  const klant = session.klantSlug || 'onbekend'
+  paintSendStatus()
   const result = await insertAntwoorden({
     klant,
-    sessie_id: session.sessieId,
+    sessie_id: sessieId,
     schema_versie: session.version,
     payload: toExportDoc(questionnaire, session),
   })
   saveInFlight = false
-  if (generation !== saveGeneration) return
+  if (!session || session.sessieId !== sessieId) return
   writeSaveLog({
     ok: result.ok,
     status: result.status,
     at: new Date().toISOString(),
-    sessieId: session.sessieId,
+    sessieId,
     klant,
     network: result.ok ? false : result.network,
   })
   if (result.ok) {
-    const latest = currentFingerprint()
-    if (latest === fingerprint) {
-      writeSaveFlag(session.sessieId, {
-        fingerprint,
-        savedAt: new Date().toISOString(),
-        status: result.status,
-      })
-      saveState = 'saved'
-      networkRetried = false
-      dirtyWhileFlight = false
-      paintSaveStatus()
-      return
-    }
-    dirtyWhileFlight = false
-    saveState = 'saving'
-    paintSaveStatus()
-    scheduleRemoteSave(2000)
-    return
-  }
-  if (!result.ok && result.network && !networkRetried) {
-    networkRetried = true
-    saveState = 'saving'
-    paintSaveStatus()
-    retryTimer = window.setTimeout(() => {
-      retryTimer = 0
-      void runSave()
-    }, 3000)
-    return
-  }
-  saveState = 'error'
-  paintSaveStatus()
-  if (dirtyWhileFlight) {
-    dirtyWhileFlight = false
-    scheduleRemoteSave(2000)
-  }
-}
-
-function retrySave(): void {
-  networkRetried = false
-  window.clearTimeout(retryTimer)
-  retryTimer = 0
-  saveState = 'saving'
-  paintSaveStatus()
-  void runSave()
+    writeSaveFlag(sessieId, {
+      fingerprint: currentFingerprint(),
+      savedAt: new Date().toISOString(),
+      status: result.status,
+    })
+    saveState = 'saved'
+  } else saveState = 'error'
+  paintSendStatus()
 }
 
 function download(): void {
@@ -1641,56 +1537,8 @@ function download(): void {
   URL.revokeObjectURL(url)
 }
 
-async function copySummary(): Promise<void> {
-  if (!session || !questionnaire) return
-  syncText()
-  const text = toPlainText(toExportDoc(questionnaire, session))
-  const button = document.querySelector<HTMLButtonElement>('[data-action="copy"]')
-  try {
-    await navigator.clipboard.writeText(text)
-    if (button) button.textContent = 'Gekopieerd'
-  } catch {
-    const area = document.createElement('textarea')
-    area.value = text
-    document.body.appendChild(area)
-    area.select()
-    document.execCommand('copy')
-    area.remove()
-    if (button) button.textContent = 'Gekopieerd'
-  }
-  window.setTimeout(() => {
-    if (button) button.textContent = 'Kopieer tekst'
-  }, 1800)
-}
-
-function mailTo(address: string): void {
-  if (!session || !questionnaire) return
-  const email = address.trim()
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    openModal('email')
-    const input = document.getElementById('mail-to')
-    const error = document.getElementById('mail-error')
-    if (error) {
-      error.hidden = false
-      error.textContent = 'Vul een geldig e-mailadres in.'
-    }
-    if (input instanceof HTMLInputElement) input.focus()
-    return
-  }
-  const doc = toExportDoc(questionnaire, session)
-  let body = toPlainText(doc)
-  if (body.length > 1400) {
-    body =
-      body.slice(0, 1100) +
-      '\n…\n\nDit is een verkorte versie. Download de JSON en voeg die toe aan de mail voor het volledige overzicht.'
-  }
-  const href = `mailto:${email}?subject=${encodeURIComponent(`Workshopvoorbereiding ${doc.klant}`.trim())}&body=${encodeURIComponent(body)}`
-  closeModal()
-  location.href = href
-}
-
-function openModal(kind: 'reset' | 'email'): void {
-  modal = kind
+function openModal(): void {
+  modal = 'reset'
   paintModal()
 }
 
@@ -1706,39 +1554,19 @@ function paintModal(): void {
   root.id = 'modal-root'
   root.innerHTML = modalHtml()
   document.body.appendChild(root)
-  const field = document.getElementById('mail-to')
-  if (field instanceof HTMLInputElement) field.focus()
 }
 
 function modalHtml(): string {
-  if (modal === 'reset') {
-    return `<div class="modal-back">
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-        <h2 id="modal-title">Opnieuw beginnen?</h2>
-        <p>Weet je het zeker? Je antwoorden worden gewist.</p>
-        <div class="actions">
-          <button class="btn btn-ghost-dark" type="button" data-action="close-modal">Annuleren</button>
-          <button class="btn btn-primary" type="button" data-action="confirm-reset">Wis en begin opnieuw</button>
-        </div>
+  return `<div class="modal-back">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <h2 id="modal-title">Opnieuw beginnen?</h2>
+      <p>Weet je het zeker? Je antwoorden worden gewist.</p>
+      <div class="actions">
+        <button class="btn btn-ghost-dark" type="button" data-action="close-modal">Annuleren</button>
+        <button class="btn btn-primary" type="button" data-action="confirm-reset">Wis en begin opnieuw</button>
       </div>
-    </div>`
-  }
-  if (modal === 'email') {
-    const preset = naarParam || questionnaire?.consultantEmail || ''
-    return `<div class="modal-back">
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-        <h2 id="modal-title">Naar welk adres mailen we?</h2>
-        <p>Je mailprogramma opent met een samenvatting. Voeg de JSON toe als de tekst wordt afgekapt.</p>
-        <input class="field" id="mail-to" type="email" inputmode="email" placeholder="workshop@bedrijf.nl" value="${escapeHtml(preset)}" />
-        <p class="form-error" id="mail-error" hidden></p>
-        <div class="actions">
-          <button class="btn btn-ghost-dark" type="button" data-action="close-modal">Annuleren</button>
-          <button class="btn btn-primary" type="button" data-action="send-mail">Open de mail</button>
-        </div>
-      </div>
-    </div>`
-  }
-  return ''
+    </div>
+  </div>`
 }
 
 function resetSession(): void {
@@ -2073,7 +1901,7 @@ document.addEventListener('click', (event) => {
   }
   else if (action === 'back') goBack()
   else if (action === 'home') goHome()
-  else if (action === 'ask-reset') openModal('reset')
+  else if (action === 'ask-reset') openModal()
   else if (action === 'confirm-reset') resetSession()
   else if (action === 'close-modal') closeModal()
   else if (action === 'cancel-edit') {
@@ -2127,18 +1955,10 @@ document.addEventListener('click', (event) => {
   }   else if (action === 'play-clip') playClip(el)
   else if (action === 'unmute') unmuteClip(el)
   else if (action === 'fullscreen') fullscreenClip(el)
-  else if (action === 'retry-save') retrySave()
+  else if (action === 'send-result') void sendResult()
   else if (action === 'download') download()
   else if (action === 'print') window.print()
-  else if (action === 'copy') void copySummary()
-  else if (action === 'mail') {
-    const preset = naarParam || questionnaire?.consultantEmail || ''
-    if (preset) mailTo(preset)
-    else openModal('email')
-  } else if (action === 'send-mail') {
-    const input = document.getElementById('mail-to')
-    if (input instanceof HTMLInputElement) mailTo(input.value)
-  } else if (action === 'pick') {
+  else if (action === 'pick') {
     const index = Number(el.dataset.index)
     if (picked.has(index)) picked.delete(index)
     else if (picked.size < 2) picked.add(index)
@@ -2231,11 +2051,6 @@ document.addEventListener('keydown', (event) => {
     closeModal()
     return
   }
-  if (event.key === 'Enter' && modal === 'email' && event.target instanceof HTMLInputElement) {
-    event.preventDefault()
-    mailTo(event.target.value)
-    return
-  }
 })
 
 document.addEventListener('dragover', (event) => {
@@ -2261,17 +2076,16 @@ window.addEventListener('pagehide', () => {
   syncText()
   stampSession()
   saveSession(session)
-  if (session.afgerond) void runSave()
+})
+
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) location.reload()
 })
 
 if (session && questionnaire && !resetOnLoad) {
   const changed = ensureIdentity()
-  primeSaveState()
+  restoreSentState()
   if (changed) persist()
 }
 
 if (!resetOnLoad) render()
-
-if (!resetOnLoad && session && (session.phase === 'summary' || session.afgerond)) {
-  void runSave()
-}

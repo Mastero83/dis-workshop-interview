@@ -133,7 +133,6 @@ Handige parameters:
 | `?k=van-gelder` | Klant-slug in Supabase. Wint van de rest |
 | `?klant=Naam` | Naam op het welkomstscherm, in de export, en (zonder `k`) de slug |
 | `?vragenlijst=id` | Andere lijst uit de JSON |
-| `?naar=workshop@bedrijf.nl` | Vooringevuld adres voor de mailknop |
 | `?beheer=1` | Op het eindscherm een debugregel met de laatste opslag. Op de andere schermen het vergelijkscherm |
 | `?vergelijk=1` | Altijd het scherm om geëxporteerde JSON te vergelijken |
 | `?reset=1` | Wist de opgeslagen antwoorden zonder bevestiging en opent het welkomstscherm |
@@ -150,11 +149,11 @@ dis-workshop-v1:workshop-voorbereiding:van-gelder
 
 Sluiten en later terugkomen op dezelfde link herstelt de antwoorden op de vraag waar iemand was. De sessie bewaart het vraag-id (schemaversie 6). Een oudere sessie past niet meer op het gesprek: die wordt gewist en het welkomstscherm toont “Het gesprek is bijgewerkt, we beginnen opnieuw.”
 
-*Opnieuw beginnen* staat in de balk van het welkomstscherm, het gesprek en het overzicht. Na bevestiging wist de app alle `dis-workshop`-sleutels in `localStorage` en de `sessionStorage`, en laadt het welkomstscherm opnieuw. `?reset=1` doet hetzelfde zonder de vraag.
+*Opnieuw beginnen* staat in de balk van het welkomstscherm en het gesprek, en als tekstlink op het overzicht. Na bevestiging wist de app alle `dis-workshop`-sleutels in `localStorage` en de `sessionStorage`, en opent het welkomstscherm via `?reset=1`. Dat is dezelfde start als een verse pagina: nieuw `sessie_id`, geen oude bubbels of kansenkaart.
 
 ### Supabase
 
-Op de kansenkaart stuurt de app de antwoorden één keer naar Supabase. Wijzigt iemand daarna nog eigen invoer of een keuze bij ‘graag bespreken’, dan volgt na ongeveer twee seconden een nieuwe rij met dezelfde `sessie_id`. Een mislukte netwerkpoging wordt één keer herhaald. Op het eindscherm staat de status. Zonder een geslaagde response toont de app nooit dat het opgeslagen is. Mail en download blijven als uitweg, plus de knop *Opnieuw proberen*.
+Niets gaat vanzelf naar Supabase. Op de kansenkaart staat één knop, *Versturen*. Die stuurt de volledige payload, inclusief de graag-bespreken-keuzes en eigen invoer. Een geslaagde response (2xx) toont “Verstuurd, dank je wel!” en zet de knop uit. Zo komt er één rij per keer dat iemand verstuurt. Lukt het niet, dan heet dezelfde knop *Opnieuw versturen*. Er is geen tweede knop en geen automatische herhaalbeurt.
 
 De rij komt in `public.workshop_antwoorden`:
 
@@ -163,7 +162,7 @@ De rij komt in `public.workshop_antwoorden`:
 | `klant` | slug uit `?k=`, anders uit de localStorage-sleutel, anders `onbekend` |
 | `sessie_id` | vast uuid voor die browsersessie |
 | `schema_versie` | de sessie-schemaversie (nu 6) |
-| `payload` | dezelfde JSON als *Download JSON* |
+| `payload` | de volledige export, inclusief kansen en eigen invoer |
 
 De publishable key en de project-URL staan in `.env.production` en als default in de code (`VITE_SUPABASE_URL`, `VITE_SUPABASE_KEY`). Het zijn publieke waarden. De app gebruikt een gewone `POST` met `Prefer: return=minimal`. De rol anon mag alleen inserten, niet lezen.
 
@@ -173,14 +172,7 @@ Op het welkomstscherm staat: “Je antwoorden worden opgeslagen voor de workshop
 
 ## Export
 
-Op het overzicht:
-
-- **Download JSON** — volledig bestand, versie 1, geschikt voor het beheerscherm.
-- **Afdrukken / PDF** — printvriendelijke weergave. Kies in het printdialoogvenster *Opslaan als PDF*.
-- **Kopieer tekst** — platte samenvatting op het klembord.
-- **Mail de samenvatting** — opent het mailprogramma. Lange antwoorden worden ingekort; voeg de JSON toe als bijlage. Het adres komt uit `?naar=`, anders uit `consultantEmail` in de JSON, anders vraagt de app erom.
-
-In het gesprek tik je een eigen antwoordballon aan om dat antwoord te wijzigen. Het overzicht groepeert de antwoorden per hoofdstuk.
+Het overzicht heeft geen download-, mail- of afdrukknop. Op het vergelijkscherm (`?vergelijk=1`) kun je een sessie die nog op dit apparaat staat exporteren als JSON. In het gesprek tik je een eigen antwoordballon aan om dat antwoord te wijzigen. Het overzicht groepeert de antwoorden per hoofdstuk en heeft per vraag *Wijzig*.
 
 ## Beheer
 
