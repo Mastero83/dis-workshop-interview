@@ -1,4 +1,5 @@
 import './style.css'
+import canvasConfetti from 'canvas-confetti'
 import { buildSteps, findQuestionnaire, findStepIndex, isQuestionActive, loadCatalog, presentQuestion, questionAt, questionIds, rolePhrase } from './catalog'
 import {
   EIGEN_PREFIX,
@@ -130,6 +131,7 @@ let errorText = ''
 let modal: 'reset' | 'thanks' | null = null
 let thanksSeconds = 0
 let modalReturn: HTMLElement | null = null
+let thanksBurst: ReturnType<typeof canvasConfetti.create> | null = null
 let memoryOnly = false
 type SaveState = 'idle' | 'saving' | 'saved' | 'error'
 let saveState: SaveState = 'idle'
@@ -1561,6 +1563,8 @@ function openThanks(seconds: number): void {
   modalReturn = document.activeElement instanceof HTMLElement ? document.activeElement : null
   paintModal()
   document.getElementById('thanks-close')?.focus()
+  const canvas = document.getElementById('thanks-burst')
+  if (canvas instanceof HTMLCanvasElement) fireThanksBurst(canvas)
 }
 
 function closeModal(): void {
@@ -1568,12 +1572,14 @@ function closeModal(): void {
   modal = null
   thanksSeconds = 0
   modalReturn = null
+  stopThanksBurst()
   document.getElementById('modal-root')?.remove()
   if (back && document.contains(back) && !back.hasAttribute('disabled')) back.focus()
   else document.querySelector<HTMLElement>('.send-restart')?.focus()
 }
 
 function paintModal(): void {
+  stopThanksBurst()
   document.getElementById('modal-root')?.remove()
   if (!modal) return
   const root = document.createElement('div')
@@ -1582,18 +1588,77 @@ function paintModal(): void {
   document.body.appendChild(root)
 }
 
-function thanksConfetti(): string {
-  if (reduceMotion) return ''
-  const bits = Array.from({ length: 14 }, (_, index) => `<i style="--i:${index}"></i>`).join('')
-  return `<div class="confetti thanks-confetti" aria-hidden="true">${bits}</div>`
+function confettiColors(): string[] {
+  const style = getComputedStyle(document.documentElement)
+  const pick = (name: string, fallback: string) => style.getPropertyValue(name).trim() || fallback
+  const yellow = pick('--das-yellow', '#fbb815')
+  const blue = pick('--das-blue', '#319fda')
+  return [
+    pick('--das-navy', '#001a3f'),
+    yellow,
+    blue,
+    pick('--das-orange', '#e95227'),
+    pick('--das-green', '#7db928'),
+    '#fff8e8',
+    '#ffffff',
+    yellow,
+    blue,
+  ]
+}
+
+function stopThanksBurst(): void {
+  thanksBurst?.reset()
+  thanksBurst = null
+}
+
+/** Twee kanonnen vanuit de onderste hoeken, schuin naar binnen. */
+function fireThanksBurst(canvas: HTMLCanvasElement): void {
+  if (reduceMotion) return
+  stopThanksBurst()
+  const burst = canvasConfetti.create(canvas, { resize: true, useWorker: false, disableForReducedMotion: true })
+  thanksBurst = burst
+  const narrow = window.innerWidth < 720
+  const colors = confettiColors()
+  const shots = narrow
+    ? [
+        { particleCount: 38, scalar: 0.72, startVelocity: 48 },
+        { particleCount: 26, scalar: 1.08, startVelocity: 58 },
+      ]
+    : [
+        { particleCount: 48, scalar: 0.75, startVelocity: 50 },
+        { particleCount: 26, scalar: 1.15, startVelocity: 64 },
+        { particleCount: 12, scalar: 0.5, startVelocity: 40 },
+      ]
+  const corner = (x: number, angle: number, drift: number) => {
+    for (const shot of shots) {
+      void burst({
+        particleCount: shot.particleCount,
+        angle,
+        spread: 68,
+        startVelocity: shot.startVelocity,
+        origin: { x, y: 0.98 },
+        drift,
+        scalar: shot.scalar,
+        gravity: 0.9,
+        decay: 0.91,
+        ticks: 200,
+        colors,
+        shapes: ['square', 'circle'],
+        disableForReducedMotion: true,
+      })
+    }
+  }
+  corner(0, 58, 0.35)
+  corner(1, 122, -0.35)
 }
 
 function modalHtml(): string {
   if (modal === 'thanks') {
     const mark =
       '<svg viewBox="0 0 24 24" width="32" height="32" aria-hidden="true"><path d="M5 12.5 9.2 17 19 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    const burst = reduceMotion ? '' : '<canvas id="thanks-burst" class="thanks-burst" aria-hidden="true"></canvas>'
     return `<div class="modal-back is-thanks">
-      ${thanksConfetti()}
+      ${burst}
       <div class="modal thanks-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-copy">
         <div class="thanks-mark" aria-hidden="true">${mark}</div>
         <h2 id="modal-title">Klaar, dank je wel!</h2>

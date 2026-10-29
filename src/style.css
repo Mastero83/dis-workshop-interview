@@ -1272,12 +1272,17 @@ tr.diff td:first-child { font-weight: 600; }
 .modal p { margin: 0 0 14px; }
 .modal .actions { margin-top: 8px; }
 .modal-back.is-thanks { place-items: center; }
-.thanks-confetti { z-index: 0; }
-.thanks-confetti i:nth-child(odd) { background: var(--das-yellow); }
-.thanks-confetti i:nth-child(even) { background: var(--das-navy); }
+.thanks-burst {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  pointer-events: none;
+  z-index: 3;
+}
 .thanks-modal {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   text-align: left;
   animation: thanksIn 0.4s cubic-bezier(0.22, 0.8, 0.28, 1);
 }
@@ -1291,6 +1296,7 @@ tr.diff td:first-child { font-weight: 600; }
   background: var(--das-navy);
   color: white;
   box-shadow: 0 0 0 8px #fff6e0;
+  animation: thanksPop 0.55s cubic-bezier(0.2, 1.35, 0.36, 1) both;
 }
 .thanks-modal h2 { font-size: 28px; line-height: 1.15; margin-bottom: 10px; }
 .thanks-time { color: var(--das-navy); font-weight: 600; }
@@ -1298,6 +1304,11 @@ tr.diff td:first-child { font-weight: 600; }
 @keyframes thanksIn {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: none; }
+}
+@keyframes thanksPop {
+  0% { transform: scale(0.7); }
+  65% { transform: scale(1.08); }
+  100% { transform: scale(1); }
 }
 .panel { min-height: 100dvh; background: white; padding: 20px; }
 .panel-body { width: min(640px, 100%); margin: 24px auto; }
@@ -1666,7 +1677,7 @@ tr.diff td:first-child { font-weight: 600; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .blob, .typing i, .typing-row, .reveal-1, .reveal-2, .chapter.is-fresh, .confetti i, .thanks-modal, .meter span, .btn, .role-card.is-on {
+  .blob, .typing i, .typing-row, .reveal-1, .reveal-2, .chapter.is-fresh, .confetti i, .thanks-modal, .thanks-mark, .meter span, .btn, .role-card.is-on {
     animation: none !important;
     transition: none !important;
   }
@@ -1675,7 +1686,7 @@ tr.diff td:first-child { font-weight: 600; }
 }
 
 @media print {
-  .scene, .confetti, .no-print, .export-bar, .welcome-foot, .linkish { display: none !important; }
+  .scene, .confetti, .thanks-burst, .no-print, .export-bar, .welcome-foot, .linkish { display: none !important; }
   .only-print { display: block; }
   body { background: white; }
   .summary, .sum-body { background: white; }
