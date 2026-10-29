@@ -208,6 +208,8 @@ export interface Session {
   /** Het eindscherm is een keer bereikt. Daarna telt een wijziging als nieuwe opslag. */
   afgerond?: boolean
   remotePushedAt?: string
+  /** Seconden tussen de start van deze sessie en Versturen. */
+  invultijdSeconden?: number
 }
 
 export interface ExportAnswer {
@@ -228,6 +230,8 @@ export interface ExportDoc {
   exportedAt: string
   startedAt: string
   updatedAt: string
+  /** Seconden van welkomstscherm tot Versturen. */
+  invultijd_seconden?: number
   answers: ExportAnswer[]
   kansen: { id: string; naam: string; score: number; interest: string; signalen: string[] }[]
   eigen: {

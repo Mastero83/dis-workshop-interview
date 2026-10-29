@@ -190,6 +190,7 @@ export function toExportDoc(questionnaire: Questionnaire, session: Session): Exp
     exportedAt: new Date().toISOString(),
     startedAt: session.startedAt,
     updatedAt: session.updatedAt,
+    invultijd_seconden: session.invultijdSeconden,
     answers,
     kansen: result.ranked.map((item) => ({
       id: item.id,
@@ -269,6 +270,29 @@ export function formatSummaryWhen(iso: string): { date: string; time: string } {
     date: new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }).format(date),
     time: new Intl.DateTimeFormat('nl-NL', { hour: '2-digit', minute: '2-digit' }).format(date),
   }
+}
+
+/** Seconden vanaf `startedAt` tot nu. Ongeldige start telt als 0. */
+export function invultijdSeconds(startedAt: string, now = Date.now()): number {
+  const start = Date.parse(startedAt)
+  if (Number.isNaN(start)) return 0
+  return Math.max(0, Math.round((now - start) / 1000))
+}
+
+/** B1-zin voor de bedankpopup. Onder een minuut geen los getal. */
+export function invultijdLine(seconds: number): string {
+  const safe = Math.max(0, Math.floor(seconds))
+  if (safe < 60) return 'Je was er minder dan een minuut mee bezig.'
+  const minutesTotal = Math.floor(safe / 60)
+  if (minutesTotal < 60) {
+    return minutesTotal === 1 ? 'Je was er 1 minuut mee bezig.' : `Je was er ${minutesTotal} minuten mee bezig.`
+  }
+  const hours = Math.floor(minutesTotal / 60)
+  const rest = minutesTotal % 60
+  const hour = hours === 1 ? '1 uur' : `${hours} uur`
+  if (rest === 0) return `Je was er ${hour} mee bezig.`
+  const minute = rest === 1 ? '1 minuut' : `${rest} minuten`
+  return `Je was er ${hour} en ${minute} mee bezig.`
 }
 
 export function fileSlug(value: string): string {

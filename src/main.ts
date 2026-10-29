@@ -21,6 +21,8 @@ import {
   fileSlug,
   formatSummaryWhen,
   formatWhen,
+  invultijdLine,
+  invultijdSeconds,
   isEmpty,
   isExportDoc,
   isKansAnswer,
@@ -125,7 +127,9 @@ let atWelcome = !session || session.phase === 'welcome'
 let beheer = params.get('beheer') === '1'
 const vergelijk = params.get('vergelijk') === '1'
 let errorText = ''
-let modal: 'reset' | null = null
+let modal: 'reset' | 'thanks' | null = null
+let thanksSeconds = 0
+let modalReturn: HTMLElement | null = null
 let memoryOnly = false
 type SaveState = 'idle' | 'saving' | 'saved' | 'error'
 let saveState: SaveState = 'idle'
@@ -1488,6 +1492,8 @@ async function sendResult(): Promise<void> {
   syncText()
   ensureIdentity()
   session.afgerond = true
+  const filledSeconds = invultijdSeconds(session.startedAt)
+  session.invultijdSeconden = filledSeconds
   persist()
   const sessieId = session.sessieId
   const klant = session.klantSlug || 'onbekend'
@@ -1517,7 +1523,11 @@ async function sendResult(): Promise<void> {
       status: result.status,
     })
     saveState = 'saved'
-  } else saveState = 'error'
+    paintSendStatus()
+    openThanks(filledSeconds)
+    return
+  }
+  saveState = 'error'
   paintSendStatus()
 }
 
@@ -1538,13 +1548,29 @@ function download(): void {
 }
 
 function openModal(): void {
+  thanksSeconds = 0
   modal = 'reset'
+  modalReturn = document.activeElement instanceof HTMLElement ? document.activeElement : null
   paintModal()
+  document.getElementById('reset-cancel')?.focus()
+}
+
+function openThanks(seconds: number): void {
+  thanksSeconds = seconds
+  modal = 'thanks'
+  modalReturn = document.activeElement instanceof HTMLElement ? document.activeElement : null
+  paintModal()
+  document.getElementById('thanks-close')?.focus()
 }
 
 function closeModal(): void {
+  const back = modalReturn
   modal = null
+  thanksSeconds = 0
+  modalReturn = null
   document.getElementById('modal-root')?.remove()
+  if (back && document.contains(back) && !back.hasAttribute('disabled')) back.focus()
+  else document.querySelector<HTMLElement>('.send-restart')?.focus()
 }
 
 function paintModal(): void {
@@ -1556,13 +1582,35 @@ function paintModal(): void {
   document.body.appendChild(root)
 }
 
+function thanksConfetti(): string {
+  if (reduceMotion) return ''
+  const bits = Array.from({ length: 14 }, (_, index) => `<i style="--i:${index}"></i>`).join('')
+  return `<div class="confetti thanks-confetti" aria-hidden="true">${bits}</div>`
+}
+
 function modalHtml(): string {
+  if (modal === 'thanks') {
+    const mark =
+      '<svg viewBox="0 0 24 24" width="32" height="32" aria-hidden="true"><path d="M5 12.5 9.2 17 19 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    return `<div class="modal-back is-thanks">
+      ${thanksConfetti()}
+      <div class="modal thanks-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-copy">
+        <div class="thanks-mark" aria-hidden="true">${mark}</div>
+        <h2 id="modal-title">Klaar, dank je wel!</h2>
+        <p class="thanks-time">${escapeHtml(invultijdLine(thanksSeconds))}</p>
+        <p id="modal-copy">Tot snel bij jullie op kantoor! We nemen je antwoorden mee naar de workshop.</p>
+        <div class="actions">
+          <button class="btn btn-primary" type="button" id="thanks-close" data-action="close-modal">Sluiten</button>
+        </div>
+      </div>
+    </div>`
+  }
   return `<div class="modal-back">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <h2 id="modal-title">Opnieuw beginnen?</h2>
       <p>Weet je het zeker? Je antwoorden worden gewist.</p>
       <div class="actions">
-        <button class="btn btn-ghost-dark" type="button" data-action="close-modal">Annuleren</button>
+        <button class="btn btn-ghost-dark" type="button" id="reset-cancel" data-action="close-modal">Annuleren</button>
         <button class="btn btn-primary" type="button" data-action="confirm-reset">Wis en begin opnieuw</button>
       </div>
     </div>
@@ -2048,8 +2096,26 @@ document.addEventListener('keydown', (event) => {
     return
   }
   if (event.key === 'Escape' && modal) {
+    event.preventDefault()
     closeModal()
     return
+  }
+  if (event.key === 'Tab' && modal) {
+    const root = document.getElementById('modal-root')
+    if (!root) return
+    const items = [...root.querySelectorAll<HTMLElement>('button, [href], input, [tabindex]:not([tabindex="-1"])')].filter(
+      (item) => !item.hasAttribute('disabled'),
+    )
+    if (!items.length) return
+    const first = items[0]
+    const last = items[items.length - 1]
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault()
+      last.focus()
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault()
+      first.focus()
+    }
   }
 })
 

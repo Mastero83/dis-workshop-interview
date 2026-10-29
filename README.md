@@ -153,7 +153,7 @@ Sluiten en later terugkomen op dezelfde link herstelt de antwoorden op de vraag 
 
 ### Supabase
 
-Niets gaat vanzelf naar Supabase. Op de kansenkaart staat één knop, *Versturen*. Die stuurt de volledige payload, inclusief de graag-bespreken-keuzes en eigen invoer. Een geslaagde response (2xx) toont “Verstuurd, dank je wel!” en zet de knop uit. Zo komt er één rij per keer dat iemand verstuurt. Lukt het niet, dan heet dezelfde knop *Opnieuw versturen*. Er is geen tweede knop en geen automatische herhaalbeurt.
+Niets gaat vanzelf naar Supabase. Op de kansenkaart staat één knop, *Versturen*. Die stuurt de volledige payload, inclusief de graag-bespreken-keuzes, eigen invoer en `invultijd_seconden` (seconden vanaf het openen van het welkomstscherm). Alleen na een geslaagde response (2xx) opent een bedankvenster met die tijd, en de knop toont “Verstuurd”. Zo komt er één rij per keer dat iemand verstuurt. Lukt het niet, dan heet dezelfde knop *Opnieuw versturen* en blijft het bedankvenster dicht. Er is geen tweede knop en geen automatische herhaalbeurt.
 
 De rij komt in `public.workshop_antwoorden`:
 
@@ -162,7 +162,7 @@ De rij komt in `public.workshop_antwoorden`:
 | `klant` | slug uit `?k=`, anders uit de localStorage-sleutel, anders `onbekend` |
 | `sessie_id` | vast uuid voor die browsersessie |
 | `schema_versie` | de sessie-schemaversie (nu 6) |
-| `payload` | de volledige export, inclusief kansen en eigen invoer |
+| `payload` | de volledige export, inclusief kansen, eigen invoer en `invultijd_seconden` |
 
 De publishable key en de project-URL staan in `.env.production` en als default in de code (`VITE_SUPABASE_URL`, `VITE_SUPABASE_KEY`). Het zijn publieke waarden. De app gebruikt een gewone `POST` met `Prefer: return=minimal`. De rol anon mag alleen inserten, niet lezen.
 
