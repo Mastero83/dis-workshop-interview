@@ -483,6 +483,7 @@ button { -webkit-tap-highlight-color: transparent; }
   position: sticky;
   bottom: 0;
   z-index: 3;
+  flex: 0 0 auto;
   background: rgba(255, 255, 255, 0.96);
   border-top: 1px solid #e6ebf2;
   padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
@@ -490,8 +491,22 @@ button { -webkit-tap-highlight-color: transparent; }
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 52vh;
+  min-height: 0;
+  max-height: 45dvh;
+  overflow: hidden;
+}
+.composer-scroll {
+  min-height: 0;
   overflow: auto;
+  flex: 0 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.composer-dock {
+  flex: 0 0 auto;
+  padding-top: 8px;
+  background: white;
 }
 .composer-row { display: flex; gap: 8px; align-items: flex-end; }
 .composer-row .field { flex: 1; }
@@ -615,7 +630,7 @@ button { -webkit-tap-highlight-color: transparent; }
 }
 .composer:has(.signal-list),
 .composer:has(.kans-card),
-.composer:has(.kans-empty) { max-height: min(62vh, 720px); overflow: auto; }
+.composer:has(.kans-empty) { max-height: 45dvh; }
 .kaart-wrap { margin: 8px 0 18px; }
 .kaart-layout { display: flex; flex-direction: column; gap: 14px; }
 .kaart-stage {
@@ -1112,7 +1127,7 @@ button { -webkit-tap-highlight-color: transparent; }
   font-weight: 600;
 }
 .bubble.user .role-chips { margin-bottom: 2px; }
-.composer:has(.role-sheet) { max-height: min(72vh, 640px); overflow: auto; }
+.composer:has(.role-sheet) { max-height: 45dvh; }
 .export-bar {
   position: sticky;
   bottom: 0;
@@ -1256,17 +1271,6 @@ tr.diff td:first-child { font-weight: 600; }
   .welcome-foot { padding-top: 22px; }
   .actions { flex-direction: row; align-items: center; }
   .actions .btn { min-width: 240px; }
-  .chat-app { min-height: 100dvh; display: grid; place-items: center; padding: 28px; }
-  .chat-panel {
-    width: min(880px, 100%);
-    height: min(860px, calc(100dvh - 56px));
-    min-height: 0;
-    border-radius: 28px;
-    overflow: hidden;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.28);
-  }
-  .thread { padding: 22px 28px 16px; }
-  .chat-bar, .composer { padding-left: 22px; padding-right: 22px; }
   .role-close { display: none; }
   .summary { padding: 28px 24px 36px; }
   .sum-frame {
@@ -1295,6 +1299,76 @@ tr.diff td:first-child { font-weight: 600; }
   .sum-body { padding: 22px 28px 28px; }
   .export-bar { grid-template-columns: repeat(4, 1fr); position: static; }
   .modal-back { place-items: center; }
+}
+
+@media (min-width: 1024px) {
+  .chat-app { height: 100dvh; min-height: 0; padding: 0; }
+  .chat-panel {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    background: #f6f8fb;
+    box-shadow: none;
+    display: grid;
+    grid-template-columns: minmax(0, 760px) minmax(420px, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-areas:
+      "bar bar"
+      "meter meter"
+      "thread composer";
+  }
+  .chat-bar { grid-area: bar; padding-left: 28px; padding-right: 28px; }
+  .meter { grid-area: meter; }
+  .thread {
+    grid-area: thread;
+    min-height: 0;
+    padding: 28px 36px 24px;
+  }
+  .thread .stack,
+  .thread .bubble.user { max-width: min(100%, 62ch); }
+  .thread .chapter { align-self: flex-start; width: min(100%, 62ch); max-width: 62ch; }
+  .composer,
+  .composer:has(.signal-list),
+  .composer:has(.kans-card),
+  .composer:has(.kans-empty),
+  .composer:has(.role-sheet) {
+    grid-area: composer;
+    position: relative;
+    align-self: stretch;
+    min-height: 0;
+    max-height: none;
+    overflow: hidden;
+    border-top: 0;
+    border-left: 1px solid #e6ebf2;
+    padding: 22px 22px 18px;
+    background: white;
+  }
+  .composer-scroll,
+  .composer-dock {
+    width: min(100%, 640px);
+  }
+  .composer-scroll:has(.role-grid),
+  .composer:has(.role-sheet) .composer-dock {
+    width: min(100%, 920px);
+  }
+  .role-grid { grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); }
+  .summary { padding: 0; background: #f6f8fb; }
+  .sum-frame {
+    width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+    background: #f6f8fb;
+  }
+  .sum-body,
+  .kaart-wrap { width: min(1180px, 100%); margin-inline: auto; }
+  .kaart-stage { max-width: none; }
+  .kaart-layout { grid-template-columns: minmax(0, 1fr) minmax(220px, 280px); }
+  .qa h3,
+  .answer-text,
+  .chapter-intro { max-width: 72ch; }
 }
 
 @media (min-width: 800px) and (max-width: 959px) {
@@ -1505,12 +1579,24 @@ tr.diff td:first-child { font-weight: 600; }
   .role-sheet { display: none; }
   .role-sheet.is-open {
     display: flex;
+    flex-direction: column;
     position: fixed;
     inset: 0;
     z-index: 40;
     background: #f6f8fb;
     padding: calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));
+    overflow: hidden;
+  }
+  .role-sheet.is-open .role-grid {
+    flex: 1 1 auto;
+    min-height: 0;
     overflow: auto;
+    align-content: start;
+  }
+  .role-sheet.is-open .role-sheet-foot {
+    position: static;
+    flex: none;
+    background: #f6f8fb;
   }
   .role-grid { grid-template-columns: 1fr 1fr; }
   .role-card { min-height: 168px; }

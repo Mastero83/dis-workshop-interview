@@ -237,20 +237,13 @@ function render(): void {
   document.querySelectorAll('body > .role-sheet').forEach((node) => node.remove())
   const arriving = freshId
   app.innerHTML = view()
+  dockComposerAction()
   restoreMedia(media)
   applyPortraitPosters()
   const nextThread = document.getElementById('thread')
   if (nextThread) {
-    if (arriving) {
-      const composer = document.querySelector('.composer')
-      const tall = composer != null && composer.getBoundingClientRect().height > window.innerHeight * 0.58
-      const hosts = nextThread.querySelectorAll('.msg.host')
-      const last = hosts[hosts.length - 1]
-      if (tall && last) {
-        const delta = last.getBoundingClientRect().top - nextThread.getBoundingClientRect().top
-        nextThread.scrollTop += delta - 4
-      } else nextThread.scrollTop = nextThread.scrollHeight
-    } else if (keepScroll != null) nextThread.scrollTop = keepScroll
+    if (keepScroll == null) revealThreadEnd(nextThread)
+    else nextThread.scrollTop = keepScroll
   } else if (pageScroll) window.scrollTo(0, pageScroll)
   const nextSheet = document.querySelector('.role-sheet.is-open')
   if (nextSheet && window.matchMedia('(max-width: 799px)').matches) document.body.appendChild(nextSheet)
@@ -630,6 +623,37 @@ function rolePreview(question: Question, values: string[]): string {
     })
     .join('')
   return `<span class="role-chips">${chips}</span>`
+}
+
+function revealThreadEnd(thread: HTMLElement): void {
+  const pin = () => {
+    thread.scrollTop = thread.scrollHeight
+  }
+  pin()
+  window.requestAnimationFrame(pin)
+  thread.querySelectorAll('img, video').forEach((media) => {
+    media.addEventListener('load', pin, { once: true })
+    if (media instanceof HTMLVideoElement) media.addEventListener('loadedmetadata', pin, { once: true })
+  })
+}
+
+/** Houdt Verder vast onder het antwoordpaneel; de opties scrollen daarboven. */
+function dockComposerAction(): void {
+  document.querySelectorAll('form.composer').forEach((composer) => {
+    if (composer.querySelector(':scope > .composer-scroll')) return
+    const button = composer.querySelector(':scope > .send-wide')
+    const scroll = document.createElement('div')
+    scroll.className = 'composer-scroll'
+    while (composer.firstChild) scroll.appendChild(composer.firstChild)
+    composer.appendChild(scroll)
+    const dock = document.createElement('div')
+    dock.className = 'composer-dock'
+    if (button) dock.appendChild(button)
+    const mobileSheet = window.matchMedia('(max-width: 799px)').matches
+    const roleFoot = mobileSheet ? null : scroll.querySelector('.role-sheet-foot')
+    if (roleFoot) dock.appendChild(roleFoot)
+    if (dock.childElementCount) composer.appendChild(dock)
+  })
 }
 
 function composerHtml(question: Question | null): string {
